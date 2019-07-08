@@ -1,0 +1,10 @@
+process.o: ..\contiki\core\sys\process.c
+process.o: D:\Keil\ARM\RV31\INC\stdio.h
+process.o: ..\contiki\core\sys/process.h
+process.o: ..\contiki\core\sys/pt.h
+process.o: ..\contiki\core\sys/lc.h
+process.o: ..\contiki\core\sys/lc-switch.h
+process.o: ..\contiki\core\sys/cc.h
+process.o: ..\contiki\portable\contiki-conf.h
+process.o: D:\Keil\ARM\RV31\INC\stdint.h
+process.o: ..\contiki\core\sys/arg.h

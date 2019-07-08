@@ -1,0 +1,9 @@
+autostart.o: ..\contiki\core\sys\autostart.c
+autostart.o: ..\contiki\core\sys/autostart.h
+autostart.o: ..\contiki\core\sys/process.h
+autostart.o: ..\contiki\core\sys/pt.h
+autostart.o: ..\contiki\core\sys/lc.h
+autostart.o: ..\contiki\core\sys/lc-switch.h
+autostart.o: ..\contiki\core\sys/cc.h
+autostart.o: ..\contiki\portable\contiki-conf.h
+autostart.o: D:\Keil\ARM\RV31\INC\stdint.h

@@ -1,0 +1,11 @@
+etimer.o: ..\contiki\core\sys\etimer.c
+etimer.o: ..\contiki\portable\contiki-conf.h
+etimer.o: D:\Keil\ARM\RV31\INC\stdint.h
+etimer.o: ..\contiki\core\sys/etimer.h
+etimer.o: ..\contiki\core\sys/timer.h
+etimer.o: ..\contiki\core\sys/clock.h
+etimer.o: ..\contiki\core\sys/process.h
+etimer.o: ..\contiki\core\sys/pt.h
+etimer.o: ..\contiki\core\sys/lc.h
+etimer.o: ..\contiki\core\sys/lc-switch.h
+etimer.o: ..\contiki\core\sys/cc.h

@@ -1,0 +1,1 @@
+-c --cpu Cortex-M0 -g -O0 --apcs=interwork -I..\app -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu\inc -I..\cpu -I "D:\Keil\ARM\INC" -I "D:\Keil\ARM\INC\ST\STM32F0xx" -DUSE_STDPERIPH_DRIVER -DSTM32F0XX -o "74hc595.o" --omf_browse "74hc595.crf" --depend "74hc595.d" "..\dev\74hc595.c"
