@@ -20,7 +20,7 @@
                 全局函数
 ====================================================*/
 //初始化配置的iic接口
-void ld_iic_init(LD_IIC_MAP*map)
+void ld_iic_init(t_i2cx_map*map)
 {
 
 }

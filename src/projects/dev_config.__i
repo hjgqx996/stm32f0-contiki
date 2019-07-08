@@ -1,1 +1,0 @@
--c --cpu Cortex-M0 -g -O0 --apcs=interwork -I..\app -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu\inc -I..\cpu -I "D:\Keil\ARM\INC" -I "D:\Keil\ARM\INC\ST\STM32F0xx" -DUSE_STDPERIPH_DRIVER -DSTM32F0XX -o "dev_config.o" --omf_browse "dev_config.crf" --depend "dev_config.d" "..\dev\dev_config.c"

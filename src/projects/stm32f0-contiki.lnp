@@ -1,4 +1,0 @@
---cpu Cortex-M0 "main.o" "autostart.o" "etimer.o" "process.o" "timer.o" "clock.o" "core_cm3.o" "stm32f0xx_it.o" "system_stm32f0xx.o" ".\startup_stm32f030x8.o" "stm32f0xx_gpio.o" "stm32f0xx_rcc.o" "dev.o" "dev_config.o" "iic.o" "uart.o" "74hc595.o" "ir.o" "switch.o" "lib.o" "cbuffer.o" --strict --scatter "stm32f0-contiki.sct" 
---autoat --summary_stderr --info summarysizes --map --xref --callgraph --symbols 
---info sizes --info totals --info unused --info veneers 
- --list ".\stm32f0-contiki.map" -o "stm32f0-contiki.axf"

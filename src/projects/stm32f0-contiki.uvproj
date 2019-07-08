@@ -42,14 +42,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\</OutputDirectory>
+          <OutputDirectory>.\objects\</OutputDirectory>
           <OutputName>stm32f0-contiki</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath>.\</ListingPath>
+          <ListingPath>.\lists\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -345,7 +345,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F0XX,</Define>
               <Undefine></Undefine>
-              <IncludePath>..\app;..\contiki;..\contiki\core;..\contiki\portable;..\cpu\inc;..\cpu</IncludePath>
+              <IncludePath>..\app;..\contiki;..\contiki\core;..\contiki\portable;..\cpu;..\cpu\cmsis_inc;..\cpu\inc;..\dev;..\lib</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -400,6 +400,11 @@
               <FileType>1</FileType>
               <FilePath>..\app\communication.c</FilePath>
             </File>
+            <File>
+              <FileName>channel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\channel.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -451,6 +456,11 @@
           <GroupName>cpu</GroupName>
           <Files>
             <File>
+              <FileName>cpu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\cpu.c</FilePath>
+            </File>
+            <File>
               <FileName>core_cm3.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\cpu\core_cm3.c</FilePath>
@@ -480,6 +490,21 @@
               <FileType>1</FileType>
               <FilePath>..\cpu\src\stm32f0xx_rcc.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f0xx_iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_iwdg.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_misc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_misc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_usart.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -494,6 +519,45 @@
               <FileName>dev_config.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\dev\dev_config.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>0</IncludeInBuild>
+                  <AlwaysBuild>0</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                </CommonProperty>
+                <FileArmAds>
+                  <Cads>
+                    <interw>2</interw>
+                    <Optim>0</Optim>
+                    <oTime>2</oTime>
+                    <SplitLS>2</SplitLS>
+                    <OneElfS>2</OneElfS>
+                    <Strict>2</Strict>
+                    <EnumInt>2</EnumInt>
+                    <PlainCh>2</PlainCh>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <wLevel>0</wLevel>
+                    <uThumb>2</uThumb>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath></IncludePath>
+                    </VariousControls>
+                  </Cads>
+                </FileArmAds>
+              </FileOption>
             </File>
             <File>
               <FileName>iic.c</FileName>
@@ -529,6 +593,16 @@
               <FileName>motor.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\dev\motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>driver_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\driver_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\key.c</FilePath>
             </File>
           </Files>
         </Group>

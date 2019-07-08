@@ -3,818 +3,119 @@
 <pre>
 <h1>礦ision Build Log</h1>
 <h2>Project:</h2>
-F:\项目\50口机\stm32f0-contiki\src\projects\stm32f0-contiki.uvproj
+H:\来电科技\stm32f0-contiki\src\projects\stm32f0-contiki.uvproj
 Project File Date:  07/08/2019
 
 <h2>Output:</h2>
 Build target 'stm32f0'
 compiling main.c...
+compiling charge.c...
+compiling communication.c...
 compiling autostart.c...
 compiling etimer.c...
 compiling process.c...
 compiling timer.c...
 compiling clock.c...
-..\contiki\portable\clock.c(1): error:  #5: cannot open source input file "stm32f10x.h": No such file or directory
-..\contiki\portable\clock.c:   #include "stm32f10x.h"
+..\contiki\portable\clock.c(1): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\contiki\portable\clock.c:   #include "stm32f0xx.h"
 ..\contiki\portable\clock.c:                         ^
 ..\contiki\portable\clock.c: ..\contiki\portable\clock.c: 0 warnings, 1 error
-compiling system_stm32f10x.c...
-..\cpu\stm32f10x.h(96): error:  #35: #error directive: "Please select first the target STM32F10x device used in your application (in stm32f10x.h file)"
-..\cpu\stm32f10x.h:    #error "Please select first the target STM32F10x device used in your application (in stm32f10x.h file)"
-..\cpu\stm32f10x.h:     ^
-..\cpu\stm32f10x.h: ..\cpu\system_stm32f10x.c: 0 warnings, 1 error
 compiling core_cm3.c...
-compiling stm32f10x_rcc.c...
-..\cpu\inc\stm32f10x_rcc.h(32): error:  #5: cannot open source input file "stm32f10x.h": No such file or directory
-..\cpu\inc\stm32f10x_rcc.h:   #include "stm32f10x.h"
-..\cpu\inc\stm32f10x_rcc.h:                         ^
-..\cpu\inc\stm32f10x_rcc.h: ..\cpu\src\stm32f10x_rcc.c: 0 warnings, 1 error
-compiling dev.c...
-compiling dev_config.c...
-..\dev\dev_config.c(2): error:  #5: cannot open source input file "stm32f": No such file or directory
-..\dev\dev_config.c:   #include "stm32f"
-..\dev\dev_config.c:                    ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 1 error
-compiling iic.c...
-..\dev\types.h(4): error:  #20: identifier "uint8_t" is undefined
-..\dev\types.h:   typedef uint8_t U8;
-..\dev\types.h:           ^
-..\dev\types.h(5): error:  #20: identifier "int8_t" is undefined
-..\dev\types.h:   typedef int8_t S8;
-..\dev\types.h:           ^
-..\dev\types.h(6): error:  #20: identifier "uint16_t" is undefined
-..\dev\types.h:   typedef uint16_t U16;
-..\dev\types.h:           ^
-..\dev\types.h(7): error:  #20: identifier "int16_t" is undefined
-..\dev\types.h:   typedef int16_t S16;
-..\dev\types.h:           ^
-..\dev\types.h(8): error:  #20: identifier "uint32_t" is undefined
-..\dev\types.h:   typedef uint32_t U32;
-..\dev\types.h:           ^
-..\dev\types.h(9): error:  #20: identifier "int32_t" is undefined
-..\dev\types.h:   typedef int32_t S32;
-..\dev\types.h:           ^
-..\dev\types.h(10): error:  #20: identifier "uint64_t" is undefined
-..\dev\types.h:   typedef uint64_t U64;
-..\dev\types.h:           ^
-..\dev\types.h(11): error:  #20: identifier "int64_t" is undefined
-..\dev\types.h:   typedef int64_t S64;
-..\dev\types.h:           ^
-..\dev\types.h(24): warning:  #1-D: last line of file ends without a newline
-..\dev\types.h:   #endif
-..\dev\types.h:         ^
-..\dev\iic.h(8): error:  #77-D: this declaration has no storage class or type specifier
-..\dev\iic.h:            dir;            //方向 dir=0: sda=io[0] scl=io[1]     dir=1:sda=io[1] scl=io[0]                                   
-..\dev\iic.h:            ^
-..\dev\iic.h: ..\dev\iic.c: 1 warning, 9 errors
-compiling lib.c...
-Target not created
-Build target 'stm32f0'
-compiling clock.c...
-..\contiki\portable\clock.c(1): error:  #5: cannot open source input file "stm32f00x.h": No such file or directory
-..\contiki\portable\clock.c:   #include "stm32f00x.h"
-..\contiki\portable\clock.c:                         ^
-..\contiki\portable\clock.c: ..\contiki\portable\clock.c: 0 warnings, 1 error
 compiling stm32f0xx_it.c...
-..\cpu\stm32f0xx_it.c(32): error:  #5: cannot open source input file "main.h": No such file or directory
-..\cpu\stm32f0xx_it.c:   #include "main.h"
-..\cpu\stm32f0xx_it.c:                    ^
-..\cpu\stm32f0xx_it.c: ..\cpu\stm32f0xx_it.c: 0 warnings, 1 error
+..\cpu\stm32f0xx_it.h(37): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\cpu\stm32f0xx_it.h:   #include "stm32f0xx.h"
+..\cpu\stm32f0xx_it.h:                         ^
+..\cpu\stm32f0xx_it.h: ..\cpu\stm32f0xx_it.c: 0 warnings, 1 error
 compiling system_stm32f0xx.c...
+..\cpu\system_stm32f0xx.c(84): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\cpu\system_stm32f0xx.c:   #include "stm32f0xx.h"
+..\cpu\system_stm32f0xx.c:                         ^
+..\cpu\system_stm32f0xx.c: ..\cpu\system_stm32f0xx.c: 0 warnings, 1 error
 assembling startup_stm32f030x8.s...
-compiling dev_config.c...
-..\dev\dev_config.c(2): error:  #5: cannot open source input file "stm32f": No such file or directory
-..\dev\dev_config.c:   #include "stm32f"
-..\dev\dev_config.c:                    ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 1 error
-compiling iic.c...
-..\dev\types.h(4): error:  #20: identifier "uint8_t" is undefined
-..\dev\types.h:   typedef uint8_t U8;
-..\dev\types.h:           ^
-..\dev\types.h(5): error:  #20: identifier "int8_t" is undefined
-..\dev\types.h:   typedef int8_t S8;
-..\dev\types.h:           ^
-..\dev\types.h(6): error:  #20: identifier "uint16_t" is undefined
-..\dev\types.h:   typedef uint16_t U16;
-..\dev\types.h:           ^
-..\dev\types.h(7): error:  #20: identifier "int16_t" is undefined
-..\dev\types.h:   typedef int16_t S16;
-..\dev\types.h:           ^
-..\dev\types.h(8): error:  #20: identifier "uint32_t" is undefined
-..\dev\types.h:   typedef uint32_t U32;
-..\dev\types.h:           ^
-..\dev\types.h(9): error:  #20: identifier "int32_t" is undefined
-..\dev\types.h:   typedef int32_t S32;
-..\dev\types.h:           ^
-..\dev\types.h(10): error:  #20: identifier "uint64_t" is undefined
-..\dev\types.h:   typedef uint64_t U64;
-..\dev\types.h:           ^
-..\dev\types.h(11): error:  #20: identifier "int64_t" is undefined
-..\dev\types.h:   typedef int64_t S64;
-..\dev\types.h:           ^
-..\dev\types.h(24): warning:  #1-D: last line of file ends without a newline
-..\dev\types.h:   #endif
-..\dev\types.h:         ^
-..\dev\iic.h(8): error:  #77-D: this declaration has no storage class or type specifier
-..\dev\iic.h:            dir;            //方向 dir=0: sda=io[0] scl=io[1]     dir=1:sda=io[1] scl=io[0]                                   
-..\dev\iic.h:            ^
-..\dev\iic.h: ..\dev\iic.c: 1 warning, 9 errors
-Target not created
-compiling stm32f0xx_it.c...
-..\cpu\stm32f0xx_it.c(104): warning:  #223-D: function "USART_GetITStatus" declared implicitly
-..\cpu\stm32f0xx_it.c:     if(USART_GetITStatus(USART1, USART_IT_RXNE)  != RESET)
-..\cpu\stm32f0xx_it.c:        ^
-..\cpu\stm32f0xx_it.c(104): error:  #20: identifier "USART_IT_RXNE" is undefined
-..\cpu\stm32f0xx_it.c:     if(USART_GetITStatus(USART1, USART_IT_RXNE)  != RESET)
-..\cpu\stm32f0xx_it.c:                                  ^
-..\cpu\stm32f0xx_it.c(106): warning:  #223-D: function "USART_ClearFlag" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ClearFlag(USART1, USART_IT_RXNE); //清除中断标志          
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(110): error:  #20: identifier "USART_IT_TXE" is undefined
-..\cpu\stm32f0xx_it.c:          if(USART_GetITStatus(USART1,USART_IT_TXE)==SET)
-..\cpu\stm32f0xx_it.c:                                      ^
-..\cpu\stm32f0xx_it.c(115): warning:  #223-D: function "USART_GetFlagStatus" declared implicitly
-..\cpu\stm32f0xx_it.c:          if(USART_GetFlagStatus(USART1,USART_FLAG_ORE)==SET)
-..\cpu\stm32f0xx_it.c:             ^
-..\cpu\stm32f0xx_it.c(115): error:  #20: identifier "USART_FLAG_ORE" is undefined
-..\cpu\stm32f0xx_it.c:          if(USART_GetFlagStatus(USART1,USART_FLAG_ORE)==SET)
-..\cpu\stm32f0xx_it.c:                                        ^
-..\cpu\stm32f0xx_it.c(117): warning:  #223-D: function "USART_ClearFlag" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ClearFlag(USART1,USART_FLAG_ORE); //读SR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(118): warning:  #223-D: function "USART_ReceiveData" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ReceiveData(USART1);      //读DR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(121): error:  #20: identifier "USART_FLAG_NE" is undefined
-..\cpu\stm32f0xx_it.c:          if(USART_GetFlagStatus(USART1,USART_FLAG_NE)==SET)
-..\cpu\stm32f0xx_it.c:                                        ^
-..\cpu\stm32f0xx_it.c(123): warning:  #223-D: function "USART_ClearFlag" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ClearFlag(USART1,USART_FLAG_NE);  //读SR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(124): warning:  #223-D: function "USART_ReceiveData" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ReceiveData(USART1);      //读DR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(127): error:  #20: identifier "USART_FLAG_FE" is undefined
-..\cpu\stm32f0xx_it.c:          if(USART_GetFlagStatus(USART1,USART_FLAG_FE)==SET)
-..\cpu\stm32f0xx_it.c:                                        ^
-..\cpu\stm32f0xx_it.c(129): warning:  #223-D: function "USART_ClearFlag" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ClearFlag(USART1,USART_FLAG_FE);  //读SR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(130): warning:  #223-D: function "USART_ReceiveData" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ReceiveData(USART1);      //读DR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(133): error:  #20: identifier "USART_FLAG_PE" is undefined
-..\cpu\stm32f0xx_it.c:          if(USART_GetFlagStatus(USART1,USART_FLAG_PE)==SET)
-..\cpu\stm32f0xx_it.c:                                        ^
-..\cpu\stm32f0xx_it.c(135): warning:  #223-D: function "USART_ClearFlag" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ClearFlag(USART1,USART_FLAG_PE);  //读SR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(136): warning:  #223-D: function "USART_ReceiveData" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ReceiveData(USART1);      //读DR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(148): warning:  #223-D: function "USART_GetITStatus" declared implicitly
-..\cpu\stm32f0xx_it.c:     if(USART_GetITStatus(USART2, USART_IT_RXNE)  != RESET)
-..\cpu\stm32f0xx_it.c:        ^
-..\cpu\stm32f0xx_it.c(148): error:  #20: identifier "USART_IT_RXNE" is undefined
-..\cpu\stm32f0xx_it.c:     if(USART_GetITStatus(USART2, USART_IT_RXNE)  != RESET)
-..\cpu\stm32f0xx_it.c:                                  ^
-..\cpu\stm32f0xx_it.c(150): warning:  #223-D: function "USART_ClearFlag" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ClearFlag(USART2, USART_IT_RXNE); //清除中断标志          
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(155): warning:  #223-D: function "USART_GetFlagStatus" declared implicitly
-..\cpu\stm32f0xx_it.c:          if(USART_GetFlagStatus(USART2,USART_FLAG_ORE)==SET)
-..\cpu\stm32f0xx_it.c:             ^
-..\cpu\stm32f0xx_it.c(155): error:  #20: identifier "USART_FLAG_ORE" is undefined
-..\cpu\stm32f0xx_it.c:          if(USART_GetFlagStatus(USART2,USART_FLAG_ORE)==SET)
-..\cpu\stm32f0xx_it.c:                                        ^
-..\cpu\stm32f0xx_it.c(157): warning:  #223-D: function "USART_ClearFlag" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ClearFlag(USART2,USART_FLAG_ORE); //读SR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(158): warning:  #223-D: function "USART_ReceiveData" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ReceiveData(USART2);      //读DR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(161): error:  #20: identifier "USART_FLAG_NE" is undefined
-..\cpu\stm32f0xx_it.c:          if(USART_GetFlagStatus(USART2,USART_FLAG_NE)==SET)
-..\cpu\stm32f0xx_it.c:                                        ^
-..\cpu\stm32f0xx_it.c(163): warning:  #223-D: function "USART_ClearFlag" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ClearFlag(USART2,USART_FLAG_NE);  //读SR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(164): warning:  #223-D: function "USART_ReceiveData" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ReceiveData(USART2);      //读DR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(167): error:  #20: identifier "USART_FLAG_FE" is undefined
-..\cpu\stm32f0xx_it.c:          if(USART_GetFlagStatus(USART2,USART_FLAG_FE)==SET)
-..\cpu\stm32f0xx_it.c:                                        ^
-..\cpu\stm32f0xx_it.c(169): warning:  #223-D: function "USART_ClearFlag" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ClearFlag(USART2,USART_FLAG_FE);  //读SR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(170): warning:  #223-D: function "USART_ReceiveData" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ReceiveData(USART2);      //读DR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(173): error:  #20: identifier "USART_FLAG_PE" is undefined
-..\cpu\stm32f0xx_it.c:          if(USART_GetFlagStatus(USART2,USART_FLAG_PE)==SET)
-..\cpu\stm32f0xx_it.c:                                        ^
-..\cpu\stm32f0xx_it.c(175): warning:  #223-D: function "USART_ClearFlag" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ClearFlag(USART2,USART_FLAG_PE);  //读SR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(176): warning:  #223-D: function "USART_ReceiveData" declared implicitly
-..\cpu\stm32f0xx_it.c:                  USART_ReceiveData(USART2);      //读DR
-..\cpu\stm32f0xx_it.c:                  ^
-..\cpu\stm32f0xx_it.c(179): warning:  #223-D: function "RS485_commond" declared implicitly
-..\cpu\stm32f0xx_it.c:          RS485_commond();//Receive\Send RS485 communication
-..\cpu\stm32f0xx_it.c:          ^
-..\cpu\stm32f0xx_it.c: ..\cpu\stm32f0xx_it.c: 23 warnings, 11 errors
-..\cpu\stm32f0xx_it.c - 11 Error(s), 23 Warning(s).
-Build target 'stm32f0'
-compiling clock.c...
-..\contiki\portable\clock.c(1): error:  #5: cannot open source input file "stm32f00x.h": No such file or directory
-..\contiki\portable\clock.c:   #include "stm32f00x.h"
-..\contiki\portable\clock.c:                         ^
-..\contiki\portable\clock.c: ..\contiki\portable\clock.c: 0 warnings, 1 error
-compiling stm32f0xx_it.c...
-compiling dev_config.c...
-..\dev\dev_config.c(2): error:  #5: cannot open source input file "stm32f": No such file or directory
-..\dev\dev_config.c:   #include "stm32f"
-..\dev\dev_config.c:                    ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 1 error
-compiling iic.c...
-..\dev\types.h(4): error:  #20: identifier "uint8_t" is undefined
-..\dev\types.h:   typedef uint8_t U8;
-..\dev\types.h:           ^
-..\dev\types.h(5): error:  #20: identifier "int8_t" is undefined
-..\dev\types.h:   typedef int8_t S8;
-..\dev\types.h:           ^
-..\dev\types.h(6): error:  #20: identifier "uint16_t" is undefined
-..\dev\types.h:   typedef uint16_t U16;
-..\dev\types.h:           ^
-..\dev\types.h(7): error:  #20: identifier "int16_t" is undefined
-..\dev\types.h:   typedef int16_t S16;
-..\dev\types.h:           ^
-..\dev\types.h(8): error:  #20: identifier "uint32_t" is undefined
-..\dev\types.h:   typedef uint32_t U32;
-..\dev\types.h:           ^
-..\dev\types.h(9): error:  #20: identifier "int32_t" is undefined
-..\dev\types.h:   typedef int32_t S32;
-..\dev\types.h:           ^
-..\dev\types.h(10): error:  #20: identifier "uint64_t" is undefined
-..\dev\types.h:   typedef uint64_t U64;
-..\dev\types.h:           ^
-..\dev\types.h(11): error:  #20: identifier "int64_t" is undefined
-..\dev\types.h:   typedef int64_t S64;
-..\dev\types.h:           ^
-..\dev\types.h(24): warning:  #1-D: last line of file ends without a newline
-..\dev\types.h:   #endif
-..\dev\types.h:         ^
-..\dev\iic.h(8): error:  #77-D: this declaration has no storage class or type specifier
-..\dev\iic.h:            dir;            //方向 dir=0: sda=io[0] scl=io[1]     dir=1:sda=io[1] scl=io[0]                                   
-..\dev\iic.h:            ^
-..\dev\iic.h: ..\dev\iic.c: 1 warning, 9 errors
-Target not created
-Build target 'stm32f0'
-compiling clock.c...
-compiling dev_config.c...
-..\dev\dev_config.c(2): error:  #5: cannot open source input file "stm32f": No such file or directory
-..\dev\dev_config.c:   #include "stm32f"
-..\dev\dev_config.c:                    ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 1 error
-compiling iic.c...
-..\dev\types.h(4): error:  #20: identifier "uint8_t" is undefined
-..\dev\types.h:   typedef uint8_t U8;
-..\dev\types.h:           ^
-..\dev\types.h(5): error:  #20: identifier "int8_t" is undefined
-..\dev\types.h:   typedef int8_t S8;
-..\dev\types.h:           ^
-..\dev\types.h(6): error:  #20: identifier "uint16_t" is undefined
-..\dev\types.h:   typedef uint16_t U16;
-..\dev\types.h:           ^
-..\dev\types.h(7): error:  #20: identifier "int16_t" is undefined
-..\dev\types.h:   typedef int16_t S16;
-..\dev\types.h:           ^
-..\dev\types.h(8): error:  #20: identifier "uint32_t" is undefined
-..\dev\types.h:   typedef uint32_t U32;
-..\dev\types.h:           ^
-..\dev\types.h(9): error:  #20: identifier "int32_t" is undefined
-..\dev\types.h:   typedef int32_t S32;
-..\dev\types.h:           ^
-..\dev\types.h(10): error:  #20: identifier "uint64_t" is undefined
-..\dev\types.h:   typedef uint64_t U64;
-..\dev\types.h:           ^
-..\dev\types.h(11): error:  #20: identifier "int64_t" is undefined
-..\dev\types.h:   typedef int64_t S64;
-..\dev\types.h:           ^
-..\dev\types.h(24): warning:  #1-D: last line of file ends without a newline
-..\dev\types.h:   #endif
-..\dev\types.h:         ^
-..\dev\iic.h(8): error:  #77-D: this declaration has no storage class or type specifier
-..\dev\iic.h:            dir;            //方向 dir=0: sda=io[0] scl=io[1]     dir=1:sda=io[1] scl=io[0]                                   
-..\dev\iic.h:            ^
-..\dev\iic.h: ..\dev\iic.c: 1 warning, 9 errors
-Target not created
-Build target 'stm32f0'
-compiling dev_config.c...
-..\dev\dev_config.c(8): error:  #20: identifier "LD_IIC_MAP" is undefined
-..\dev\dev_config.c:   LD_IIC_MAP ld_iic_maps[]={
-..\dev\dev_config.c:   ^
-..\dev\dev_config.c(12): error:  #29: expected an expression
-..\dev\dev_config.c:   };
-..\dev\dev_config.c:   ^
-..\dev\dev_config.c(8): error:  #1514: an empty initializer is invalid for an array with unspecified bound
-..\dev\dev_config.c:   LD_IIC_MAP ld_iic_maps[]={
-..\dev\dev_config.c:              ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 3 errors
-compiling iic.c...
-..\dev\types.h(4): error:  #20: identifier "uint8_t" is undefined
-..\dev\types.h:   typedef uint8_t U8;
-..\dev\types.h:           ^
-..\dev\types.h(5): error:  #20: identifier "int8_t" is undefined
-..\dev\types.h:   typedef int8_t S8;
-..\dev\types.h:           ^
-..\dev\types.h(6): error:  #20: identifier "uint16_t" is undefined
-..\dev\types.h:   typedef uint16_t U16;
-..\dev\types.h:           ^
-..\dev\types.h(7): error:  #20: identifier "int16_t" is undefined
-..\dev\types.h:   typedef int16_t S16;
-..\dev\types.h:           ^
-..\dev\types.h(8): error:  #20: identifier "uint32_t" is undefined
-..\dev\types.h:   typedef uint32_t U32;
-..\dev\types.h:           ^
-..\dev\types.h(9): error:  #20: identifier "int32_t" is undefined
-..\dev\types.h:   typedef int32_t S32;
-..\dev\types.h:           ^
-..\dev\types.h(10): error:  #20: identifier "uint64_t" is undefined
-..\dev\types.h:   typedef uint64_t U64;
-..\dev\types.h:           ^
-..\dev\types.h(11): error:  #20: identifier "int64_t" is undefined
-..\dev\types.h:   typedef int64_t S64;
-..\dev\types.h:           ^
-..\dev\types.h(24): warning:  #1-D: last line of file ends without a newline
-..\dev\types.h:   #endif
-..\dev\types.h:         ^
-..\dev\iic.h(8): error:  #77-D: this declaration has no storage class or type specifier
-..\dev\iic.h:            dir;            //方向 dir=0: sda=io[0] scl=io[1]     dir=1:sda=io[1] scl=io[0]                                   
-..\dev\iic.h:            ^
-..\dev\iic.h: ..\dev\iic.c: 1 warning, 9 errors
-Target not created
-Build target 'stm32f0'
-compiling dev_config.c...
-..\dev\types.h(24): warning:  #1-D: last line of file ends without a newline
-..\dev\types.h:   #endif
-..\dev\types.h:         ^
-..\dev\iic.h(8): error:  #77-D: this declaration has no storage class or type specifier
-..\dev\iic.h:            dir;            //方向 dir=0: sda=io[0] scl=io[1]     dir=1:sda=io[1] scl=io[0]                                   
-..\dev\iic.h:            ^
-..\dev\dev_config.c(12): error:  #29: expected an expression
-..\dev\dev_config.c:   };
-..\dev\dev_config.c:   ^
-..\dev\dev_config.c(8): error:  #1514: an empty initializer is invalid for an array with unspecified bound
-..\dev\dev_config.c:   LD_IIC_MAP ld_iic_maps[]={
-..\dev\dev_config.c:              ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 1 warning, 3 errors
-compiling iic.c...
-..\dev\types.h(4): error:  #20: identifier "uint8_t" is undefined
-..\dev\types.h:   typedef uint8_t U8;
-..\dev\types.h:           ^
-..\dev\types.h(5): error:  #20: identifier "int8_t" is undefined
-..\dev\types.h:   typedef int8_t S8;
-..\dev\types.h:           ^
-..\dev\types.h(6): error:  #20: identifier "uint16_t" is undefined
-..\dev\types.h:   typedef uint16_t U16;
-..\dev\types.h:           ^
-..\dev\types.h(7): error:  #20: identifier "int16_t" is undefined
-..\dev\types.h:   typedef int16_t S16;
-..\dev\types.h:           ^
-..\dev\types.h(8): error:  #20: identifier "uint32_t" is undefined
-..\dev\types.h:   typedef uint32_t U32;
-..\dev\types.h:           ^
-..\dev\types.h(9): error:  #20: identifier "int32_t" is undefined
-..\dev\types.h:   typedef int32_t S32;
-..\dev\types.h:           ^
-..\dev\types.h(10): error:  #20: identifier "uint64_t" is undefined
-..\dev\types.h:   typedef uint64_t U64;
-..\dev\types.h:           ^
-..\dev\types.h(11): error:  #20: identifier "int64_t" is undefined
-..\dev\types.h:   typedef int64_t S64;
-..\dev\types.h:           ^
-..\dev\types.h(24): warning:  #1-D: last line of file ends without a newline
-..\dev\types.h:   #endif
-..\dev\types.h:         ^
-..\dev\iic.h(8): error:  #77-D: this declaration has no storage class or type specifier
-..\dev\iic.h:            dir;            //方向 dir=0: sda=io[0] scl=io[1]     dir=1:sda=io[1] scl=io[0]                                   
-..\dev\iic.h:            ^
-..\dev\iic.h: ..\dev\iic.c: 1 warning, 9 errors
-Target not created
-Build target 'stm32f0'
-compiling dev_config.c...
-..\dev\dev_config.c(12): error:  #29: expected an expression
-..\dev\dev_config.c:   };
-..\dev\dev_config.c:   ^
-..\dev\dev_config.c(8): error:  #1514: an empty initializer is invalid for an array with unspecified bound
-..\dev\dev_config.c:   LD_IIC_MAP ld_iic_maps[]={
-..\dev\dev_config.c:              ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 2 errors
-compiling iic.c...
-..\dev\types.h(4): error:  #20: identifier "uint8_t" is undefined
-..\dev\types.h:   typedef uint8_t U8;
-..\dev\types.h:           ^
-..\dev\types.h(5): error:  #20: identifier "int8_t" is undefined
-..\dev\types.h:   typedef int8_t S8;
-..\dev\types.h:           ^
-..\dev\types.h(6): error:  #20: identifier "uint16_t" is undefined
-..\dev\types.h:   typedef uint16_t U16;
-..\dev\types.h:           ^
-..\dev\types.h(7): error:  #20: identifier "int16_t" is undefined
-..\dev\types.h:   typedef int16_t S16;
-..\dev\types.h:           ^
-..\dev\types.h(8): error:  #20: identifier "uint32_t" is undefined
-..\dev\types.h:   typedef uint32_t U32;
-..\dev\types.h:           ^
-..\dev\types.h(9): error:  #20: identifier "int32_t" is undefined
-..\dev\types.h:   typedef int32_t S32;
-..\dev\types.h:           ^
-..\dev\types.h(10): error:  #20: identifier "uint64_t" is undefined
-..\dev\types.h:   typedef uint64_t U64;
-..\dev\types.h:           ^
-..\dev\types.h(11): error:  #20: identifier "int64_t" is undefined
-..\dev\types.h:   typedef int64_t S64;
-..\dev\types.h:           ^
-..\dev\types.h: KB: Unexpected type: 0
-..\dev\types.h: <error type>..\dev\iic.c: 0 warnings, 8 errors
-Target not created
-Build target 'stm32f0'
-compiling dev_config.c...
-..\dev\dev_config.c(12): error:  #29: expected an expression
-..\dev\dev_config.c:   };
-..\dev\dev_config.c:   ^
-..\dev\dev_config.c(8): error:  #1514: an empty initializer is invalid for an array with unspecified bound
-..\dev\dev_config.c:   LD_IIC_MAP ld_iic_maps[]={
-..\dev\dev_config.c:              ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 2 errors
-compiling iic.c...
-Target not created
-Build target 'stm32f0'
-compiling main.c...
-compiling autostart.c...
-compiling etimer.c...
-compiling process.c...
-compiling timer.c...
-compiling clock.c...
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h(3241): error:  #5: cannot open source input file "stm32f0xx_conf.h": No such file or directory
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h:     #include "stm32f0xx_conf.h"
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h:                                ^
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h: ..\contiki\portable\clock.c: 0 warnings, 1 error
-compiling core_cm3.c...
-compiling stm32f0xx_it.c...
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h(3241): error:  #5: cannot open source input file "stm32f0xx_conf.h": No such file or directory
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h:     #include "stm32f0xx_conf.h"
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h:                                ^
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h: ..\cpu\stm32f0xx_it.c: 0 warnings, 1 error
-compiling system_stm32f0xx.c...
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h(3241): error:  #5: cannot open source input file "stm32f0xx_conf.h": No such file or directory
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h:     #include "stm32f0xx_conf.h"
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h:                                ^
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h: ..\cpu\system_stm32f0xx.c: 0 warnings, 1 error
-compiling dev.c...
-compiling dev_config.c...
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h(3241): error:  #5: cannot open source input file "stm32f0xx_conf.h": No such file or directory
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h:     #include "stm32f0xx_conf.h"
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h:                                ^
-D:\Keil\ARM\INC\ST\STM32F0xx\stm32f0xx.h: ..\dev\dev_config.c: 0 warnings, 1 error
-compiling iic.c...
-compiling lib.c...
-Target not created
-Build target 'stm32f0'
-compiling main.c...
-compiling autostart.c...
-compiling etimer.c...
-compiling process.c...
-compiling timer.c...
-compiling clock.c...
-compiling core_cm3.c...
-compiling stm32f0xx_it.c...
-compiling system_stm32f0xx.c...
-compiling dev.c...
-compiling dev_config.c...
-..\dev\dev_config.c(12): error:  #29: expected an expression
-..\dev\dev_config.c:   };
-..\dev\dev_config.c:   ^
-..\dev\dev_config.c(8): error:  #1514: an empty initializer is invalid for an array with unspecified bound
-..\dev\dev_config.c:   LD_IIC_MAP ld_iic_maps[]={
-..\dev\dev_config.c:              ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 2 errors
-compiling iic.c...
-compiling lib.c...
-Target not created
-Build target 'stm32f0'
-compiling dev_config.c...
-..\dev\dev_config.c(11): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,9,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(12): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c(16): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,7,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(17): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c(22): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,5,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(23): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c(28): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,3,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(29): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c(34): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,12,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(35): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 10 errors
-compiling iic.c...
-Target not created
-Build target 'stm32f0'
-compiling dev_config.c...
-..\dev\dev_config.c(10): error:  #29: expected an expression
-..\dev\dev_config.c:      {[{0,8,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:       ^
-..\dev\dev_config.c(16): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,7,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(17): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c(22): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,5,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(23): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c(28): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,3,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(29): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c(34): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,12,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(35): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 9 errors
-Target not created
-Build target 'stm32f0'
-compiling dev_config.c...
-..\dev\dev_config.c(19): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,7,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(20): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c(25): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,5,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(26): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c(31): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,3,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(32): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c(37): error:  #67: expected a "}"
-..\dev\dev_config.c:       {0,12,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3},
-..\dev\dev_config.c:          ^
-..\dev\dev_config.c(38): error:  #146: too many initializer values
-..\dev\dev_config.c:    0
-..\dev\dev_config.c:    ^
-..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 8 errors
-Target not created
-Build target 'stm32f0'
-compiling dev_config.c...
-linking...
-Program Size: Code=3216 RO-data=264 RW-data=132 ZI-data=2052  
-"stm32f0-contiki.axf" - 0 Error(s), 0 Warning(s).
-Build target 'stm32f0'
-linking...
-Program Size: Code=3216 RO-data=264 RW-data=132 ZI-data=2052  
-"stm32f0-contiki.axf" - 0 Error(s), 0 Warning(s).
-Build target 'stm32f0'
-compiling dev.c...
-..\dev\dev.c(9): error:  #18: expected a ")"
-..\dev\dev.c:   const static (GPIO_TypeDef *)GPIOS[]={(GPIO_TypeDef *)GPIOA,(GPIO_TypeDef *)GPIOB,(GPIO_TypeDef *)GPIOC,(GPIO_TypeDef *)GPIOD,(GPIO_TypeDef *)GPIOE,(GPIO_TypeDef *)GPIOF};
-..\dev\dev.c:                              ^
-..\dev\dev.c(9): warning:  #260-D: explicit type is missing ("int" assumed)
-..\dev\dev.c:   const static (GPIO_TypeDef *)GPIOS[]={(GPIO_TypeDef *)GPIOA,(GPIO_TypeDef *)GPIOB,(GPIO_TypeDef *)GPIOC,(GPIO_TypeDef *)GPIOD,(GPIO_TypeDef *)GPIOE,(GPIO_TypeDef *)GPIOF};
-..\dev\dev.c:                ^
-..\dev\dev.c(9): error:  #101: "GPIO_TypeDef" has already been declared in the current scope
-..\dev\dev.c:   const static (GPIO_TypeDef *)GPIOS[]={(GPIO_TypeDef *)GPIOA,(GPIO_TypeDef *)GPIOB,(GPIO_TypeDef *)GPIOC,(GPIO_TypeDef *)GPIOD,(GPIO_TypeDef *)GPIOE,(GPIO_TypeDef *)GPIOF};
-..\dev\dev.c:                 ^
-..\dev\dev.c(9): error:  #65: expected a ";"
-..\dev\dev.c:   const static (GPIO_TypeDef *)GPIOS[]={(GPIO_TypeDef *)GPIOA,(GPIO_TypeDef *)GPIOB,(GPIO_TypeDef *)GPIOC,(GPIO_TypeDef *)GPIOD,(GPIO_TypeDef *)GPIOE,(GPIO_TypeDef *)GPIOF};
-..\dev\dev.c:                                ^
-..\dev\dev.c(14): warning:  #1-D: last line of file ends without a newline
-..\dev\dev.c:   }
-..\dev\dev.c:    ^
-..\dev\dev.c(9): warning:  #177-D: variable "GPIO_TypeDef" was declared but never referenced
-..\dev\dev.c:   const static (GPIO_TypeDef *)GPIOS[]={(GPIO_TypeDef *)GPIOA,(GPIO_TypeDef *)GPIOB,(GPIO_TypeDef *)GPIOC,(GPIO_TypeDef *)GPIOD,(GPIO_TypeDef *)GPIOE,(GPIO_TypeDef *)GPIOF};
-..\dev\dev.c:                 ^
-..\dev\dev.c: ..\dev\dev.c: 3 warnings, 3 errors
-Target not created
-Build target 'stm32f0'
-compiling dev.c...
-..\dev\dev.c(9): error:  #20: identifier "GPIOE" is undefined
-..\dev\dev.c:   const static GPIO_TypeDef *GPIOS[]={(GPIO_TypeDef *)GPIOA,(GPIO_TypeDef *)GPIOB,(GPIO_TypeDef *)GPIOC,(GPIO_TypeDef *)GPIOD,(GPIO_TypeDef *)GPIOE,(GPIO_TypeDef *)GPIOF};
-..\dev\dev.c:                                                                                                                                               ^
-..\dev\dev.c(9): error:  #44: expression must have pointer type
-..\dev\dev.c:   const static GPIO_TypeDef *GPIOS[]={(GPIO_TypeDef *)GPIOA,(GPIO_TypeDef *)GPIOB,(GPIO_TypeDef *)GPIOC,(GPIO_TypeDef *)GPIOD,(GPIO_TypeDef *)GPIOE,(GPIO_TypeDef *)GPIOF};
-..\dev\dev.c:                                                                                                                                               ^
-..\dev\dev.c(14): warning:  #1-D: last line of file ends without a newline
-..\dev\dev.c:   }
-..\dev\dev.c:    ^
-..\dev\dev.c(9): warning:  #177-D: variable "GPIOS" was declared but never referenced
-..\dev\dev.c:   const static GPIO_TypeDef *GPIOS[]={(GPIO_TypeDef *)GPIOA,(GPIO_TypeDef *)GPIOB,(GPIO_TypeDef *)GPIOC,(GPIO_TypeDef *)GPIOD,(GPIO_TypeDef *)GPIOE,(GPIO_TypeDef *)GPIOF};
-..\dev\dev.c:                              ^
-..\dev\dev.c: ..\dev\dev.c: 2 warnings, 2 errors
-Target not created
-Build target 'stm32f0'
-compiling dev.c...
-..\dev\dev.c(14): warning:  #1-D: last line of file ends without a newline
-..\dev\dev.c:   }
-..\dev\dev.c:    ^
-..\dev\dev.c(9): warning:  #177-D: variable "GPIOS" was declared but never referenced
-..\dev\dev.c:   const static GPIO_TypeDef *GPIOS[]={(GPIO_TypeDef *)GPIOA,(GPIO_TypeDef *)GPIOB,(GPIO_TypeDef *)GPIOC,(GPIO_TypeDef *)GPIOD,(GPIO_TypeDef *)0,(GPIO_TypeDef *)GPIOF};
-..\dev\dev.c:                              ^
-..\dev\dev.c: ..\dev\dev.c: 2 warnings, 0 errors
-linking...
-Program Size: Code=3216 RO-data=264 RW-data=132 ZI-data=2052  
-"stm32f0-contiki.axf" - 0 Error(s), 2 Warning(s).
-Build target 'stm32f0'
-compiling dev.c...
-..\dev\dev.c(13): error:  #20: identifier "NULL" is undefined
-..\dev\dev.c:       if(map==NULL)return;
-..\dev\dev.c:               ^
-..\dev\dev.c(24): warning:  #188-D: enumerated type mixed with another type
-..\dev\dev.c:                           GPIO_InitStructure.GPIO_Mode = map->mode;
-..\dev\dev.c:                                                        ^
-..\dev\dev.c(25): warning:  #188-D: enumerated type mixed with another type
-..\dev\dev.c:                           GPIO_InitStructure.GPIO_OType = map->otype;
-..\dev\dev.c:                                                         ^
-..\dev\dev.c(26): warning:  #188-D: enumerated type mixed with another type
-..\dev\dev.c:                           GPIO_InitStructure.GPIO_PuPd = map->pp;
-..\dev\dev.c:                                                        ^
-..\dev\dev.c(27): warning:  #188-D: enumerated type mixed with another type
-..\dev\dev.c:                           GPIO_InitStructure.GPIO_Speed = map->speed;
-..\dev\dev.c:                                                         ^
-..\dev\dev.c(32): warning:  #1-D: last line of file ends without a newline
-..\dev\dev.c:   }
-..\dev\dev.c:    ^
-..\dev\dev.c: ..\dev\dev.c: 5 warnings, 1 error
-Target not created
-Build target 'stm32f0'
-compiling dev.c...
-..\dev\dev.c(13): error:  #20: identifier "NULL" is undefined
-..\dev\dev.c:       if(map==NULL)return;
-..\dev\dev.c:               ^
-..\dev\dev.c(32): warning:  #1-D: last line of file ends without a newline
-..\dev\dev.c:   }
-..\dev\dev.c:    ^
-..\dev\dev.c: ..\dev\dev.c: 1 warning, 1 error
-Target not created
-Build target 'stm32f0'
-compiling main.c...
-compiling autostart.c...
-compiling etimer.c...
-compiling process.c...
-compiling timer.c...
-compiling clock.c...
-compiling core_cm3.c...
-compiling stm32f0xx_it.c...
-compiling system_stm32f0xx.c...
-assembling startup_stm32f030x8.s...
-compiling dev.c...
-..\dev\types.h(14): error:  #40: expected an identifier
-..\dev\types.h:   typedef (void*(0)) NULL;
-..\dev\types.h:            ^
-..\dev\types.h(14): error:  #79: expected a type specifier
-..\dev\types.h:   typedef (void*(0)) NULL;
-..\dev\types.h:                  ^
-..\dev\types.h(14): error:  #65: expected a ";"
-..\dev\types.h:   typedef (void*(0)) NULL;
-..\dev\types.h:                      ^
-..\dev\dev.c(13): error:  #20: identifier "NULL" is undefined
-..\dev\dev.c:       if(map==NULL)return;
-..\dev\dev.c:               ^
-..\dev\dev.c(32): warning:  #1-D: last line of file ends without a newline
-..\dev\dev.c:   }
-..\dev\dev.c:    ^
-..\dev\dev.c: ..\dev\dev.c: 1 warning, 4 errors
-compiling dev_config.c...
-..\dev\types.h(14): error:  #40: expected an identifier
-..\dev\types.h:   typedef (void*(0)) NULL;
-..\dev\types.h:            ^
-..\dev\types.h(14): error:  #79: expected a type specifier
-..\dev\types.h:   typedef (void*(0)) NULL;
-..\dev\types.h:                  ^
-..\dev\types.h(14): error:  #65: expected a ";"
-..\dev\types.h:   typedef (void*(0)) NULL;
-..\dev\types.h:                      ^
-..\dev\types.h: ..\dev\dev_config.c: 0 warnings, 3 errors
-compiling iic.c...
-..\dev\types.h(14): error:  #40: expected an identifier
-..\dev\types.h:   typedef (void*(0)) NULL;
-..\dev\types.h:            ^
-..\dev\types.h(14): error:  #79: expected a type specifier
-..\dev\types.h:   typedef (void*(0)) NULL;
-..\dev\types.h:                  ^
-..\dev\types.h(14): error:  #65: expected a ";"
-..\dev\types.h:   typedef (void*(0)) NULL;
-..\dev\types.h:                      ^
-..\dev\types.h: ..\dev\iic.c: 0 warnings, 3 errors
-compiling lib.c...
-Target not created
-Build target 'stm32f0'
-compiling dev.c...
-..\dev\dev.c(13): error:  #18: expected a ")"
-..\dev\dev.c:       if(map==NULL)return;
-..\dev\dev.c:               ^
-..\dev\dev.c(13): error:  #29: expected an expression
-..\dev\dev.c:       if(map==NULL)return;
-..\dev\dev.c:                   ^
-..\dev\dev.c(32): warning:  #1-D: last line of file ends without a newline
-..\dev\dev.c:   }
-..\dev\dev.c:    ^
-..\dev\dev.c: ..\dev\dev.c: 1 warning, 2 errors
-compiling dev_config.c...
-compiling iic.c...
-Target not created
-Build target 'stm32f0'
-compiling dev.c...
-..\dev\dev.c(13): error:  #20: identifier "NULL" is undefined
-..\dev\dev.c:       if(map==NULL)return;
-..\dev\dev.c:               ^
-..\dev\dev.c(32): warning:  #1-D: last line of file ends without a newline
-..\dev\dev.c:   }
-..\dev\dev.c:    ^
-..\dev\dev.c: ..\dev\dev.c: 1 warning, 1 error
-compiling dev_config.c...
-compiling iic.c...
-Target not created
-Build target 'stm32f0'
-compiling dev.c...
-..\dev\dev.c(32): warning:  #1-D: last line of file ends without a newline
-..\dev\dev.c:   }
-..\dev\dev.c:    ^
-..\dev\dev.c: ..\dev\dev.c: 1 warning, 0 errors
-compiling dev_config.c...
-compiling iic.c...
-linking...
-stm32f0-contiki.axf: Error: L6218E: Undefined symbol GPIO_Init (referred from dev.o).
-stm32f0-contiki.axf: Error: L6218E: Undefined symbol RCC_AHBPeriphClockCmd (referred from dev.o).
-stm32f0-contiki.axf: Not enough information to list image symbols.
-stm32f0-contiki.axf: Finished: 1 information, 0 warning and 2 error messages.
-Target not created
-Build target 'stm32f0'
-compiling dev.c...
-linking...
-stm32f0-contiki.axf: Error: L6218E: Undefined symbol GPIO_Init (referred from dev.o).
-stm32f0-contiki.axf: Error: L6218E: Undefined symbol RCC_AHBPeriphClockCmd (referred from dev.o).
-stm32f0-contiki.axf: Not enough information to list image symbols.
-stm32f0-contiki.axf: Finished: 1 information, 0 warning and 2 error messages.
-Target not created
-Build target 'stm32f0'
 compiling stm32f0xx_gpio.c...
-linking...
-stm32f0-contiki.axf: Error: L6218E: Undefined symbol RCC_AHBPeriphResetCmd (referred from stm32f0xx_gpio.o).
-stm32f0-contiki.axf: Error: L6218E: Undefined symbol RCC_AHBPeriphClockCmd (referred from dev.o).
-stm32f0-contiki.axf: Not enough information to list image symbols.
-stm32f0-contiki.axf: Finished: 1 information, 0 warning and 2 error messages.
-Target not created
-Build target 'stm32f0'
+..\cpu\inc\stm32f0xx_gpio.h(38): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\cpu\inc\stm32f0xx_gpio.h:   #include "stm32f0xx.h"
+..\cpu\inc\stm32f0xx_gpio.h:                         ^
+..\cpu\inc\stm32f0xx_gpio.h: ..\cpu\src\stm32f0xx_gpio.c: 0 warnings, 1 error
 compiling stm32f0xx_rcc.c...
-linking...
-Program Size: Code=3216 RO-data=264 RW-data=132 ZI-data=2052  
-"stm32f0-contiki.axf" - 0 Error(s), 0 Warning(s).
-Build target 'stm32f0'
-compiling iic.c...
-linking...
-Program Size: Code=3216 RO-data=264 RW-data=132 ZI-data=2052  
-"stm32f0-contiki.axf" - 0 Error(s), 0 Warning(s).
-Build target 'stm32f0'
+..\cpu\inc\stm32f0xx_rcc.h(38): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\cpu\inc\stm32f0xx_rcc.h:   #include "stm32f0xx.h"
+..\cpu\inc\stm32f0xx_rcc.h:                         ^
+..\cpu\inc\stm32f0xx_rcc.h: ..\cpu\src\stm32f0xx_rcc.c: 0 warnings, 1 error
+compiling dev.c...
+..\dev\dev.c(4): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\dev\dev.c:   #include "stm32f0xx.h"
+..\dev\dev.c:                         ^
+..\dev\dev.c: ..\dev\dev.c: 0 warnings, 1 error
+compiling dev_config.c...
+..\dev\dev_config.c(2): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\dev\dev_config.c:   #include "stm32f0xx.h"
+..\dev\dev_config.c:                         ^
+..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 1 error
 compiling iic.c...
 compiling uart.c...
 compiling 74hc595.c...
 compiling ir.c...
 compiling switch.c...
+compiling flash.c...
+compiling motor.c...
+compiling lib.c...
 compiling cbuffer.c...
-linking...
-Program Size: Code=3216 RO-data=264 RW-data=132 ZI-data=2052  
-"stm32f0-contiki.axf" - 0 Error(s), 0 Warning(s).
+Target not created
+Clean started: Project: 'stm32f0-contiki'
+   deleting intermediate output files for target 'stm32f0'
+Build target 'stm32f0'
+compiling main.c...
+compiling charge.c...
+compiling communication.c...
+compiling autostart.c...
+compiling etimer.c...
+compiling process.c...
+compiling timer.c...
+compiling clock.c...
+..\contiki\portable\clock.c(1): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\contiki\portable\clock.c:   #include "stm32f0xx.h"
+..\contiki\portable\clock.c:                         ^
+..\contiki\portable\clock.c: ..\contiki\portable\clock.c: 0 warnings, 1 error
+compiling core_cm3.c...
+compiling stm32f0xx_it.c...
+..\cpu\stm32f0xx_it.h(37): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\cpu\stm32f0xx_it.h:   #include "stm32f0xx.h"
+..\cpu\stm32f0xx_it.h:                         ^
+..\cpu\stm32f0xx_it.h: ..\cpu\stm32f0xx_it.c: 0 warnings, 1 error
+compiling system_stm32f0xx.c...
+..\cpu\system_stm32f0xx.c(84): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\cpu\system_stm32f0xx.c:   #include "stm32f0xx.h"
+..\cpu\system_stm32f0xx.c:                         ^
+..\cpu\system_stm32f0xx.c: ..\cpu\system_stm32f0xx.c: 0 warnings, 1 error
+assembling startup_stm32f030x8.s...
+compiling stm32f0xx_gpio.c...
+..\cpu\inc\stm32f0xx_gpio.h(38): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\cpu\inc\stm32f0xx_gpio.h:   #include "stm32f0xx.h"
+..\cpu\inc\stm32f0xx_gpio.h:                         ^
+..\cpu\inc\stm32f0xx_gpio.h: ..\cpu\src\stm32f0xx_gpio.c: 0 warnings, 1 error
+compiling stm32f0xx_rcc.c...
+..\cpu\inc\stm32f0xx_rcc.h(38): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\cpu\inc\stm32f0xx_rcc.h:   #include "stm32f0xx.h"
+..\cpu\inc\stm32f0xx_rcc.h:                         ^
+..\cpu\inc\stm32f0xx_rcc.h: ..\cpu\src\stm32f0xx_rcc.c: 0 warnings, 1 error
+compiling dev.c...
+..\dev\dev.c(4): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\dev\dev.c:   #include "stm32f0xx.h"
+..\dev\dev.c:                         ^
+..\dev\dev.c: ..\dev\dev.c: 0 warnings, 1 error
+compiling dev_config.c...
+..\dev\dev_config.c(2): error:  #5: cannot open source input file "stm32f0xx.h": No such file or directory
+..\dev\dev_config.c:   #include "stm32f0xx.h"
+..\dev\dev_config.c:                         ^
+..\dev\dev_config.c: ..\dev\dev_config.c: 0 warnings, 1 error
+compiling iic.c...
+compiling uart.c...
+compiling 74hc595.c...
+compiling ir.c...
+compiling switch.c...
+compiling flash.c...
+compiling motor.c...
+compiling lib.c...
+compiling cbuffer.c...
+Target not created
