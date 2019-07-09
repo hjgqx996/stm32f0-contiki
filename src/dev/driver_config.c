@@ -345,6 +345,15 @@ t_uart_map uart_map[] = {
 
 const unsigned char uart_number = sizeof(uart_map) /(sizeof(t_uart_map)) - 1;
 
+/*************************
+			74hc595
+*************************/
+//<o> 74hc595
+//t_74hc595_map	hc595_map[]={
+//	cpu_gpio_map(HC595_CLK)
+//	cpu_gpio_map(HC595_CS)
+//	cpu_gpio_map(HC595_DATA)
+//};
 
 /************************
 		bootloader
