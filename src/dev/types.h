@@ -2,7 +2,7 @@
 #define __TYPES_H__
 #include "stdint.h"
 
-
+/*常用数据类型*/
 typedef uint8_t U8;
 typedef int8_t S8;
 typedef uint16_t U16;
@@ -16,7 +16,9 @@ typedef enum{ TRUE=1,FALSE=!TRUE}  BOOL;
 #ifndef NULL
 #define NULL 0
 #endif /* NULL */
-
+/*===================================================
+                配置类型
+====================================================*/
 //GPIO的配置类型
 typedef struct{
 	U8 port:4;	                     //0-5 A-F
@@ -25,7 +27,14 @@ typedef struct{
 }GPIO_Map;
 
 
-
-
+/*===================================================
+                状态机定义
+====================================================*/
+typedef struct{
+  U32   state;    //状态，保存状态所在的行号
+  void*	name;     //状态名，保存当前状态的名称
+}FSM;
+#define Start(sname)                switch(fsm->state){case 0:fsm->name=#sname;
+#define State(sname)                break;sname: fsm->state=__LINE__;break;case __LINE__:fsm->name=#sname;
 
 #endif

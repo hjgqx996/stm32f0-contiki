@@ -44,8 +44,9 @@
 
 #if ! CC_NO_VA_ARGS
 #if AUTOSTART_ENABLE
-#define AUTOSTART_PROCESSES(...)					\
-struct process * const autostart_processes[] = {__VA_ARGS__, NULL}
+#define AUTOSTART_PROCESSES(name)					\
+struct process * const autostart_processes_##name[] __attribute__((section("autostart")))  __attribute__((used)) = {&name}
+//struct process * const autostart_processes[] = {__VA_ARGS__, NULL}
 #else /* AUTOSTART_ENABLE */
 #define AUTOSTART_PROCESSES(...)					\
 extern int _dummy
@@ -56,7 +57,7 @@ extern int _dummy
 
 CLIF extern struct process * const autostart_processes[];
 
-void autostart_start(struct process * const processes[]);
-void autostart_exit(struct process * const processes[]);
+void autostart_start(struct process * const processes[],int size);
+void autostart_exit(struct process * const processes[],int size);
 
 #endif /* __AUTOSTART_H__ */

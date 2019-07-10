@@ -49,22 +49,22 @@
 
 /*---------------------------------------------------------------------------*/
 void
-autostart_start(struct process * const processes[])
+autostart_start(struct process * const processes[],int size)
 {
   int i;
   
-  for(i = 0; processes[i] != NULL; ++i) {
+  for(i = 0; i<size; ++i) {
     process_start(processes[i], NULL);
     PRINTF("autostart_start: starting process '%s'\n", processes[i]->name);
   }
 }
 /*---------------------------------------------------------------------------*/
 void
-autostart_exit(struct process * const processes[])
+autostart_exit(struct process * const processes[],int size)
 {
   int i;
   
-  for(i = 0; processes[i] != NULL; ++i) {
+  for(i = 0; i<size; ++i) {
     process_exit(processes[i]);
     PRINTF("autostart_exit: stopping process '%s'\n", processes[i]->name);
   }
