@@ -1,5 +1,5 @@
-#ifndef __CHANNEL_H__
-#define __CHANNEL_H__
+#ifndef __THREAD_CHANNEL_H__
+#define __THREAD_CHANNEL_H__
 
 /*²ÖµÀÊý¾Ý*/
 typedef struct{

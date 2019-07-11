@@ -9,7 +9,7 @@ extern const  U32 autostart$$Base;
 extern const  U32 autostart$$Limit;
 extern const  U32 autostart$$Size;
 
-int main(void*arg)
+int main(void)
 {
 	clock_init();  
 	process_init();  
@@ -19,6 +19,8 @@ int main(void*arg)
 		while(process_run()> 0);  
 		idle_count++;  
 	}
+	
+//	return 0;
 }
 
 

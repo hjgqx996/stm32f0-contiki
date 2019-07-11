@@ -10,32 +10,6 @@
 /*===================================================
                 全局函数
 ====================================================*/
-PROCESS(ir_thread, "红外任务");
-PROCESS_THREAD(ir_thread, ev, data)  
-{
-	PROCESS_BEGIN();
-	while(1)
-	{
-    //红外方式读取充电宝数据
-	}
-
-	PROCESS_END();
-}
-
-
-PROCESS(iic_thread, "iic任务");
-PROCESS_THREAD(iic_thread, ev, data)  
-{
-	PROCESS_BEGIN();
-	while(1)
-	{
-    //iic方式读取充电宝数据
-	}
-
-	PROCESS_END();
-}
-
-
 
 static struct etimer et_channel;
 PROCESS(channel_thread, "通道任务");
@@ -51,9 +25,13 @@ PROCESS_THREAD(channel_thread, ev, data)
 		 //读一次充电宝数据
 		
 		 //转换充电宝数据
+		
+		 //通道状态,告警，错误检测
 	}
 
 	PROCESS_END();
 }
+
+
 
 AUTOSTART_PROCESSES(channel_thread);
