@@ -434,6 +434,13 @@
         </Group>
         <Group>
           <GroupName>system</GroupName>
+          <Files>
+            <File>
+              <FileName>channel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\system\channel.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>contiki</GroupName>

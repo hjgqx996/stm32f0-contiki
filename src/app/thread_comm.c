@@ -11,7 +11,7 @@
                 全局函数
 ====================================================*/
 static struct etimer et_comm;
-PROCESS(comm_thread, "归还任务");
+PROCESS(comm_thread, "通讯任务");
 PROCESS_THREAD(comm_thread, ev, data)  
 {
 	PROCESS_BEGIN();

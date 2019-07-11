@@ -11,7 +11,7 @@ static void charge_fsm(U8 channel,void*arg)
 	//channel数据
 	FSM*fsm;
 	Start(检测充电宝进入){
-		//检测条件:
+		//检测条件:     检测成功->识别充电宝
 				
 	}
 	
