@@ -11,6 +11,7 @@ extern const  U32 autostart$$Size;
 
 int main(void)
 {
+	ld_dev_init();
 	clock_init();  
 	process_init();  
 	process_start(&etimer_process,NULL);  

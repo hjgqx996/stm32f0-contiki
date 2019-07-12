@@ -1,36 +1,48 @@
-//#include "gpio.h"
 #include "types.h"
+#include "driver_config_types.h"
 
 
 
 /*===================================================
                 配置文件
 ====================================================*/
-
-/*===================================================
-                宏，类型
-====================================================*/
-#define scl
-#define sda
+extern t_gpio_map gpio_map[];
+extern const unsigned char gpio_number;
 /*===================================================
                 本地函数
 ====================================================*/
-
-
+static U16 hc595data=0;
 /*===================================================
                 全局函数
 ====================================================*/
 //初始化配置的iic接口
-void ld_gpio_init(U32 index)
+void ld_gpio_init(void)
 {
-
+  int i=0;
+	for(;i<gpio_number;i++)
+	{
+		cpu_gpio_map_config(gpio_map,i);
+	}
+	HC595Init();
 }
 
 //设置电平
 void ld_gpio_set(U32 index,U8 value)
 {
-
-
+	index--;
+	if(index>=gpio_number)return;
+	//HC595
+	if(gpio_map[index].xPort==0xFF)
+	{
+		if(value==0){
+			hc595data&=~(1<<gpio_map[index].xPin);
+		}else{
+			hc595data|= (1<<gpio_map[index].xPin);
+		}
+		HC595Send(hc595data);
+	}
+	else
+   cpu_gpio_map_set(gpio_map,index,value);
 }
 
 /*读取电平

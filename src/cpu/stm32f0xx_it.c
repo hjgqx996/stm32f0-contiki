@@ -90,7 +90,20 @@ void PendSV_Handler(void)
 {
 }
 
-
+/**
+  * @brief  This function handles TIM3 global interrupt request.
+  * @param  None
+  * @retval None
+  */
+extern void ld_ir_timer_100us(void);
+void TIM3_IRQHandler(void)
+{
+  if(TIM_GetITStatus(TIM3,TIM_IT_Update) != RESET) //溢出中断
+	{
+			ld_ir_timer_100us();  
+	}
+	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位
+}
 
 /**
   * @brief  This function handles USART1_IRQHandler.

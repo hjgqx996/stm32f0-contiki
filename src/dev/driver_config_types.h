@@ -14,6 +14,7 @@ typedef const struct
     U8 xPort;						   //端口 A~G
     U8 xPin;				   //pin脚 0~15
     U8 xMode;					   //模式
+	  U8 xOType;            //上下拉
     U8 xSpeed;            //速度
     U8 xSta;					   //初始状态，高低电平
 } t_gpio_map;

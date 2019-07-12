@@ -31,14 +31,28 @@ typedef struct{
                 状态机定义
 ====================================================*/
 typedef struct{
-  U32   state;    //状态，保存状态所在的行号
+  U16   state;    //状态，保存状态所在的行号
   void*	name;     //状态名，保存当前状态的名称
+	U32   tick;     //tick计数
+	U32   wait;     //等待时间
+	U8   i;         //相当于i
+	U8   j;         //相当于j
 }FSM;
 #define Start(sname)                switch(fsm->state){case 0:fsm->name=#sname;
 #define State(sname)                break;sname: fsm->state=__LINE__;break;case __LINE__:fsm->name=#sname;
-
+#define WaitMs(ms)		 fsm->state=__LINE__;fsm->tick=0;fsm->wait=ms*1000;break; \
+	     }case __LINE__:{fsm->tick+=FSM_TICK; \
+				 if(fsm->tick>=fsm->wait)fsm->state=__LINE__+1; \
+				 else break; \
+			 }case __LINE__+1:{
+				 
+#define WaitUs(us)    fsm->state=__LINE__;fsm->tick=0;fsm->wait=us;break; \
+	     }case __LINE__:{fsm->tick+=FSM_TICK; \
+				 if(fsm->tick>=fsm->wait)fsm->state=__LINE__+1; \
+				 else break; \
+			 }case __LINE__+1:{
 /*===================================================
                os 延时
 ====================================================*/
-#define os_delay(et,time) 		 etimer_set(&et, (time*1000)/CLOCK_SECOND);PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et))
+#define os_delay(et,time) 		 etimer_set(&et, (time/10));PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et))
 #endif

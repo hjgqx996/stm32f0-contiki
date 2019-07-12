@@ -23,12 +23,17 @@ void   SysTick_Handler(void)
 
 /*初始化系统定时器*/
 void clock_init()
-{
-	if (SysTick_Config(SystemCoreClock /CLOCK_SECOND)) 
+{	
+	RCC_ClocksTypeDef RCC_Clocks;
+	/* SysTick end of count event each 10ms */
+	RCC_GetClocksFreq(&RCC_Clocks);
+	if (SysTick_Config(RCC_Clocks.HCLK_Frequency /CLOCK_SECOND)) 
 	{ 
     	while(1); 
 	} 
 }
+
+
 
 clock_time_t clock_time(void)
 {

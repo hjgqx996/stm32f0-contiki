@@ -25,9 +25,12 @@ PROCESS_THREAD(channel_thread, ev, data)
 		 //转换充电宝数据
 		
 		 //通道状态,告警，错误检测
-		
+		 ld_gpio_set(1,0);
+		 os_delay(et_channel,100);
+		 ld_gpio_set(1,1);
+		 os_delay(et_channel,100);
 		 //延时10ms
-		 os_delay(et_channel,10);
+//		 os_delay(et_channel,10);
 	}
 
 	PROCESS_END();
