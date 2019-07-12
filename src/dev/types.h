@@ -37,4 +37,8 @@ typedef struct{
 #define Start(sname)                switch(fsm->state){case 0:fsm->name=#sname;
 #define State(sname)                break;sname: fsm->state=__LINE__;break;case __LINE__:fsm->name=#sname;
 
+/*===================================================
+               os —” ±
+====================================================*/
+#define os_delay(et,time) 		 etimer_set(&et, (time*1000)/CLOCK_SECOND);PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et))
 #endif

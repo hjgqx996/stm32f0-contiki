@@ -1,5 +1,5 @@
 #include "contiki.h"
-#include "thread_channel.h"
+#include "types.h"
 
 
 /*===================================================
@@ -18,8 +18,6 @@ PROCESS_THREAD(channel_thread, ev, data)
 	PROCESS_BEGIN();
 	while(1)
 	{
-		 etimer_set(&et_channel, CLOCK_SECOND);              // etimer溢出时间为5s
-     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et_channel));  // 等待定时器溢出
      //充电宝是否有效
 		
 		 //读一次充电宝数据
@@ -27,6 +25,9 @@ PROCESS_THREAD(channel_thread, ev, data)
 		 //转换充电宝数据
 		
 		 //通道状态,告警，错误检测
+		
+		 //延时10ms
+		 os_delay(et_channel,10);
 	}
 
 	PROCESS_END();

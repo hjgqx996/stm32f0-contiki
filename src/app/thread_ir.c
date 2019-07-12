@@ -14,4 +14,4 @@ PROCESS_THREAD(ir_thread, ev, data)
 }
 
 
-AUTOSTART_PROCESSES(ir_thread);
+//AUTOSTART_PROCESSES(ir_thread);

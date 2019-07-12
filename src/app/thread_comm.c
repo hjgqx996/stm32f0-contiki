@@ -1,5 +1,5 @@
 #include "contiki.h"
-
+#include "types.h"
 
 
 /*===================================================
@@ -17,8 +17,9 @@ PROCESS_THREAD(comm_thread, ev, data)
 	PROCESS_BEGIN();
 	while(1)
 	{
-		 etimer_set(&et_comm, CLOCK_SECOND);              // etimer溢出时间为5s
-     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et_comm));  // 等待定时器溢出
+		
+    //os_delay(et_comm,5);
+		PROCESS_WAIT_EVENT();
 	}
 
 	PROCESS_END();

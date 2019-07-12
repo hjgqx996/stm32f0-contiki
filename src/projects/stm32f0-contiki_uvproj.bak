@@ -141,7 +141,7 @@
             <RestoreToolbox>1</RestoreToolbox>
             <RestoreTracepoints>0</RestoreTracepoints>
             <RestoreSysVw>1</RestoreSysVw>
-            <UsePdscDebugDescription>0</UsePdscDebugDescription>
+            <UsePdscDebugDescription>1</UsePdscDebugDescription>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
           <TargetSelection>0</TargetSelection>
@@ -416,19 +416,29 @@
               <FilePath>..\app\thread_insert.c</FilePath>
             </File>
             <File>
+              <FileName>thread_ir.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\thread_ir.c</FilePath>
+            </File>
+            <File>
+              <FileName>thread_iic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\thread_iic.c</FilePath>
+            </File>
+            <File>
               <FileName>thread_channel.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\app\thread_channel.c</FilePath>
             </File>
             <File>
-              <FileName>thread_comm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\app\thread_comm.c</FilePath>
-            </File>
-            <File>
               <FileName>thread_return.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\app\thread_return.c</FilePath>
+            </File>
+            <File>
+              <FileName>thread_comm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\thread_comm.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -546,9 +556,24 @@
           <GroupName>dev</GroupName>
           <Files>
             <File>
+              <FileName>driver_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\driver_config.c</FilePath>
+            </File>
+            <File>
               <FileName>dev.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\dev\dev.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\key.c</FilePath>
             </File>
             <File>
               <FileName>iic.c</FileName>
@@ -561,11 +586,6 @@
               <FilePath>..\dev\uart.c</FilePath>
             </File>
             <File>
-              <FileName>74hc595.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\74hc595.c</FilePath>
-            </File>
-            <File>
               <FileName>ir.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\dev\ir.c</FilePath>
@@ -576,24 +596,19 @@
               <FilePath>..\dev\switch.c</FilePath>
             </File>
             <File>
-              <FileName>flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\flash.c</FilePath>
-            </File>
-            <File>
               <FileName>motor.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\dev\motor.c</FilePath>
             </File>
             <File>
-              <FileName>driver_config.c</FileName>
+              <FileName>74hc595.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\dev\driver_config.c</FilePath>
+              <FilePath>..\dev\74hc595.c</FilePath>
             </File>
             <File>
-              <FileName>key.c</FileName>
+              <FileName>flash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\dev\key.c</FilePath>
+              <FilePath>..\dev\flash.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,5 +1,5 @@
 #include "contiki.h"
-#include "thread_return.h"
+#include "types.h"
 
 
 /*===================================================
@@ -17,8 +17,7 @@ PROCESS_THREAD(return_thread, ev, data)
 	PROCESS_BEGIN();
 	while(1)
 	{
-		 etimer_set(&et_return, CLOCK_SECOND);              // etimer溢出时间为5s
-     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et_return));  // 等待定时器溢出
+    os_delay(et_return,10);
 	}
 
 	PROCESS_END();

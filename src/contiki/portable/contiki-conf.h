@@ -9,8 +9,10 @@
 #define WITH_UIP 1
 #define WITH_ASCII 1
 
-#define CLOCK_CONF_SECOND 100
+//定时器频率
+#define CLOCK_CONF_SECOND 200  //5ms
 
+//使用自启线程
 #define AUTOSTART_ENABLE  1
 
 /* These names are deprecated, use C99 names. */

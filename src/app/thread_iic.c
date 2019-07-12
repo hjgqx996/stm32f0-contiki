@@ -17,4 +17,4 @@ PROCESS_THREAD(iic_thread, ev, data)
 }
 
 
-AUTOSTART_PROCESSES(iic_thread);
+//AUTOSTART_PROCESSES(iic_thread);
