@@ -18,8 +18,11 @@ static void charge_fsm(U8 channel,void*arg)
 {
 
 	//channel数据
+	static U32 fsm_time = 0;  //状态机时间
 	FSM*fsm;
-	Channel*ch;
+	Channel*ch;	
+	fsm_time_set(time(0));//状态机计时
+	
 	Start(检测充电宝进入){
 		//检测条件:     检测成功->识别充电宝
 				
@@ -99,7 +102,7 @@ static void charge_fsm(U8 channel,void*arg)
 		//电量<85%,3小时补充一次，无限机会
 	
 	}
-  default:{}}
+  Default()
 		
 }
 

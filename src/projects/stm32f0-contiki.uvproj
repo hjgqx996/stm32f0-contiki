@@ -576,11 +576,6 @@
               <FilePath>..\dev\gpio.c</FilePath>
             </File>
             <File>
-              <FileName>key.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\key.c</FilePath>
-            </File>
-            <File>
               <FileName>iic.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\dev\iic.c</FilePath>

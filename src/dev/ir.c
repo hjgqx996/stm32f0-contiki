@@ -1,4 +1,4 @@
-#include "iic.h"
+#include "types.h"
 #include "string.h"
 
 
@@ -9,8 +9,31 @@
 #define IR_CHANNEL_MAX  5    //最大仓道数
 #define FSM_TICK        100  //最小中断时间100us
 
+//互斥(只在抢占式内核中使用)
 #define ir_lock()
 #define ir_unlock()
+
+//输出发送电平
+#define ir(data)       ld_gpio_set(pir->io_ir,data)
+
+//读取输入电平
+#define re()           ld_gpio_get(pir->io_re)
+
+//等待re直到re!=level,等待时间片为tick_us,等待总超时为timeout_us
+//默认等待时间片为FSM_TICK,可自行定义
+#define FSM_WAIT_TICK  FSM_TICK
+#define wait_re_until_not(level,timeout_us) \
+    /*计时清0*/   pir->counter=0; \
+    /*读入电平*/  while(re()==level){ \
+		/*等待时间片*/	  waitus(FSM_WAIT_TICK); pir->counter+=FSM_WAIT_TICK; \
+		/*判断超时退出*/  if(pir->counter>timeout_us)break; \
+		              }
+		
+//判断一个电平不在一个时间范围(min_us,max_us)
+#define if_re_not_between(min_us,max_us)     if(pir->counter<min_us||pir->counter>max_us)
+#define if_re_between(min_us,max_us)         if(pir->counter>=min_us&&pir->counter<=max_us)
+#define if_re_higher(max_us)                 if(pir->counter>max_us)
+#define if_re_lower(min_us)                  if(pir->counter<min_us)
 
 /*===================================================
                 类型
@@ -24,17 +47,16 @@ typedef enum{
 }IR_STATE;
 
 typedef struct{
-	U8 io_ir;        //红外发送io
-	U8 io_re;        //红外接收io
-	U8 cmd;          //发送命令
-	U8 data[16];     //接收数据
-	U8 wanlen;       //要接收的数据长度
-	U8 len;          //实际接收到的数据长度
-	BOOL start;      //TRUE: 开始  FALSE:结束
-	int state;  //错误码
-	
-	int counter;     //计数
-	U8 tmp;          //缓存一字节
+	U8 io_ir;        			//红外发送io
+	U8 io_re;        			//红外接收io
+	U8 cmd;          			//发送命令	
+	U8 wanlen;       			//要接收的数据长度
+	U8 len;          			//实际接收到的数据长度
+	BOOL start;      			//TRUE: 开始  FALSE:结束
+	S8 state;        			//错误码		
+	S32 counter;     			//计数
+	U8 data[IR_DATA_MAX]; //接收数据
+	U8 tmp;          			//缓存一字节
 	
 	////////////////////////////////
 	FSM fsm;         //状态机私有变量
@@ -45,112 +67,68 @@ static IR_Type irs[IR_CHANNEL_MAX];
 /*===================================================
                 本地函数
 ====================================================*/
-/*使用定时器3,频率100us*/
-#include "stm32f0xx_tim.h"
-static void timer_init()
+/*红外状态机(伪阻塞)
+* 发送命令码--->读取前导码--->读入数据--->成功
+* 1.状态机开始请使用 ld_ir_read_start
+* 2.读取是否成功使用 ld_ir_read_isok
+*/
+static void ir_fsm(IR_Type*pir,FSM*fsm)
 {
-	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-  TIM_OCInitTypeDef  TIM_OCInitStructure;
-  NVIC_InitTypeDef NVIC_InitStructure;
-  /* TIM3 clock enable */
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
-	
-  /* Enable the TIM3 gloabal Interrupt */
-	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-	
-  /* Time base configuration */
-  TIM_TimeBaseStructure.TIM_Period = 50-1;
-  TIM_TimeBaseStructure.TIM_Prescaler = (uint16_t) (SystemCoreClock  / 500000) - 1;  //timer3 counter =500KHz
-  TIM_TimeBaseStructure.TIM_ClockDivision = 0;
-  TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-  TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
+	static U32 fsm_time = 0;
 
-  /* TIM3 enable counter */
-	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
-  TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE); //允许定时器3更新中断
-  TIM_Cmd(TIM3, ENABLE);
-}
-
-/*红外读状态机*/
-static void ir_fsm(IR_Type*pir)
-{
-	FSM*fsm=&pir->fsm;
-	
+	//设置状态机时间(用来超时)
+	fsm_time_set(fsm_time+FSM_TICK);
+	//////////////////////////////////
 	Start(开始)
 	{
     if(pir->start==TRUE)
 			goto 发送命令码;
 	}
-	
-	
+	//////////////////////////////////
 	State(发送命令码)
 	{
-		 ld_gpio_set(pir->io_ir,1);
-	   WaitMs(100);
-		 ld_gpio_set(pir->io_ir,0);
-	   WaitMs(100);
+		//高低100ms
+		ir(HIGH);
+		waitms(100);
+		ir(LOW);
+		waitms(100);
 		
 		//发送指令
 		for(fsm->i=0;fsm->i<(pir->cmd-1);fsm->i++)
 		{
-			ld_gpio_set(pir->io_ir,1);	//H
-			WaitMs(2);
-			ld_gpio_set(pir->io_ir,0);  //L
-			WaitMs(2);
+			ir(HIGH);
+			waitms(2);
+			ir(LOW); 
+			waitms(2);
 		}
-		ld_gpio_set(pir->io_ir,1);    //H
-		WaitMs(3);
-		ld_gpio_set(pir->io_ir,0);    //L
-		WaitMs(50);
+		ir(HIGH);     
+		waitms(3);
+		ir(LOW); 
+		waitms(50);
 		goto 读取前导码;
 	}
-	
-	
-	
+	//////////////////////////////////
 	State(读取前导码)
 	{
-		//等待拉高，超时60ms
-		pir->counter=0;
-		while(ld_gpio_get(pir->io_re)!=1)
-		{
-			WaitUs(100);
-			pir->counter+=100;
-			if(pir->counter>60000)
-			{
-				goto Header_Error;
-			}
-		}
+		//等待re拉高,超时时间60ms
+		wait_re_until_not(LOW,60000)  
+		if_re_higher(60000)
+			goto Header_Error;
 		
-	  //9ms高电平,7ms-10ms为正常
-		pir->counter=0;
-		while(ld_gpio_get(pir->io_re)==1)
-		{
-			WaitUs(200);
-			pir->counter+=200;
-			if(pir->counter>10000)
-				goto Header_Error;
-		}
-		if(pir->counter<7000)goto Header_Error;
-		
-		//4.5ms低电平,2.5ms-5ms为正常时间
-		pir->counter=0;
-		while(ld_gpio_get(pir->io_re)!=1)
-		{
-			WaitUs(200);
-			pir->counter+=200;
-			if(pir->counter>5000)
-			{
-				goto Header_Error;
-			}
-		}
-		if(pir->counter<2500)goto Header_Error;
-		
+	  //9ms高电平,7ms-10ms为正常,超时10ms
+		wait_re_until_not(HIGH,10000)  
+		if_re_not_between(7000,10000)
+			goto Header_Error;
+
+
+		//4.5ms低电平,2.5ms-5ms为正常时间,超时5ms
+		wait_re_until_not(LOW,5000)  
+		if_re_not_between(2500,5000)
+			goto Header_Error;
+
 		goto 读取数据;
 	}
-	
+	//////////////////////////////////
 	State(读取数据)
 	{
 		for(fsm->i=0;fsm->i<pir->wanlen;fsm->i++)
@@ -158,55 +136,38 @@ static void ir_fsm(IR_Type*pir)
 			pir->tmp=0;
 			for(fsm->j=0;fsm->j<8;fsm->j++)
 			{
+				//高电平200-600,超时600
+				wait_re_until_not(HIGH,600)  
+				if_re_not_between(200,600)
+					goto Data_Error;
+
+				//低电平200-1700，超时1.7ms
+				wait_re_until_not(LOW,1700) 
+				if_re_not_between(200,1700)
+					goto Data_Error;
+				
+			  pir->tmp>>=1;
+				
+				//200us-600us :低电平    
+				if_re_lower(200)
+					goto Data_Error;
 			
-				//判断高电平时间 200-600
-				pir->counter=0;
-				while(ld_gpio_get(pir->io_re)==1)
-				{
-					WaitUs(100);
-					pir->counter+=100;
-					if(pir->counter>600)goto Data_Error;
-				}
-				if(pir->counter<200)goto Data_Error;
-				
-				//读取低电平时间，超时1.7ms
-				pir->counter=0;
-				while(ld_gpio_get(pir->io_re)==0)
-				{
-					WaitUs(200);
-					pir->counter+=200;
-					if(pir->counter>1700)goto Data_Error;
-				}
-				
-				//200us-600us :低电平    1200us-1700us:高电平
-				if(pir->counter <200)goto Data_Error;
-				pir->tmp>>=1;
-				if(pir->counter>=1200 && pir->counter<=1700){
-					pir->tmp|=0x80;
-				}			
+				//1200us-1700us:高电平
+				if_re_between(1100,1700)
+					pir->tmp|=0x80;//保存一位数据		
 			}
 			
-			//读入一个字节后，读取停止码 H=200us-600us  L=700us-1100us
-			pir->counter=0;
-			while(ld_gpio_get(pir->io_re)==1)
+			//读取停止码 H=200us-600us  
+			wait_re_until_not(HIGH,600)  
+			if_re_not_between(200,600)
+				goto Data_Error;
+			
+			//读取停止码 L=700us-1100us
+			if(fsm->i!=(pir->wanlen-1))//最一个字节不读取
 			{
-				WaitUs(100);
-				pir->counter+=100;
-				if(pir->counter>600)goto Data_Error;
-			}	
-			if(pir->counter<200)goto Data_Error;
-				
-			//最后一个字节，不读取低电平
-			if(fsm->i!=(pir->wanlen-1))
-			{
-				pir->counter=0;
-				while(ld_gpio_get(pir->io_re)==0)
-				{
-					WaitUs(100);
-					pir->counter+=100;
-					if(pir->counter>1100)goto Data_Error;
-				}	
-				if(pir->counter<700)goto Data_Error;			
+				wait_re_until_not(LOW,1100)  		
+        if_re_not_between(700,1100)
+					goto Data_Error;				
 			}
 			//保存一个字节
 			pir->data[fsm->i]=pir->tmp;
@@ -216,9 +177,11 @@ static void ir_fsm(IR_Type*pir)
 		pir->counter = 0;
 		pir->start=FALSE;
 		pir->state=IR_State_OK;
-		pir->fsm.state=0;
+		pir->fsm.line=0;
+		pir->fsm.save=0;
+		pir->fsm.end=0;
 	}
-	default:{}}
+	Default()
 		
 	return ;
 		
@@ -226,7 +189,9 @@ static void ir_fsm(IR_Type*pir)
 	pir->counter = 0;
 	pir->start=FALSE;
 	pir->state=IR_Error_Header;
-	pir->fsm.state=0;
+	pir->fsm.line=0;
+	pir->fsm.save=0;
+	pir->fsm.end=0;
 	return;
 		
 		
@@ -234,7 +199,9 @@ static void ir_fsm(IR_Type*pir)
 	pir->counter = 0;
 	pir->start=FALSE;
 	pir->state=IR_Error_Data;
-	pir->fsm.state=0;		
+	pir->fsm.line=0;
+	pir->fsm.save=0;
+	pir->fsm.end=0;	
 }
 
 /*===================================================
@@ -269,15 +236,19 @@ void ld_ir_timer_100us(void)
 {
 	int i=0;
 	for(;i<IR_CHANNEL_MAX;i++)
-		ir_fsm(&irs[i]);
+		ir_fsm(&irs[i],&irs[i].fsm);
 }
 
 //开始读取红外数据
 BOOL ld_ir_read_start(U8 ch,U8 cmd,U8 wanlen)
 {
+	if(ch>IR_CHANNEL_MAX)return FALSE;
 	ch-=1;
 	ir_lock();
-	if(ch < IR_CHANNEL_MAX && irs[ch].start==FALSE)
+	//红外已经开始读
+	if(irs[ch].start==TRUE)return TRUE;
+	//红外未开始读
+	if(irs[ch].start==FALSE)
   {
 		//开始读
 		irs[ch].cmd = cmd;
@@ -285,9 +256,8 @@ BOOL ld_ir_read_start(U8 ch,U8 cmd,U8 wanlen)
 		irs[ch].start=TRUE;
 		
 		//复位状态机
-		irs[ch].fsm.state=0;
-		irs[ch].fsm.name=NULL;
-		
+    memset(&irs[ch].fsm,0,sizeof(FSM));
+	
 		ir_unlock();
 		return TRUE;
 	}
@@ -335,14 +305,40 @@ PROCESS_THREAD(testir_thread, ev, data)
 	ld_ir_init(4,20,25);
 	ld_ir_init(5,21,26);
 	id_ir_timer_init();
+	
 	while(1)
 	{
 		
-		ld_ir_read_start(2,0x10,7);
-		
-    os_delay(et_testir,2000);
-	}
 
+		ld_ir_timer_100us();
+		ld_ir_read_start(1,0x10,7);
+		ld_ir_read_start(2,0x10,7);
+		ld_ir_read_start(3,0x10,7);
+		ld_ir_read_start(4,0x10,7);
+		ld_ir_read_start(5,0x10,7);
+		os_delay(et_testir,30);
+	}
 	PROCESS_END();
 }
 AUTOSTART_PROCESSES(testir_thread);
+
+
+
+
+//void fsm_(FSM*fsm)
+//{
+//	fsm_time_set(time(0));
+//	
+//	Start(开始)
+//	{
+//	
+//	}
+//	
+//	State(状态1)
+//	{
+//	   waitms(100);
+//	}
+//	
+//	Default()
+//	
+//}

@@ -21,7 +21,7 @@ PROCESS_THREAD(channel_thread, ev, data)
      //充电宝是否有效
 		
 		 //读一次充电宝数据
-		
+		 
 		 //转换充电宝数据
 		
 		 //通道状态,告警，错误检测

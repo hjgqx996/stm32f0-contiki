@@ -11,7 +11,8 @@ extern const unsigned char gpio_number;
 /*===================================================
                 本地函数
 ====================================================*/
-static U16 hc595data=0;
+//static 
+U16 hc595data=0;
 /*===================================================
                 全局函数
 ====================================================*/
@@ -51,6 +52,15 @@ void ld_gpio_set(U32 index,U8 value)
 */
 U8 ld_gpio_get(U32 index)
 {
-
+	index--;
+	if(index>=gpio_number)return 0;
+	//HC595
+	if(gpio_map[index].xPort==0xFF)
+	{
+			if(hc595data&(1<<gpio_map[index].xPin))return 1;
+			else return 0;
+	}
+	else
+   return cpu_gpio_map_get(gpio_map,index);
 }
 

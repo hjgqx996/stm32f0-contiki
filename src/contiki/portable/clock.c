@@ -2,7 +2,7 @@
 #include <sys/clock.h>
 #include <sys/cc.h>
 #include <sys/etimer.h>
-
+#include "types.h"
 static volatile clock_time_t current_clock = 0;
 static volatile unsigned long current_seconds = 0;
 static unsigned int second_countdown = CLOCK_SECOND;
@@ -38,6 +38,14 @@ void clock_init()
 clock_time_t clock_time(void)
 {
   return current_clock;
+}
+
+/*当前时间ms*/
+time_t time(time_t*t)
+{
+	time_t tt = current_clock *(1000/CLOCK_SECOND);
+	if(t!=NULL)*t=tt;
+	return tt;
 }
 
 #if 0
