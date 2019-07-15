@@ -95,5 +95,5 @@ typedef struct{
 /*===================================================
                os —” ±
 ====================================================*/
-#define os_delay(et,time) 		 etimer_set(&et, (time/10));PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et))
+#define os_delay(et,time) 		 etimer_set(&et, (time/(1000/CLOCK_SECOND)));PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et))
 #endif

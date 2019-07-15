@@ -29,7 +29,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_it.h"
-
+#include "types.h"
 /** @addtogroup STM32F0308-Discovery_Demo
   * @{
   */
@@ -100,21 +100,11 @@ void TIM3_IRQHandler(void)
 {
   if(TIM_GetITStatus(TIM3,TIM_IT_Update) != RESET) //Òç³öÖÐ¶Ï
 	{
-			ld_ir_timer_100us();  
+			ld_ir_timer_100us();
+		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //Çå³ýÖÐ¶Ï±êÖ¾Î»  
 	}
-	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //Çå³ýÖÐ¶Ï±êÖ¾Î»
-}
-
-/**
-  * @brief  This function handles USART1_IRQHandler.
-  * @param  None
-  * @retval None
-  */
 	
-void USART1_IRQHandler(void)
-{
-  
-} 
+}
 
 /**
   * @brief  This function handles External line  interrupt request.
@@ -125,6 +115,122 @@ void USART1_IRQHandler(void)
 void EXTI4_15_IRQHandler(void)
 { 
 }
+
+
+/**
+  * @brief  This function handles USART1_IRQHandler.
+  * @param  None
+  * @retval None
+  */
+	
+void USART1_IRQHandler(void)
+{
+	USART_TypeDef *pUart=USART1;
+	char temp;
+  /* USART in mode Receiver --------------------------------------------------*/
+  if(USART_GetITStatus(USART1, USART_IT_RXNE)  != RESET)
+  {
+		temp = USART_ReceiveData(pUart)& 0xff;
+		ld_uart_isp(1,&temp,0);
+		USART_ClearITPendingBit(pUart, USART_IT_RXNE);						
+  }
+	
+	if(USART_GetITStatus(USART1,USART_IT_TXE)==SET)
+	{
+		if(ld_uart_isp(1,&temp,1) != FALSE)
+		{
+				USART_SendData(pUart, temp);
+		}
+		else
+		{
+			 // pUart->CR1 &= ~(USART_FLAG_TXE | USART_FLAG_TC);
+				USART_ITConfig(pUart, USART_IT_TXE, DISABLE);
+				//USART_ITConfig(pUart, USART_IT_TC, ENABLE);
+		}
+	}	
+	
+
+	if(USART_GetFlagStatus(pUart,USART_FLAG_ORE)==SET)
+	{
+		USART_ClearFlag(pUart,USART_FLAG_ORE);	//¶ÁSR
+		USART_ReceiveData(pUart);	//¶ÁDR
+	}
+
+	if(USART_GetFlagStatus(pUart,USART_FLAG_NE)==SET)
+	{
+		USART_ClearFlag(pUart,USART_FLAG_NE);	//¶ÁSR
+		USART_ReceiveData(pUart);	//¶ÁDR
+	}
+
+	if(USART_GetFlagStatus(pUart,USART_FLAG_FE)==SET)
+	{
+		USART_ClearFlag(USART2,USART_FLAG_FE);	//¶ÁSR
+		USART_ReceiveData(pUart);	//¶ÁDR
+	}
+	
+	if(USART_GetFlagStatus(pUart,USART_FLAG_PE)==SET)
+	{
+		USART_ClearFlag(pUart,USART_FLAG_PE);	//¶ÁSR
+		USART_ReceiveData(pUart);	//¶ÁDR
+	}	 			
+	
+}
+/**
+  * @brief  This function handles USART2_IRQHandler.
+  * @param  None
+  * @retval None
+  */
+void USART2_IRQHandler(void)
+{
+	USART_TypeDef *pUart=USART2;
+	char temp;
+  /* USART in mode Receiver --------------------------------------------------*/
+  if(USART_GetITStatus(pUart, USART_IT_RXNE)  != RESET)
+  {
+		temp = USART_ReceiveData(pUart)& 0xff;
+		ld_uart_isp(2,&temp,0);
+		USART_ClearITPendingBit(pUart, USART_IT_RXNE);						
+  }
+	
+	if(USART_GetITStatus(pUart,USART_IT_TXE)==SET)
+	{
+
+			if(ld_uart_isp(2,&temp,1) != FALSE)
+			{
+					USART_SendData(pUart, temp);
+			}
+			else
+			{
+				 // pUart->CR1 &= ~(USART_FLAG_TXE | USART_FLAG_TC);
+					USART_ITConfig(pUart, USART_IT_TXE, DISABLE);
+					//USART_ITConfig(pUart, USART_IT_TC, ENABLE);
+			}
+	}	
+	
+	if(USART_GetFlagStatus(pUart,USART_FLAG_ORE)==SET)
+	{
+		USART_ClearFlag(pUart,USART_FLAG_ORE);	//¶ÁSR
+		USART_ReceiveData(pUart);	//¶ÁDR
+	}
+
+	if(USART_GetFlagStatus(pUart,USART_FLAG_NE)==SET)
+	{
+		USART_ClearFlag(pUart,USART_FLAG_NE);	//¶ÁSR
+		USART_ReceiveData(pUart);	//¶ÁDR
+	}
+
+	if(USART_GetFlagStatus(pUart,USART_FLAG_FE)==SET)
+	{
+		USART_ClearFlag(USART2,USART_FLAG_FE);	//¶ÁSR
+		USART_ReceiveData(pUart);	//¶ÁDR
+	}
+	
+	if(USART_GetFlagStatus(pUart,USART_FLAG_PE)==SET)
+	{
+		USART_ClearFlag(pUart,USART_FLAG_PE);	//¶ÁSR
+		USART_ReceiveData(pUart);	//¶ÁDR
+	}	 			
+} 
 /******************************************************************************/
 /*                 STM32F0xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */

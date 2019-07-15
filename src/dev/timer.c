@@ -20,7 +20,7 @@ void timer_init()
   /* Time base configuration */
   TIM_TimeBaseStructure.TIM_Period = 50-1;
   TIM_TimeBaseStructure.TIM_Prescaler = (uint16_t) (SystemCoreClock  / 500000) - 1;  //timer3 counter =500KHz
-  TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+  TIM_TimeBaseStructure.TIM_ClockDivision  = TIM_CKD_DIV1;
   TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
   TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
 

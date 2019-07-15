@@ -74,8 +74,7 @@ static IR_Type irs[IR_CHANNEL_MAX];
 */
 static void ir_fsm(IR_Type*pir,FSM*fsm)
 {
-	fsm_time_add(FSM_TICK);//状态机时间
-	
+	fsm_time_add(FSM_TICK);//状态机时间	
 	//////////////////////////////////
 	Start(开始)
 	{
@@ -108,18 +107,18 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 	//////////////////////////////////
 	State(读取前导码)
 	{
-		//等待re拉高,超时时间60ms
+		//等待re拉高,超时时间60ms   //实测10300
 		wait_re_until_not(LOW,60000)  
 		if_re_higher(60000)
 			goto Header_Error;
 		
-	  //9ms高电平,7ms-10ms为正常,超时10ms
-		wait_re_until_not(HIGH,10000)  
-		if_re_not_between(7000,10000)
+	  //9ms高电平,7ms-11ms为正常,超时11ms//实测9300
+		wait_re_until_not(HIGH,11000)  
+		if_re_not_between(7000,11000)
 			goto Header_Error;
 
 
-		//4.5ms低电平,2.5ms-5ms为正常时间,超时5ms
+		//4.5ms低电平,2.5ms-5ms为正常时间,超时5ms//实测4600
 		wait_re_until_not(LOW,5000)  
 		if_re_not_between(2500,5000)
 			goto Header_Error;
@@ -134,37 +133,37 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 			pir->tmp=0;
 			for(fsm->j=0;fsm->j<8;fsm->j++)
 			{
-				//高电平200-600,超时600
+				//高电平200-600,超时600//实测300
 				wait_re_until_not(HIGH,600)  
 				if_re_not_between(200,600)
 					goto Data_Error;
 
-				//低电平200-1700，超时1.7ms
-				wait_re_until_not(LOW,1700) 
-				if_re_not_between(200,1700)
+				//低电平200-1700，超时2ms
+				wait_re_until_not(LOW,2000) 
+				if_re_not_between(200,2000)
 					goto Data_Error;
 				
 			  pir->tmp>>=1;
 				
-				//200us-600us :低电平    
+				//200us-600us :低电平    //实测300-400
 				if_re_lower(200)
 					goto Data_Error;
 			
-				//1200us-1700us:高电平
-				if_re_between(1100,1700)
+				//1200us-1700us:高电平  //实测1600
+				if_re_between(1100,2000)
 					pir->tmp|=0x80;//保存一位数据		
 			}
 			
-			//读取停止码 H=200us-600us  
+			//读取停止码 H=200us-600us  //实测300-400
 			wait_re_until_not(HIGH,600)  
 			if_re_not_between(200,600)
 				goto Data_Error;
 			
-			//读取停止码 L=700us-1100us
+			//读取停止码 L=700us-1400us //实测 1100-1200
 			if(fsm->i!=(pir->wanlen-1))//最一个字节不读取
 			{
-				wait_re_until_not(LOW,1100)  		
-        if_re_not_between(700,1100)
+				wait_re_until_not(LOW,1400)  		
+        if_re_not_between(700,1400)
 					goto Data_Error;				
 			}
 			//保存一个字节
@@ -232,9 +231,10 @@ void id_ir_timer_init(void)
 //定时器中断服务，用于收发时序
 void ld_ir_timer_100us(void)
 {
-	int i=0;
-	for(;i<IR_CHANNEL_MAX;i++)
-		ir_fsm(&irs[i],&irs[i].fsm);
+//	int i=0;
+//	for(;i<IR_CHANNEL_MAX;i++)
+//		ir_fsm(&irs[i],&irs[i].fsm);
+	ir_fsm(&irs[1],&irs[1].fsm);
 }
 
 //开始读取红外数据
@@ -297,22 +297,22 @@ PROCESS(testir_thread, "归还任务");
 PROCESS_THREAD(testir_thread, ev, data)  
 {
 	PROCESS_BEGIN();
-	ld_ir_init(1,17,22);
-	ld_ir_init(2,18,23);
-	ld_ir_init(3,19,24);
-	ld_ir_init(4,20,25);
-	ld_ir_init(5,21,26);
+	ld_ir_init(1,6,7);
+	ld_ir_init(2,16,17);
+	ld_ir_init(3,26,27);
+	ld_ir_init(4,36,37);
+	ld_ir_init(5,46,47);
 	id_ir_timer_init();
 	
 	while(1)
 	{
-		ld_ir_timer_100us();
-		ld_ir_read_start(1,0x10,7);
-		ld_ir_read_start(2,0x10,7);
-		ld_ir_read_start(3,0x10,7);
-		ld_ir_read_start(4,0x10,7);
-		ld_ir_read_start(5,0x10,7);
-		os_delay(et_testir,30);
+//		ld_ir_timer_100us();
+//		ld_ir_read_start(1,0x10,7);
+		ld_ir_read_start(2,10,7);
+//		ld_ir_read_start(3,0x10,7);
+//		ld_ir_read_start(4,0x10,7);
+//		ld_ir_read_start(5,0x10,7);
+		os_delay(et_testir,2000);
 	}
 	PROCESS_END();
 }

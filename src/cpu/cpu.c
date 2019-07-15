@@ -132,6 +132,21 @@ void GPIO_ReleaseSWDJ(void)
 *	配置io管脚
 *	xPort :0-8  :A-I
 * xPin  :0-15 :Pin0-Pin15
+* AF    :
+*return :TRUE or FALSE
+*/
+int cpu_gpioaf_cfg(U8 xPort,U8 xPin,U8 AF)
+{
+	GPIO_TypeDef* GPIOx;
+	if(xPort>6)return FALSE;
+	GPIOx=	GPIO_TABLE[xPort];
+	GPIO_PinAFConfig(GPIOx,xPin, AF);
+	return TRUE;
+}
+/*
+*	配置io管脚
+*	xPort :0-8  :A-I
+* xPin  :0-15 :Pin0-Pin15
 * xMode :GPIO模式
 * sta   :默认电平  0 or 1
 * xSpeed:速度 :0-3 :2,25,50,100 MHz

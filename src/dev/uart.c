@@ -47,7 +47,7 @@ extern int gt_uart_wait_msleep(int ms);           //接收等待延时函数
 
 #define Uart_Lock(xUart)                          //对xUart 上锁
 #define Uart_Unlock(xUart)                        //对xUart 解锁
-
+#define UART_MAX             2                    //本驱动最大UART,根据具体mcu而定，简单修改
 
 /**************************************
 	cpu 函数
@@ -69,7 +69,6 @@ typedef enum {
     UART_CMD_DUMP,
 } UART_CMD;
 
-
 typedef const struct {
     USART_TypeDef * USART;   //cpu 串口寄存器
     U8 IRQn;                 //cpu 串口中断号
@@ -80,13 +79,13 @@ typedef const struct {
 
 static CPU_USART cpu_uart[]= {
 		{0     ,          0,                    0,0,0},             //uart0不存在
-    {USART1,USART1_IRQn,RCC_APB2Periph_USART1,2,0},
-    {USART2,USART2_IRQn,RCC_APB1Periph_USART2,1,0,},
+    {USART1,USART1_IRQn,RCC_APB2Periph_USART1,2,GPIO_AF_0 },
+    {USART2,USART2_IRQn,RCC_APB1Periph_USART2,1,GPIO_AF_1,},
 //    {USART3,USART3_IRQn,RCC_APB1Periph_USART3,1,0},
 //    {UART4,UART4_IRQn,RCC_APB1Periph_UART4,1,0},
 //    {UART5,UART5_IRQn,RCC_APB1Periph_UART5,1,0},
 };
-static const unsigned char uart_max = 2;
+static const unsigned char uart_max = UART_MAX;
 
 /*
 *	设置 波特率等待参数
@@ -189,10 +188,10 @@ BOOL cpu_uart_init(U8 xUart,U32 xBaud,U8 xData,U8 xPari,U8 xStop,t_gpio_map*tx,t
     USART_Cmd(uart->USART, DISABLE);
 
     /*---------------------------初始化GPIO AF-----------------------------*/
-    //cpu_gpioaf_cfg(tx->xPort, tx->xPin,uart->AF);
+    cpu_gpioaf_cfg(tx->xPort, tx->xPin,uart->AF);
     cpu_gpio_map_config(tx,0);
 
-    //cpu_gpioaf_cfg(rx->xPort, rx->xPin,uart->AF);
+    cpu_gpioaf_cfg(rx->xPort, rx->xPin,uart->AF);
     cpu_gpio_map_config(rx,0);
 
 
@@ -205,13 +204,13 @@ BOOL cpu_uart_init(U8 xUart,U32 xBaud,U8 xData,U8 xPari,U8 xStop,t_gpio_map*tx,t
 						措施 :   减少其它中断的优先级，避免抢占svc (2018-1-31)
 		*/
     /* Enable the USART Interrupt */
-	//    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_3);
-	xNVIC.NVIC_IRQChannel = uart->IRQn;
-	//    xNVIC.NVIC_IRQChannelPreemptionPriority = 1;
-	//    xNVIC.NVIC_IRQChannelSubPriority = xUart;
-	xNVIC.NVIC_IRQChannelPriority = xUart;
-	xNVIC.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&xNVIC);
+		//    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_3);
+		xNVIC.NVIC_IRQChannel = uart->IRQn;
+		//    xNVIC.NVIC_IRQChannelPreemptionPriority = 1;
+		//    xNVIC.NVIC_IRQChannelSubPriority = xUart;
+		xNVIC.NVIC_IRQChannelPriority = xUart;
+		xNVIC.NVIC_IRQChannelCmd = ENABLE;
+		NVIC_Init(&xNVIC);
     //禁用收发中断
     USART_ITConfig(uart->USART, USART_IT_RXNE, DISABLE);
     USART_ITConfig(uart->USART, USART_IT_TXE, DISABLE);
@@ -243,18 +242,18 @@ BOOL cpu_uart_ctrl(U8 xUart,U8 cmd, void*arg)
 				USART_ClearITPendingBit(uart->USART, USART_IT_RXNE);
 				USART_ClearITPendingBit(uart->USART, USART_IT_TXE);
 				USART_ClearITPendingBit(uart->USART, USART_FLAG_ORE);
-				USART_ClearITPendingBit(uart->USART, USART_IT_TC);
+				//USART_ClearITPendingBit(uart->USART, USART_IT_TC);
         USART_ITConfig(uart->USART, USART_IT_TXE, ENABLE);
-        USART_ITConfig(uart->USART, USART_IT_TC, ENABLE);
+        //USART_ITConfig(uart->USART, USART_IT_TC, ENABLE);
         break;
 
     case UART_CMD_DISABLE_TX:
 				USART_ITConfig(uart->USART, USART_IT_TXE, DISABLE);
-				USART_ITConfig(uart->USART, USART_IT_TC, ENABLE);	
+				//USART_ITConfig(uart->USART, USART_IT_TC, ENABLE);	
 				USART_ClearITPendingBit(uart->USART, USART_IT_RXNE);
 				USART_ClearITPendingBit(uart->USART, USART_IT_TXE);
 				USART_ClearITPendingBit(uart->USART, USART_FLAG_ORE);
-				USART_ClearITPendingBit(uart->USART, USART_IT_TC);
+				//USART_ClearITPendingBit(uart->USART, USART_IT_TC);
         break;
 
     case UART_CMD_ENABLE_RX:
@@ -294,7 +293,7 @@ typedef struct st_uart_device {
     CBuffer rx;	      //接收缓冲
 } t_uart_device;
 
-t_uart_device uarts[6];
+t_uart_device uarts[UART_MAX];
 
 
 /*查找设备*/
@@ -343,7 +342,7 @@ BOOL cpu_uart_isp(U8 port,char*byte,U8 type)
 	public functions
 **************************************/
 /*初始化*/
-int gt_uart_init()
+int ld_uart_init()
 {
 	int i = 0,j = sizeof(uarts)/sizeof(t_uart_device);
 	memset(uarts,0,sizeof(uarts));
@@ -367,7 +366,7 @@ int gt_uart_init()
 
 	return :  TRUE 成功  FALSE 失败
 */
-int gt_uart_open(U8 xUart,int xBaud,U8 xData,U8 xParity, U8 xStop,int rxbufsize,int txbufsize)
+int ld_uart_open(U8 xUart,int xBaud,U8 xData,U8 xParity, U8 xStop,int rxbufsize,int txbufsize)
 {
 	t_uart_device*uart = find(xUart);
 	if(uart==NULL)return FALSE;
@@ -418,7 +417,7 @@ int gt_uart_open(U8 xUart,int xBaud,U8 xData,U8 xParity, U8 xStop,int rxbufsize,
 	xUart  :1-n  Uart1-Uartn
 	return  :TRUE  :成功   FALSE:失败
 */
-int gt_uart_close(U8 xUart)
+int ld_uart_close(U8 xUart)
 {
 	CPU_USART*uart = &cpu_uart[xUart];
 	t_uart_device* i = find(xUart);
@@ -442,7 +441,7 @@ int gt_uart_close(U8 xUart)
 
 	return :发送的字节数
 */
-int gt_uart_send(U8 xUart,U8*pBuf,int size)
+int ld_uart_send(U8 xUart,U8*pBuf,int size)
 {
 	  int has = 0;
     char*pin= (char*)pBuf;
@@ -481,7 +480,7 @@ int gt_uart_send(U8 xUart,U8*pBuf,int size)
 	size  :读取长度
 	return :实际接收的长度 
 */
-int gt_uart_read(U8 xUart,U8*pBuf,int size)
+int ld_uart_read(U8 xUart,U8*pBuf,int size)
 {
 
     char *pout = (char*)pBuf;
@@ -519,7 +518,7 @@ int gt_uart_read(U8 xUart,U8*pBuf,int size)
 	type  :bit0 :rx data    bit1 tx data
 	return :FALSE  or TRUE
 */
-int gt_uart_dump(U8 xUart,U8 type)
+int ld_uart_dump(U8 xUart,U8 type)
 {
 	t_uart_device* i = find(xUart);
 	if( i== NULL ) return FALSE;
@@ -545,7 +544,7 @@ int gt_uart_dump(U8 xUart,U8 type)
 	return :TRUE or FALSE
 */
 
-int gt_uart_isp(U8 xUart,char*byte,U8 type)
+int ld_uart_isp(U8 xUart,char*byte,U8 type)
 {
 	return cpu_uart_isp(xUart,byte,type);
 }
@@ -554,7 +553,7 @@ int gt_uart_isp(U8 xUart,char*byte,U8 type)
 * 获取 uart 收发缓冲
 * return :TRUE or FALSE
 */
-int gt_uart_cache(U8 xUart,char**rx,char**tx)
+int ld_uart_cache(U8 xUart,char**rx,char**tx)
 {
 	t_uart_device* i = find(xUart);
 	if( i== NULL ) return FALSE;

@@ -53,54 +53,24 @@
 #define PORT_HC  0xFF  
 #define OUT(pp,pin)  {PORT_##pp,pin,GPIO_Mode_OUT,GPIO_OType_PP,GPIO_Speed_Level_3,0},
 #define IN(pp,pin)   {PORT_##pp,pin,GPIO_Mode_IN,GPIO_OType_OD,GPIO_Speed_Level_3,0},
+#define AF(pp,pin)   {PORT_##pp,pin,GPIO_Mode_AF,GPIO_OType_PP,GPIO_Speed_Level_3,0},
+#define EI(pp,pin) 
+
 
 //<o> gpio
 t_gpio_map gpio_map[]=
 {
-	/*系统LED灯*/
-	OUT(F,5)
+	//系统LED灯    485发送使能                                                                    
+	  OUT(F,5)     OUT(A,1)
 	
-	/*电磁阀*/
-	OUT(C,2)   //M1_1N1
-	OUT(C,3)   //M1_1N3
-	OUT(B,14)  //M2_1N1
-	OUT(B,11)  //M2_1N3
-	OUT(C,6)   //M3_1N1
+	//电磁阀 摆臂开关 到位开关  红外发送  红外接收   led灯      充电使能  充电输出检测     sda       scl
+	OUT(C,2) IN(B,10) IN(B,15)  OUT(HC,2)  IN(C,14)  OUT(HC,0)  OUT(HC,1)  IN(C,0)         OUT(B,8)  OUT(B,9)  //仓道1
+	OUT(C,3) IN(B,1)  IN(A,8)   OUT(HC,6)  IN(C,15)  OUT(HC,4)  OUT(HC,5)  IN(C,1)         OUT(B,6)  OUT(B,7)  //仓道2
+	OUT(B,14)IN(A,0)  IN(F,6)   OUT(HC,7)  IN(F,0)   OUT(HC,8)  OUT(HC,9)  IN(C,5)         OUT(B,4)  OUT(B,5)  //仓道3
+	OUT(B,11)IN(C,13) IN(F,7)   OUT(HC,10) IN(B,12)  OUT(HC,12) OUT(HC,13) IN(C,4)         OUT(B,2)  OUT(B,3)  //仓道4
+	OUT(C,6) IN(C,9)  IN(A,12)  OUT(HC,11) IN(C,7)   OUT(HC,14) OUT(HC,15) IN(B,13)        OUT(C,11) OUT(C,12)  //仓道5
 	
-	/*仓道灯*/
-	OUT(HC,0)
-	OUT(HC,4)
-	OUT(HC,8)
-	OUT(HC,12)
-	OUT(HC,14)
-	
-	/*充电使能*/
-	OUT(HC,1)
-	OUT(HC,5)
-	OUT(HC,9)
-	OUT(HC,13)
-	OUT(HC,15)
-	
-	/*红外发送*/
-	OUT(HC,2)
-	OUT(HC,6)
-	OUT(HC,7)
-	OUT(HC,10)
-	OUT(HC,11)	
-	
-	/*红外接收*/
-  IN(C,14)
-	IN(C,15)
-	IN(F,0)
-	IN(B,12)
-	IN(C,7)
-	
-	/*输出5V检测*/
-	
-	
-	
-    // 不使用
-    0,
+   0,
 };
 const unsigned char gpio_number = (sizeof(gpio_map)/sizeof(t_gpio_map)) - 1;
 
@@ -116,9 +86,15 @@ t_exti_map exti_map[]={
 const unsigned char exti_number = (sizeof(exti_map) /sizeof(t_exti_map)) - 1;
 
 /*************************
-	I2C 常量  模拟
-*************************/
-
-/*************************
 			Uart
 *************************/
+//<o> uart
+t_uart_map uart_map[] = {
+  
+	{AF(A,9) AF(A,10) 1},  //uart1 
+	{AF(A,2) AF(A,3) 2},   //uart2 
+	{0}	
+};
+const unsigned char uart_number = sizeof(uart_map) /(sizeof(t_uart_map)) - 1;
+
+

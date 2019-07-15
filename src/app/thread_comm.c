@@ -1,5 +1,5 @@
 #include "contiki.h"
-#include "types.h"
+#include "dev.h"
 
 
 /*===================================================
@@ -15,6 +15,9 @@ PROCESS(comm_thread, "通讯任务");
 PROCESS_THREAD(comm_thread, ev, data)  
 {
 	PROCESS_BEGIN();
+	os_delay(et_comm,1000);//延时1秒再通讯
+	ld_uart_init();
+	ld_uart_open(2,115200,8,0,1,100,100);
 	while(1)
 	{
 		

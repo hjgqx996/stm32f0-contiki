@@ -70,7 +70,7 @@ void channel_discharge(U8 ch)
   //仓道断电 
 	
 	//从排队的列表中删除本仓道
-	queue_delete(ch);
+//	queue_delete(ch);
 }
 
 /*----------------------------------
