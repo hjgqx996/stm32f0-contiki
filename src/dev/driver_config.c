@@ -94,6 +94,11 @@ t_gpio_map gpio_map[]=
 	IN(F,0)
 	IN(B,12)
 	IN(C,7)
+	
+	/*输出5V检测*/
+	
+	
+	
     // 不使用
     0,
 };

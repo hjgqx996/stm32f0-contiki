@@ -111,8 +111,8 @@
         <DllOption>
           <SimDllName>SARMCM3.DLL</SimDllName>
           <SimDllArguments>-REMAP</SimDllArguments>
-          <SimDlgDll>DARMCM1.DLL</SimDlgDll>
-          <SimDlgDllArguments>-pCM0</SimDlgDllArguments>
+          <SimDlgDll>DARMSTM.DLL</SimDlgDll>
+          <SimDlgDllArguments>-pSTM32F030R8</SimDlgDllArguments>
           <TargetDllName>SARMCM3.DLL</TargetDllName>
           <TargetDllArguments></TargetDllArguments>
           <TargetDlgDll>TARMCM1.DLL</TargetDlgDll>
@@ -388,6 +388,11 @@
               <FilePath>..\app\main.c</FilePath>
             </File>
             <File>
+              <FileName>thread_system.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\thread_system.c</FilePath>
+            </File>
+            <File>
               <FileName>thread_insert.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\app\thread_insert.c</FilePath>
@@ -406,16 +411,6 @@
               <FileName>thread_channel.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\app\thread_channel.c</FilePath>
-            </File>
-            <File>
-              <FileName>thread_ir.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\app\thread_ir.c</FilePath>
-            </File>
-            <File>
-              <FileName>thread_iic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\app\thread_iic.c</FilePath>
             </File>
             <File>
               <FileName>config.c</FileName>
@@ -653,6 +648,11 @@
               <FileType>1</FileType>
               <FilePath>..\dev\timer.c</FilePath>
             </File>
+            <File>
+              <FileName>exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\exti.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -672,6 +672,9 @@
         </Group>
         <Group>
           <GroupName>生成</GroupName>
+        </Group>
+        <Group>
+          <GroupName>说明</GroupName>
         </Group>
       </Groups>
     </Target>

@@ -90,8 +90,8 @@ typedef struct{
 /*延时us>100us*/
 #define waitus(us)               Waitx(us,10000,20000)
 /*设置状态机当前时间*/
-#define fsm_time_set(t)          fsm_time=t
-
+#define fsm_time_set(t)          static U32 fsm_time=0; fsm_time=t
+#define fsm_time_add(t)          static U32 fsm_time=0; fsm_time+=t
 /*===================================================
                os 延时
 ====================================================*/

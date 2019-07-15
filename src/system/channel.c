@@ -31,22 +31,27 @@ static Channel*channel_data_get(U8 channel)
                 全局函数
 ====================================================*/
 /*----------------------------------
+检测
+-----------------------------------*/
+
+
+
+/*----------------------------------
 仓道运行状态
 仓道告警
 仓道错误
 -----------------------------------*/
-void channel_state_check(Channel*ch)
-{
-
-
-}
-
-void channel_warn_check(Channel*ch)
+void channel_state_check(U8 ch)
 {
 
 }
 
-void channel_error_check(Channel*ch)
+void channel_warn_check(U8 ch)
+{
+
+}
+
+void channel_error_check(U8 ch)
 {
 
 }
@@ -55,15 +60,39 @@ void channel_error_check(Channel*ch)
 仓道充电
 仓道断电
 -----------------------------------*/
-void channel_charge(Channel*ch)
+void channel_charge(U8 ch)
 {
 
 
 }
-void channel_discharge(Channel*ch)
+void channel_discharge(U8 ch)
 {
   //仓道断电 
 	
 	//从排队的列表中删除本仓道
 	queue_delete(ch);
+}
+
+/*----------------------------------
+   读仓道数据
+-----------------------------------*/
+void channel_read_data(U8 ch)
+{
+
+	//根据选择，使用iic 还是 ir 读取数
+	//使用iic(阻塞)
+	
+	//iic失败几次->使用ir
+	
+	//使用ir(非阻塞)
+	
+	//ir失败几次->使用iic
+
+
+	/////////////////////////////////////
+	//读取成功，处理一下数据
+
+
+
+  /////////////////////////////////////
 }

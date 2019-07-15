@@ -74,10 +74,8 @@ static IR_Type irs[IR_CHANNEL_MAX];
 */
 static void ir_fsm(IR_Type*pir,FSM*fsm)
 {
-	static U32 fsm_time = 0;
-
-	//设置状态机时间(用来超时)
-	fsm_time_set(fsm_time+FSM_TICK);
+	fsm_time_add(FSM_TICK);//状态机时间
+	
 	//////////////////////////////////
 	Start(开始)
 	{
@@ -308,8 +306,6 @@ PROCESS_THREAD(testir_thread, ev, data)
 	
 	while(1)
 	{
-		
-
 		ld_ir_timer_100us();
 		ld_ir_read_start(1,0x10,7);
 		ld_ir_read_start(2,0x10,7);
@@ -321,24 +317,3 @@ PROCESS_THREAD(testir_thread, ev, data)
 	PROCESS_END();
 }
 AUTOSTART_PROCESSES(testir_thread);
-
-
-
-
-//void fsm_(FSM*fsm)
-//{
-//	fsm_time_set(time(0));
-//	
-//	Start(开始)
-//	{
-//	
-//	}
-//	
-//	State(状态1)
-//	{
-//	   waitms(100);
-//	}
-//	
-//	Default()
-//	
-//}

@@ -16,13 +16,10 @@
 /*充电宝进入通道状态机*/
 static void charge_fsm(U8 channel,void*arg)
 {
-
-	//channel数据
-	static U32 fsm_time = 0;  //状态机时间
 	FSM*fsm;
 	Channel*ch;	
-	fsm_time_set(time(0));//状态机计时
-	
+  fsm_time_set(time(0));//状态机时间
+
 	Start(检测充电宝进入){
 		//检测条件:     检测成功->识别充电宝
 				
