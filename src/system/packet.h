@@ -6,6 +6,16 @@
 //最大数据包长度
 #define PACKET_DATA_MAX     1024
 
+typedef enum{
+	PC_HEART_BREAK = 0x01,  //心跳
+	
+
+}PACKET_CMD;
+
+
+
+
+
 
 typedef struct{
 int len    ,state;
@@ -27,4 +37,6 @@ typedef struct{
 /*接收一个字节，返回是否成功接收一个数据包*/
 extern HPacket *packet_recv(U8 data,HPacket*m);
 
+/*发送一个包，返回发送长度*/
+int packet_send(HPacket*hp, U8 cmd,U16 len,U8*data);
 #endif

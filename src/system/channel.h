@@ -5,6 +5,8 @@
 /*===================================================
                 宏，类型
 ====================================================*/
+#pragma pack(1)
+
 /*仓道接口配置*/
 typedef const struct{
 	U8 io_motor;       //电磁阀io口
@@ -59,6 +61,13 @@ typedef struct{
 }ChannelError;
 
 
+/*充电宝输出标志*/
+typedef enum{
+	BAO_ALLOW   = 0x05,  //充电宝允许输出
+	BAO_NOTALLOW= 0x06,  //充电宝不允许输出
+	BAO_ALLOW_X = 0x07,  //??????
+}BaoOutput;
+
 /*仓道数据结构*/
 typedef struct{
 	/*-------------通道数据--------------------------*/
@@ -71,25 +80,32 @@ typedef struct{
 	volatile U8 Ver;                //红外充电宝版本
 	
 	U8 id[10];                      //充电宝编号
+	U8 addr;                        //通道地址flash[]<----System.addr_ch-------Channel.addr
+	BaoOutput bao_output;           //充电宝输出标志 
+	
 	/*--------------配置接口--------------------------*/
 	ChannelConfigureMap*map;        //通道控制io配置
 	
 	/*--------------运行状态数据----------------------*/
 	U8 iic_dir;                     //iic方向 0:正常方向  1:方向反转
-	ChannelState cs;                //运行状态
-	ChannelWarn  cw;                //运行告警
-	ChannelError ce;                //运行错误
+	ChannelState state;             //运行状态
+	ChannelWarn  warn;              //运行告警
+	ChannelError error;             //运行错误
 	
 	S32 priority;                   //充电控制优先级-->充电输出使用(优先级+冒泡)排队充电
 	
 	FSM insert;                     //充电宝进入仓道状态机变量:私有
 }Channel;
 
+#pragma pack()
 
 /*===================================================
                 全局函数
 ====================================================*/
-
+/*获取仓道数据
+*channel:1-n
+*/
+Channel*channel_data_get(U8 channel);
 #endif
 
 

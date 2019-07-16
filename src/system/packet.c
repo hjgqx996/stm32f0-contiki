@@ -58,7 +58,7 @@ HPacket *packet_recv(U8 data,HPacket*m)
 /*===================================================
            ·¢ËÍÊı¾İ
 ====================================================*/
-BOOL packet_send(HPacket*hp, U8 cmd,U16 len,U8*data)
+int packet_send(HPacket*hp, U8 cmd,U16 len,U8*data)
 {
 	packet *p = &hp->p;
 	if(hp==NULL)return FALSE;
@@ -74,6 +74,7 @@ BOOL packet_send(HPacket*hp, U8 cmd,U16 len,U8*data)
 	if(len>(PACKET_DATA_MAX-7))return FALSE;
 	p->data[len] = cs8((U8*)p,len+6);
 	ld_uart_send(COM_485,(U8*)p,len+7);
+	return len;
 }
 
 

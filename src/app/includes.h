@@ -8,4 +8,5 @@
 #include "config.h"
 #include "packet.h"
 #include "system.h"
+#include "channel.h"
 #endif

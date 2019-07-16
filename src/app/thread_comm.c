@@ -6,36 +6,65 @@ HPacket hpacket;
 /*===================================================
                 本地函数
 ====================================================*/
-/*通道处理函数*/
-static void process_com(HPacket*hp)
-{
-
-
-}
-
 
 /*发送心跳*/
-void com_send_tick(HPacket*hp)
+static void com_send_tick(HPacket*hp)
 {
 	packet*p = &hp->p;
   U8*data = p->data;
 	data[0]=system.addr485;
-	data[1]=0x05;//仓道数量
-	data[2]=0x02;//硬件版本
-	data[3]=0x02;//硬件版本
+	data[1]=CHANNEL_MAX;//仓道数量
+	data[2]=HARDWARE_VERSION>>8;    //硬件版本
+	data[3]=HARDWARE_VERSION&0x00FF;//硬件版本
 	
 	//软件编号
-  {
-		U16 sv = 0;
-		rw("sver",(U8*)&sv,2,'r');
-		data[4] = sv>>8;
-		data[5] = sv&0xFF;
+	data[4] = SOFTWARE_VERSION>>8;
+	data[5] = SOFTWARE_VERSION&0x00FF;
+	{
+		U8 i=0;
+		U8 offset=6;
+		for(;i<CHANNEL_MAX;i++)
+		{
+			Channel*ch = channel_data_get(i+1);
+			if(ch==NULL)return;
+			data[offset++]=ch->addr;//仓道地址
+			data[offset++]=*((U8*)(&ch->state)); //仓道状态
+			data[offset++]=*((U8*)(&ch->warn));  //仓道告警
+			data[offset++]=*((U8*)(&ch->error));  //仓道错误
+			memcpy(data+offset,ch->id,CHANNEL_ID_MAX);offset+=CHANNEL_ID_MAX;//仓道编号
+			data[offset++]=ch->Ver;//充电宝版本
+			data[offset++]=ch->AverageCurrent>>8;
+			data[offset++]=ch->AverageCurrent&0xFF;//平均电流
+			data[offset++]=ch->Ufsoc;//剩余电量
+			data[offset++]=ch->Temperature;//温度
+			data[offset++]=ch->CycleCount>>8;
+			data[offset++]=ch->CycleCount&0xff;//循环次数
+			data[offset++]=ch->RemainingCapacity>>8;
+			data[offset++]=ch->RemainingCapacity&0xFF;//剩余容量
+			data[offset++]=ch->bao_output; //充电宝输出标志 
+		}
+		packet_send(hp,PC_HEART_BREAK,offset,data);
 	}
-	
-	//
 }
 
 
+/*通道处理函数*/
+static void com_process(HPacket*hp)
+{
+	packet *p = &hp->p;
+	
+	switch(p->cmd)
+	{
+		case PC_HEART_BREAK:
+			com_send_tick(hp);
+		break;
+	
+	  default:
+			memset(hp,0,sizeof(HPacket));
+		  enable_485_rx();
+		break;
+	}
+}
 
 /*===================================================
                 全局函数
@@ -56,11 +85,8 @@ PROCESS_THREAD(thread_comm, ev, data)
 		if(data==&hpacket.p && ev==PROCESS_EVENT_PACKET)
 		{
 			//处理数据包
-		  
+		  com_process(&hpacket);
 			memset(&hpacket,0,sizeof(hpacket));
-			
-			//打开接收
-			disable_485_tx();
 		}
 	}
 

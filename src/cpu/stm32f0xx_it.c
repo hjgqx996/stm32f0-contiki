@@ -186,7 +186,7 @@ void USART2_IRQHandler(void)
 			//发送一个事件给Comm任务
 			process_post(&thread_comm,PROCESS_EVENT_PACKET,(void*)&hpacket.p);
 			//关接收
-			enable_485_tx();
+			disable_485_rx();
 		}
 		//ld_uart_isp(2,&temp,0);
 		USART_ClearITPendingBit(pUart, USART_IT_RXNE);						
@@ -201,6 +201,8 @@ void USART2_IRQHandler(void)
 			}
 			else
 			{
+				 //使能接收
+				 enable_485_rx();
 				 // pUart->CR1 &= ~(USART_FLAG_TXE | USART_FLAG_TC);
 					USART_ITConfig(pUart, USART_IT_TXE, DISABLE);
 					//USART_ITConfig(pUart, USART_IT_TC, ENABLE);
