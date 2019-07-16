@@ -32,9 +32,7 @@ PROCESS_THREAD(channel_thread, ev, data)
 	
 			//如果仓道有宝，读取仓道数据.频率2.8秒
 			if(flag)
-			{
-				channel_read_data(i);
-			}
+			{}
 		}
 		flag=FALSE;
 		os_delay(et_channel,10);
@@ -46,3 +44,38 @@ PROCESS_THREAD(channel_thread, ev, data)
 
 
 AUTOSTART_PROCESSES(channel_thread);
+
+/*===================================================
+                iic-仓道任务
+====================================================*/
+PROCESS(thread_iic, "iic任务");
+PROCESS_THREAD(thread_iic, ev, data)  
+{
+	PROCESS_BEGIN();
+	while(1)
+	{
+		//等待唤醒读取iic消息
+	}
+
+	PROCESS_END();
+}
+AUTOSTART_PROCESSES(thread_iic);
+
+/*===================================================
+                红外-仓道任务
+====================================================*/
+PROCESS(thread_ir, "ir任务");
+PROCESS_THREAD(thread_ir, ev, data)  
+{
+	PROCESS_BEGIN();
+	while(1)
+	{
+		//等待唤醒读取ir
+	}
+
+	PROCESS_END();
+}
+AUTOSTART_PROCESSES(thread_ir);
+
+
+

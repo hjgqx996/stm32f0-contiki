@@ -11,8 +11,8 @@
                 全局函数
 ====================================================*/
 static struct etimer et_comm;
-PROCESS(comm_thread, "通讯任务");
-PROCESS_THREAD(comm_thread, ev, data)  
+PROCESS(thread_comm, "通讯任务");
+PROCESS_THREAD(thread_comm, ev, data)  
 {
 	PROCESS_BEGIN();
 	os_delay(et_comm,1000);//延时1秒再通讯
@@ -28,4 +28,4 @@ PROCESS_THREAD(comm_thread, ev, data)
 	PROCESS_END();
 }
 
-AUTOSTART_PROCESSES(comm_thread);
+AUTOSTART_PROCESSES(thread_comm);

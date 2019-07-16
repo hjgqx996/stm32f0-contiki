@@ -4,14 +4,6 @@
 /*===================================================
                 本地函数
 ====================================================*/
-/*申请充电，并挂起自己状态*/
-#define hang_up_until_charge(ch,state) 
-
-/*检测到充电，恢复挂起的状态*/
-#define recovery_state(ch)  
-
-
-
 
 /*充电宝进入通道状态机*/
 static void charge_fsm(U8 channel,void*arg)
@@ -112,19 +104,16 @@ static void charge_fsm(U8 channel,void*arg)
 const char*vd="kaihua.yang";
 static process_event_t pet={0xF5};
 static struct etimer et_insert;
-PROCESS(insert_thread, "进入流程");
-PROCESS_THREAD(insert_thread, ev, data)  
+PROCESS(thread_insert, "进入流程");
+PROCESS_THREAD(thread_insert, ev, data)  
 {
 	PROCESS_BEGIN();
 	while(1)
 	{
-		PROCESS_NAME(comm_thread);
-		pet++;
-    process_post(&comm_thread,pet,(void*)vd);
 		os_delay(et_insert,10);
 	}
 
 	PROCESS_END();
 }
 
-AUTOSTART_PROCESSES(insert_thread);
+AUTOSTART_PROCESSES(thread_insert);

@@ -11,8 +11,8 @@
                 全局函数
 ====================================================*/
 static struct etimer et_return;
-PROCESS(return_thread, "归还任务");
-PROCESS_THREAD(return_thread, ev, data)  
+PROCESS(thread_return, "归还任务");
+PROCESS_THREAD(thread_return, ev, data)  
 {
 	PROCESS_BEGIN();
 	while(1)
@@ -22,4 +22,4 @@ PROCESS_THREAD(return_thread, ev, data)
 
 	PROCESS_END();
 }
-AUTOSTART_PROCESSES(return_thread);
+AUTOSTART_PROCESSES(thread_return);

@@ -1,4 +1,4 @@
-#include "contiki.h"
+ #include "contiki.h"
 #include "types.h"
 #include "dev.h"
 
@@ -7,8 +7,8 @@
 ====================================================*/
 
 static struct etimer et_system;
-PROCESS(system_thread, "系统任务");
-PROCESS_THREAD(system_thread, ev, data)  
+PROCESS(thread_system, "系统任务");
+PROCESS_THREAD(thread_system, ev, data)  
 {
 	PROCESS_BEGIN();
 
@@ -27,5 +27,5 @@ PROCESS_THREAD(system_thread, ev, data)
 
 
 
-AUTOSTART_PROCESSES(system_thread);
+AUTOSTART_PROCESSES(thread_system);
 

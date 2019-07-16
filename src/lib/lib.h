@@ -9,4 +9,7 @@
   */
 BOOL buffer_cmp(U8* pbuf,volatile U8* pbuf1, U8 len);
 
+/*¿€º”∫Õ*/
+U8 cs8(volatile U8*data,U32 len);
+
 #endif
