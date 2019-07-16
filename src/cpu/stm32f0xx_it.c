@@ -30,6 +30,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_it.h"
 #include "types.h"
+#include "includes.h"
 /** @addtogroup STM32F0308-Discovery_Demo
   * @{
   */
@@ -106,23 +107,15 @@ void TIM3_IRQHandler(void)
 	
 }
 
-/**
-  * @brief  This function handles External line  interrupt request.
-  * @param  None
-  * @retval None
-  */
-
-void EXTI4_15_IRQHandler(void)
-{ 
-}
-
 
 /**
   * @brief  This function handles USART1_IRQHandler.
   * @param  None
   * @retval None
   */
-	
+
+PROCESS_NAME(thread_comm);
+extern HPacket hpacket;
 void USART1_IRQHandler(void)
 {
 	USART_TypeDef *pUart=USART1;
@@ -188,7 +181,14 @@ void USART2_IRQHandler(void)
   if(USART_GetITStatus(pUart, USART_IT_RXNE)  != RESET)
   {
 		temp = USART_ReceiveData(pUart)& 0xff;
-		ld_uart_isp(2,&temp,0);
+	  if(packet_recv(temp,&hpacket)!=NULL)
+		{
+			//发送一个事件给Comm任务
+			process_post(&thread_comm,PROCESS_EVENT_PACKET,(void*)&hpacket.p);
+			//关接收
+			enable_485_tx();
+		}
+		//ld_uart_isp(2,&temp,0);
 		USART_ClearITPendingBit(pUart, USART_IT_RXNE);						
   }
 	
@@ -231,6 +231,7 @@ void USART2_IRQHandler(void)
 		USART_ReceiveData(pUart);	//读DR
 	}	 			
 } 
+
 /******************************************************************************/
 /*                 STM32F0xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */

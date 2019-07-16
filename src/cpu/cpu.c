@@ -20,7 +20,13 @@ void cpu_us_delay(int us)
 {
 	  int i = 0;
     while(us-->0) {
-					for(i=0;i<5;i++);   //36M
+			//48M --100us
+		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP(); 
+		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP(); 
+		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP(); 
+		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP(); 
+		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+					//for(i=0;i<7;i++);   //48M  //117us
     }
 }
 

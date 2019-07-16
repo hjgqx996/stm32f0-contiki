@@ -27,6 +27,13 @@ typedef enum{ TRUE=1,FALSE=!TRUE}  BOOL;
 #ifndef HIGH
 #define HIGH 1
 #endif /* HIGH */
+/*===================================================
+                键值定义
+====================================================*/
+#define key_baibi    1   //摆臂开关
+#define key_daowei   2   //到位开关
+#define KV(type,ch)              (type*0x00200000+ch) //通道键值
+#define is_key_value(v,type,ch)  if((type*0x00200000+ch)==(v&0x7FFFFFFF))  //判断键值是不是ch的
 
 /*===================================================
                 配置类型

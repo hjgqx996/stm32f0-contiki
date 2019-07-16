@@ -316,4 +316,4 @@ PROCESS_THREAD(testir_thread, ev, data)
 	}
 	PROCESS_END();
 }
-AUTOSTART_PROCESSES(testir_thread);
+//AUTOSTART_PROCESSES(testir_thread);

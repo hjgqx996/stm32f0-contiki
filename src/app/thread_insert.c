@@ -116,4 +116,4 @@ PROCESS_THREAD(thread_insert, ev, data)
 	PROCESS_END();
 }
 
-AUTOSTART_PROCESSES(thread_insert);
+//AUTOSTART_PROCESSES(thread_insert);

@@ -488,6 +488,11 @@
               <FileType>1</FileType>
               <FilePath>..\system\packet.c</FilePath>
             </File>
+            <File>
+              <FileName>system.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\system\system.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -593,6 +598,16 @@
               <FileType>1</FileType>
               <FilePath>..\cpu\src\stm32f0xx_tim.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f0xx_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_syscfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_syscfg.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -634,11 +649,6 @@
               <FilePath>..\dev\switch.c</FilePath>
             </File>
             <File>
-              <FileName>motor.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\motor.c</FilePath>
-            </File>
-            <File>
               <FileName>74hc595.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\dev\74hc595.c</FilePath>
@@ -654,9 +664,9 @@
               <FilePath>..\dev\timer.c</FilePath>
             </File>
             <File>
-              <FileName>exti.c</FileName>
+              <FileName>key.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\dev\exti.c</FilePath>
+              <FilePath>..\dev\key.c</FilePath>
             </File>
           </Files>
         </Group>

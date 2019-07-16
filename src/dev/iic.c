@@ -1,10 +1,11 @@
 #include "types.h"
 #include "dev.h"
 #include "string.h"
+#include "lib.h"
 /*===================================================
                 配置文件
 ====================================================*/
-#define sda_out() 
+#define sda_out()
 /**************************************
 	private 模拟i2c驱动
 **************************************/
@@ -36,11 +37,14 @@
 //2017-7-21
 void wait_scl_high(U8 scl)
 {
-	U16 c=10000; //250
+	U16 c=100; //100us超时
 	while(c>0)
   {
-		 if(SCL_READ()==1)
-			return ;
+		 delayus(1);
+		 if(SCL_READ()==1){
+			  c=c;
+		    return ;
+		 }
      c--;
   }
 }
@@ -51,8 +55,8 @@ static void I2C_Start(U8 sda,U8 scl)
 	SDA_H();
 	SCL_H();
  	delayus(5);	
-	wait_scl_high(scl);	
- 	delayus(5);
+//	wait_scl_high(scl);	
+// 	delayus(5);
 	SDA_L();
 	delayus(5);
 	SCL_L();
@@ -62,7 +66,7 @@ static void I2C_Start(U8 sda,U8 scl)
 static void I2C_Restart(U8 sda,U8 scl)
 {
   sda_out();
-	SDA_L();
+	SCL_L();
 	delayus(5);
 	SDA_H();
 	delayus(5);
@@ -110,37 +114,44 @@ static void I2C_NoAck(U8 sda,U8 scl)
 
 static BOOL I2C_WaitAck(U8 sda,U8 scl)	 //返回为:=TRUE有ACK,=FALSE无ACK
 {
-	int c = 0;
-	
+	U8 data=0;
 	SDA_H();			
-	delayus(2);
 	SCL_H();
 	delayus(5);
 	wait_scl_high(scl);
-  return (SDA_READ()==1)?FALSE:TRUE;//sda==0,有应答
+	data=SDA_READ();
+	SCL_L();
+	delayus(5);
+  return (data==1)?FALSE:TRUE;//sda==0,有应答
 }
 
 static void I2C_Send_Byte(U8 sda,U8 scl,U8 ucData) //数据从高位到低位//
 {
-	U8 i=8;
-	while(i--)
+	U8 i=0,temps,dat;
+	temps=ucData;
+	dat=0x80;
+	for(i=0;i<8;i++)
 	{
-		
-		if(ucData&0x80)
+		if(dat&temps)
 		{
-		 SDA_H();
-		}
-		else 
-		{
+			SDA_H();
+			delayus(2);
+			SCL_H();
+			delayus(2);
+			SCL_L();
+			delayus(2);
+		}else{
 			SDA_L();
+			delayus(2);
+			SCL_H();
+			delayus(2);
+			SCL_L();
+			delayus(2);
 		}
-		ucData<<=1;
-		delayus(1); 
-		SCL_H();
-		delayus(2);
-		SCL_L();
-		delayus(1);
+		dat=dat>>1;
 	}
+	SDA_H();
+	delayus(1);
 }
 
 static  U8 I2C_Read_Byte(U8 sda,U8 scl)  //数据从高位到低位//
@@ -152,16 +163,17 @@ static  U8 I2C_Read_Byte(U8 sda,U8 scl)  //数据从高位到低位//
 	{
 		ucData<<=1;      
 		SCL_L();
-		delayus(2);
+		delayus(5);
 		SCL_H();
 		wait_scl_high(scl);
-		delayus(2);	
+		delayus(5);	
 		if(SDA_READ())
 		{
 			ucData|=0x01;
 		}
 	}
 	SCL_L();
+	delayus(4);
 	return ucData;
 }
 
@@ -177,7 +189,7 @@ static  U8 I2C_Read_Byte(U8 sda,U8 scl)  //数据从高位到低位//
 */
 static BOOL bq27541_read_word(U8 sda,U8 scl,U8 cmd,U16 *dataout)
 {
-	U16 temp;
+	U8 L,H;
 	i2c_start();
   i2c_send_byte(BQ27541_ADD_WR); 
 	i2c_check_ack() //2017-7-21
@@ -186,12 +198,12 @@ static BOOL bq27541_read_word(U8 sda,U8 scl,U8 cmd,U16 *dataout)
 	i2c_restart();
 	i2c_send_byte(BQ27541_ADD_RD); 
 	i2c_check_ack() //2017-7-21
-	temp=i2c_read_byte();//低字节
+	L=i2c_read_byte();//低字节
 	i2c_ack();
-	temp=((U16)i2c_read_byte())<<8;//高字节
+	H=i2c_read_byte();//高字节
 	i2c_noack();
 	i2c_stop();
-	*dataout=temp;
+	*dataout=(((U16)H)<<8)|L;
 	return TRUE;
 }
 
@@ -319,10 +331,10 @@ BOOL ld_bq27541_read_id(U8 sda,U8 scl,U8*dataout)
 */
 BOOL ld_bq27541_check_ack(U8 sda,U8 scl)
 {
-  U16 rd=0;
-	if(bq27541_read_word(sda,scl,0x62,&rd)==FALSE)return FALSE;
-	if(rd==0x6207)
-		return TRUE;
-	return FALSE;
+	
+	U16 data = 0;
+	if(bq27541_read_word(sda,scl,0x62,&data)==FALSE)return FALSE;
+	if(data=0x6207)return FALSE ;
+	return TRUE;
 }
 

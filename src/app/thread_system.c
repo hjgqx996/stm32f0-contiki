@@ -19,7 +19,6 @@ PROCESS_THREAD(thread_system, ev, data)
 		 ld_gpio_set(1,1);
 		 os_delay(et_system,500);
 		 ld_gpio_set(2,1);//Ê¹ÄÜ485·¢ËÍ
-		 ld_uart_send(2,"kaihua",6);
 	}
 
 	PROCESS_END();
@@ -27,5 +26,5 @@ PROCESS_THREAD(thread_system, ev, data)
 
 
 
-AUTOSTART_PROCESSES(thread_system);
+//AUTOSTART_PROCESSES(thread_system);
 

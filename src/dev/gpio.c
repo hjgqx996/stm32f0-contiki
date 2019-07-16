@@ -22,7 +22,7 @@ void ld_gpio_init(void)
   int i=0;
 	for(;i<gpio_number;i++)
 	{
-		cpu_gpio_map_config(gpio_map,i);
+		 cpu_gpio_map_config(gpio_map,i);
 	}
 	HC595Init();
 }

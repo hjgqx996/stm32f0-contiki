@@ -22,4 +22,4 @@ PROCESS_THREAD(thread_return, ev, data)
 
 	PROCESS_END();
 }
-AUTOSTART_PROCESSES(thread_return);
+//AUTOSTART_PROCESSES(thread_return);

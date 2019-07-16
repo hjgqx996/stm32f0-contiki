@@ -12,11 +12,11 @@
 typedef const struct
 {
     U8 xPort;						   //端口 A~G
-    U8 xPin;				   //pin脚 0~15
-    U8 xMode;					   //模式
+    U8 xPin;				      //pin脚 0~15
+    U8 xMode;					    //模式
 	  U8 xOType;            //上下拉
     U8 xSpeed;            //速度
-    U8 xSta;					   //初始状态，高低电平
+    U8 xSta;					    //初始状态，高低电平
 } t_gpio_map;
 
 //<h>/*数码管显示*/
@@ -74,6 +74,15 @@ typedef const struct{
 	int pre;
 	int peroid;
 }t_timer_map;
+
+
+//<h>/*key配置类型*/
+//</h>
+typedef const struct
+{
+		t_gpio_map    gpio;    //gpio配置
+    U32  keyvalue;         // 键值
+} t_key_map;
 
 #endif
 
