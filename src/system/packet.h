@@ -7,9 +7,17 @@
 #define PACKET_DATA_MAX     1024
 
 typedef enum{
-	PC_HEART_BREAK = 0x01,  //心跳
 	
-
+	PC_HEART_BREAK = 0x01,  //心跳
+	PC_LEASE = 0x02,        //租借
+  PC_RETURN= 0x03,        //归还
+	PC_CTRL  = 0x04,        //控制
+	
+	//========================================
+	PC_UPDATE_ENTRY= 0x05,  //进入固件更新
+	PC_UPDATE_MODE=0x06,    //查询固件更新模式
+	PC_UPDATE_DATA=0x07,    //固件数据
+	//========================================
 }PACKET_CMD;
 
 

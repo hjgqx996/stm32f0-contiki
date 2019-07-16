@@ -106,6 +106,12 @@ typedef struct{
 *channel:1-n
 */
 Channel*channel_data_get(U8 channel);
+
+/*获取仓道数据--by addr
+*channel:1-n
+*/
+Channel*channel_data_get_by_addr(U8 addr);
+
 #endif
 
 

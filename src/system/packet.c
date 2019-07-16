@@ -73,6 +73,7 @@ int packet_send(HPacket*hp, U8 cmd,U16 len,U8*data)
 		memcpy(p->data,data,len);
 	if(len>(PACKET_DATA_MAX-7))return FALSE;
 	p->data[len] = cs8((U8*)p,len+6);
+	enable_485_tx();//Ê¹ÄÜ·¢ËÍ
 	ld_uart_send(COM_485,(U8*)p,len+7);
 	return len;
 }

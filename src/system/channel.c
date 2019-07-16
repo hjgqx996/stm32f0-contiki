@@ -34,7 +34,19 @@ Channel*channel_data_get(U8 channel)
 	if(channel>=CHANNEL_MAX)return NULL;
 	return &chs[channel];
 }
-
+/*获取仓道数据--by addr
+*channel:1-n
+*/
+Channel*channel_data_get_by_addr(U8 addr)
+{
+	int i =0;
+	for(;i<CHANNEL_MAX;i++)
+	{
+		if(chs[i].addr==addr)
+			return &chs[i];
+	}
+	return NULL;
+}
 /*----------------------------------
 检测
 -----------------------------------*/
