@@ -95,16 +95,12 @@ static void charge_fsm(U8 channel,void*arg)
 		
 }
 
-
-
-
 /*===================================================
                 全局函数
 ====================================================*/
-const char*vd="kaihua.yang";
-static process_event_t pet={0xF5};
 static struct etimer et_insert;
 PROCESS(thread_insert, "进入流程");
+//AUTOSTART_PROCESSES(thread_insert);
 PROCESS_THREAD(thread_insert, ev, data)  
 {
 	PROCESS_BEGIN();
@@ -112,8 +108,6 @@ PROCESS_THREAD(thread_insert, ev, data)
 	{
 		os_delay(et_insert,10);
 	}
-
 	PROCESS_END();
 }
 
-//AUTOSTART_PROCESSES(thread_insert);

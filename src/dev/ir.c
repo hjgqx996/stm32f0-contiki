@@ -239,8 +239,8 @@ void ld_ir_timer_100us(void)
 	ir_fsm(&irs[1],&irs[1].fsm);
 }
 
-//开始读取红外数据
-BOOL ld_ir_read_start(U8 ch,U8 cmd,U8 wanlen)
+//开始读取红外数据   (ch:1-n,opposite:TRUE反向, cmd 命令, 长度)
+BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 {
 	if(ch>IR_CHANNEL_MAX)return FALSE;
 	ch-=1;
@@ -296,7 +296,7 @@ int ld_ir_read_isok(U8 ch,U8*dataout,U8 size)
 #include "contiki.h"
 static struct etimer et_testir;
 PROCESS(testir_thread, "测试红外");
-AUTOSTART_PROCESSES(testir_thread);
+//AUTOSTART_PROCESSES(testir_thread);
 PROCESS_THREAD(testir_thread, ev, data)  
 {
 	PROCESS_BEGIN();

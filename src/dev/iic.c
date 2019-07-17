@@ -253,8 +253,13 @@ static void bq27541_smb_on(U8 sda,U8 scl)
 	SCL_H();
 	delayus(5000); //不可取，建议外部延时
 }
+
+/*===================================================
+                全局函数
+====================================================*/
+
 /*
-* 读取bq25741 id
+* 读取bq25741 n个字
 * sda :sda 端口号
 * scl :scl 端口号
 * cmd :命令数组
@@ -262,7 +267,7 @@ static void bq27541_smb_on(U8 sda,U8 scl)
 * dataout: 数据输出
 *return  : TRUE or FALSE
 */
-static BOOL ld_bq27541_read_words(U8 sda,U8 scl,U8*cmd,U8 cmdlen,U16 *dataout)
+BOOL ld_bq27541_read_words(U8 sda,U8 scl,U8*cmd,U8 cmdlen,U16 *dataout)
 {
 	if(cmd==NULL||dataout==NULL||cmdlen>100)return FALSE;
 	{
@@ -276,20 +281,20 @@ static BOOL ld_bq27541_read_words(U8 sda,U8 scl,U8*cmd,U8 cmdlen,U16 *dataout)
 	}
 	return TRUE;
 }
-/*===================================================
-                全局函数
-====================================================*/
+
 /*
 * 读取bq25741 id
 * sda :sda 端口号
 * scl :scl 端口号
 * dataout: 数据输出
 *return  : TRUE or FALSE
+*  把read_id分成三部分:
+*  start----50ms----end
+*  原因是50ms硬延时可能会产生严重后果
 */
-BOOL ld_bq27541_read_id(U8 sda,U8 scl,U8*dataout)
+BOOL ld_bq27541_read_id_start(U8 sda,U8 scl)
 {
-	U8 temp[10],cs,byte;
-	i2c_start();
+ 	i2c_start();
   i2c_send_byte(BQ27541_ADD_WR); 
 	i2c_check_ack()
 	i2c_send_byte(0x3F); 
@@ -297,28 +302,98 @@ BOOL ld_bq27541_read_id(U8 sda,U8 scl,U8*dataout)
 	i2c_send_byte(0x01); 
   i2c_check_ack()
 	i2c_stop();
-	//50ms延时
-	delayus(50000);
+	return TRUE;
+}
+BOOL ld_bq27541_read_id_end(U8 sda,U8 scl,U8*dataout)
+{
+	U8 temp[10],cs,byte;
 	//读取编号字节
 	if(bq27541_read_power(sda,scl,temp)==FALSE)
 	{
 		i2c_stop();//其实这里已经在bq27541_read_power中处理
 		return FALSE;
 	}
-	
 	//检验
 	cs = 0xFF-cs8(temp,10);
 	if(cs!=0xFF){
 		bq27541_read_byte(sda,scl,0x60,&byte);
 		if(byte!=cs){
 			//失败6次，充电宝编号 清0
-			
+			return FALSE;
 		}
 	}else{
 		memcpy(dataout,temp,10);
 	}
 	return TRUE;
 }
+
+
+/*
+* 加密 解密 充电宝
+* sda :sda 端口号
+* scl :scl 端口号
+* cmd :05:长解密 06:长加密 07:解密1小时
+*return  : TRUE or FALSE
+*  把read_id分成三部分:
+*  start----50ms----end
+*  原因是50ms硬延时可能会产生严重后果
+*/
+BOOL ld_bq27541_de_encrypt_charge_start(U8 sda,U8 scl,U8 cmd)
+{
+	U8 data[2];
+ 	i2c_start();
+  i2c_send_byte(BQ27541_ADD_WR); 
+	i2c_check_ack()
+	i2c_send_byte(0x62); 
+  i2c_check_ack()
+	i2c_send_byte(0x01); 
+  i2c_check_ack()
+	i2c_stop();
+	
+	delayus(5);
+	
+	i2c_start();
+	i2c_send_byte(BQ27541_ADD_RD); 
+	i2c_check_ack()
+	data[0]= i2c_read_byte();
+	i2c_ack();
+	data[1]= i2c_read_byte(); 
+	i2c_stop();
+	
+	delayus(5);
+
+ 	i2c_start();
+  i2c_send_byte(BQ27541_ADD_WR); 
+	i2c_check_ack()
+	i2c_send_byte(0x71); 
+  i2c_check_ack()
+	i2c_send_byte(cmd); 
+  i2c_check_ack()
+	i2c_stop();
+	
+	return TRUE;	
+}
+BOOL ld_bq27541_de_encrypt_charge_end(U8 sda,U8 scl)
+{
+	U8 data = 0;
+	i2c_start();
+  i2c_send_byte(BQ27541_ADD_WR); 
+	i2c_check_ack()
+	i2c_send_byte(0x71); 
+  i2c_check_ack()
+	i2c_stop();
+	
+	delayus(5);
+	
+	i2c_start();
+	i2c_send_byte(BQ27541_ADD_RD); 
+	i2c_check_ack()
+	data= i2c_read_byte();
+	i2c_noack();
+	i2c_stop();
+	return TRUE;
+}
+
 
 /*bq27541检测应答
 *功能：开始读两次0x62，李工要求
@@ -330,5 +405,41 @@ BOOL ld_bq27541_check_ack(U8 sda,U8 scl)
 	if(bq27541_read_word(sda,scl,0x62,&data)==FALSE)return FALSE;
 	if(data!=0x6207)return FALSE ;
 	return TRUE;
+}
+
+
+/*===================================================
+                标准化接口，像红外一样的接口
+====================================================*/
+typedef struct{
+	U8 io_ir;        			//红外发送io
+	U8 io_re;        			//红外接收io
+	U8 cmd;          			//发送命令	
+	U8 wanlen;       			//要接收的数据长度
+	U8 len;          			//实际接收到的数据长度
+	BOOL start;      			//TRUE: 开始  FALSE:结束
+	S8 state;        			//错误码		
+	S32 counter;     			//计数
+	U8 data[IR_DATA_MAX]; //接收数据
+	U8 tmp;          			//缓存一字节
+	
+	BOOL inited;          //初始化标志，未初始化，状态机不能运行
+	////////////////////////////////
+	FSM fsm;         //状态机私有变量
+}IR_Type;
+
+void ld_iic_init(U8 ch,U8 sda,U8 scl)
+{
+	
+
+}
+BOOL ld_iic_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)//(ch:1-n,opposite:TRUE反向, cmd 命令, 长度)
+{
+
+
+}
+int ld_iic_read_isok(U8 ch,U8*dataout,U8 size)
+{
+
 }
 

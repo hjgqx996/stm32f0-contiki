@@ -148,8 +148,8 @@ void channels_les_flash_timer(int timer_ms)
 				ch->flash_ms-=LEASE_LED_FLASH_TIME;
 				if(ch->flash_ms<LEASE_LED_FLASH_TIME){
 					ch->flash=FALSE;
-					ld_gpio_set(ch->map->io_led,LOW);
-				}//Í£Ö¹ÉÁË¸
+					ld_gpio_set(ch->map->io_led,LOW);//Í£Ö¹ÉÁË¸
+				}
 				else
 				ld_gpio_set(ch->map->io_led,ld_gpio_get(ch->map->io_led)==0?HIGH:LOW);
 			}
@@ -162,5 +162,4 @@ void channels_les_flash_timer(int timer_ms)
 			}
 		}
 	}
-
 }

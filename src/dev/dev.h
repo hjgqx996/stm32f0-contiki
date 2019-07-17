@@ -1,8 +1,11 @@
 #ifndef __DEV_H__
 #define __DEV_H__
 #include "types.h"
-
-
+#include "time.h"
+/*===================================================
+                系统运行时间ms
+====================================================*/
+time_t time(time_t*t);
 /*===================================================
                 gpio
 ====================================================*/
@@ -36,7 +39,9 @@ int ld_uart_isp(U8 xUart,char*byte,U8 type);	//type: 0 接收    1发送
 
 
 
-
+/*===================================================
+                红外数据接口
+====================================================*/
 /*红外操作接口
 * ch    :仓道号 1-n
 * io_ir :发送端口
@@ -47,5 +52,20 @@ void ld_ir_timer_init(void);
 void ld_ir_timer_100us(void);
 BOOL ld_ir_read_start(U8 ch,U8 cmd,U8 wanlen);
 int ld_ir_read_isok(U8 ch,U8*dataout,U8 size);
+
+/*===================================================
+                iic数据接口
+====================================================*/
+BOOL ld_bq27541_read_words(U8 sda,U8 scl,U8*cmd,U8 cmdlen,U16 *dataout);
+BOOL ld_bq27541_read_id_start(U8 sda,U8 scl);/*读id  :start----50ms----end*/
+BOOL ld_bq27541_read_id_end(U8 sda,U8 scl,U8*dataout);
+BOOL ld_bq27541_de_encrypt_charge_start(U8 sda,U8 scl,U8 cmd);/*加密 解密 充电宝 :start----50ms----end*/
+BOOL ld_bq27541_de_encrypt_charge_end(U8 sda,U8 scl);
+BOOL ld_bq27541_check_ack(U8 sda,U8 scl);
+
+
+
+
+
 
 #endif

@@ -100,6 +100,7 @@ typedef struct{
 	int  flash_now;                 //计时
 	
 	FSM insert;                     //充电宝进入仓道状态机变量:私有
+	FSM read;                       //充电宝读状态机
 }Channel;
 
 #pragma pack()

@@ -204,7 +204,7 @@ static void com_process(HPacket*hp)
                 全局函数
 ====================================================*/
 PROCESS(thread_packet, "数据包处理任务");
-AUTOSTART_PROCESSES(thread_packet);
+//AUTOSTART_PROCESSES(thread_packet);
 PROCESS_THREAD(thread_packet, ev, data)  
 {
 	PROCESS_BEGIN();
@@ -227,7 +227,7 @@ PROCESS_THREAD(thread_packet, ev, data)
 
 static struct etimer et_comm;
 PROCESS(thread_comm, "通讯任务");
-AUTOSTART_PROCESSES(thread_comm);
+//AUTOSTART_PROCESSES(thread_comm);
 PROCESS_THREAD(thread_comm, ev, data)  
 {
 	PROCESS_BEGIN();

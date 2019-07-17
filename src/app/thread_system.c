@@ -8,6 +8,7 @@
 
 static struct etimer et_system;
 PROCESS(thread_system, "系统任务");
+//AUTOSTART_PROCESSES(thread_system);
 PROCESS_THREAD(thread_system, ev, data)  
 {
 	PROCESS_BEGIN();
@@ -24,5 +25,5 @@ PROCESS_THREAD(thread_system, ev, data)
 
 
 
-AUTOSTART_PROCESSES(thread_system);
+
 

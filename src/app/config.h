@@ -13,12 +13,6 @@ typedef struct{
 typedef enum{
 	PROCESS_EVENT_PACKET           =0x40,   //事件:数据包接收
 	PROCESS_EVENT_COMM_LEASE,               //事件:租借数据包处理
-	PROCESS_EVENT_READ_ID,                  //事件:读充电ID
-	PROCESS_EVENT_READ_DATA,                //事件:读数据
-	PROCESS_EVENT_READ_UNLOCK,              //事件:解锁05
-	PROCESS_EVENT_READ_LOCK,                //事件:上锁06
-	PROCESS_EVENT_READ_UNLOCK_1HOUR,        //事件:解锁1小时07
-	PROCESS_EVENT_READ_OUTPUT,              //事件:读输出标志
 }PROCESS_EVENT;
 
 

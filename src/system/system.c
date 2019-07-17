@@ -21,5 +21,4 @@ void ld_system_flash_led()
 void ld_system_led_timer(int ms)
 {
 	
-
 }
