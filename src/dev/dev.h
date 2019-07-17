@@ -36,4 +36,16 @@ int ld_uart_isp(U8 xUart,char*byte,U8 type);	//type: 0 接收    1发送
 
 
 
+
+/*红外操作接口
+* ch    :仓道号 1-n
+* io_ir :发送端口
+* io_re :接收端口
+*/
+void ld_ir_init(U8 ch,U8 io_ir,U8 io_re);
+void ld_ir_timer_init(void);
+void ld_ir_timer_100us(void);
+BOOL ld_ir_read_start(U8 ch,U8 cmd,U8 wanlen);
+int ld_ir_read_isok(U8 ch,U8*dataout,U8 size);
+
 #endif

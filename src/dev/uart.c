@@ -242,18 +242,18 @@ BOOL cpu_uart_ctrl(U8 xUart,U8 cmd, void*arg)
 				USART_ClearITPendingBit(uart->USART, USART_IT_RXNE);
 				USART_ClearITPendingBit(uart->USART, USART_IT_TXE);
 				USART_ClearITPendingBit(uart->USART, USART_FLAG_ORE);
-				//USART_ClearITPendingBit(uart->USART, USART_IT_TC);
+				USART_ClearITPendingBit(uart->USART, USART_IT_TC);
         USART_ITConfig(uart->USART, USART_IT_TXE, ENABLE);
-        //USART_ITConfig(uart->USART, USART_IT_TC, ENABLE);
+        USART_ITConfig(uart->USART, USART_IT_TC, ENABLE);
         break;
 
     case UART_CMD_DISABLE_TX:
 				USART_ITConfig(uart->USART, USART_IT_TXE, DISABLE);
-				//USART_ITConfig(uart->USART, USART_IT_TC, ENABLE);	
+				USART_ITConfig(uart->USART, USART_IT_TC, ENABLE);	
 				USART_ClearITPendingBit(uart->USART, USART_IT_RXNE);
 				USART_ClearITPendingBit(uart->USART, USART_IT_TXE);
 				USART_ClearITPendingBit(uart->USART, USART_FLAG_ORE);
-				//USART_ClearITPendingBit(uart->USART, USART_IT_TC);
+				USART_ClearITPendingBit(uart->USART, USART_IT_TC);
         break;
 
     case UART_CMD_ENABLE_RX:
@@ -395,7 +395,7 @@ int ld_uart_open(U8 xUart,int xBaud,U8 xData,U8 xParity, U8 xStop,int rxbufsize,
 	}
 
 	//Ê¹ÄÜuart.port
-	if(txbufsize > 0 && rxbufsize > 0 )
+	if(txbufsize > 0)
     {
         cpu_uart_ctrl(uart->map->port,UART_CMD_ENABLE_TX,NULL);
         cpu_uart_ctrl(uart->map->port,UART_CMD_ENABLE_RX,NULL);

@@ -65,7 +65,7 @@ typedef struct{
 typedef enum{
 	BAO_ALLOW   = 0x05,  //充电宝允许输出
 	BAO_NOTALLOW= 0x06,  //充电宝不允许输出
-	BAO_ALLOW_X = 0x07,  //??????
+	BAO_ALLOW_ONE_HOUR = 0x07,  //允许输出1小时
 }BaoOutput;
 
 /*仓道数据结构*/
@@ -92,7 +92,12 @@ typedef struct{
 	ChannelWarn  warn;              //运行告警
 	ChannelError error;             //运行错误
 	
-	S32 priority;                   //充电控制优先级-->充电输出使用(优先级+冒泡)排队充电
+	/*--------------异常弹仓--------------------------*/
+	
+	/*--------------仓道灯----------------------------*/
+	BOOL flash;                     //是否闪烁
+	int  flash_ms;                  //闪烁总时间(ms)
+	int  flash_now;                 //计时
 	
 	FSM insert;                     //充电宝进入仓道状态机变量:私有
 }Channel;
@@ -102,6 +107,13 @@ typedef struct{
 /*===================================================
                 全局函数
 ====================================================*/
+BOOL channel_id_is_not_null(U8*id);
+/*
+* channel数据初始化
+*/
+BOOL channel_data_init(void);
+BOOL channel_data_clear_by_addr(U8 ch_addr);//清数据
+
 /*获取仓道数据
 *channel:1-n
 */
@@ -111,6 +123,11 @@ Channel*channel_data_get(U8 channel);
 *channel:1-n
 */
 Channel*channel_data_get_by_addr(U8 addr);
+
+
+/*通道灯闪烁控制*/
+void channel_led_flash(U8 ch,U8 seconds);
+void channels_les_flash_timer(int timer_ms);
 
 #endif
 

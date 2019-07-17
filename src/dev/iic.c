@@ -253,15 +253,6 @@ static void bq27541_smb_on(U8 sda,U8 scl)
 	SCL_H();
 	delayus(5000); //不可取，建议外部延时
 }
-/*===================================================
-                全局函数
-====================================================*/
-//初始化配置的iic接口
-void ld_iic_init(U8 sda,U8 scl)
-{
-  
-}
-
 /*
 * 读取bq25741 id
 * sda :sda 端口号
@@ -271,7 +262,7 @@ void ld_iic_init(U8 sda,U8 scl)
 * dataout: 数据输出
 *return  : TRUE or FALSE
 */
-BOOL ld_bq27541_read_words(U8 sda,U8 scl,U8*cmd,U8 cmdlen,U16 *dataout)
+static BOOL ld_bq27541_read_words(U8 sda,U8 scl,U8*cmd,U8 cmdlen,U16 *dataout)
 {
 	if(cmd==NULL||dataout==NULL||cmdlen>100)return FALSE;
 	{
@@ -285,6 +276,9 @@ BOOL ld_bq27541_read_words(U8 sda,U8 scl,U8*cmd,U8 cmdlen,U16 *dataout)
 	}
 	return TRUE;
 }
+/*===================================================
+                全局函数
+====================================================*/
 /*
 * 读取bq25741 id
 * sda :sda 端口号
@@ -334,7 +328,7 @@ BOOL ld_bq27541_check_ack(U8 sda,U8 scl)
 	
 	U16 data = 0;
 	if(bq27541_read_word(sda,scl,0x62,&data)==FALSE)return FALSE;
-	if(data=0x6207)return FALSE ;
+	if(data!=0x6207)return FALSE ;
 	return TRUE;
 }
 

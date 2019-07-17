@@ -113,9 +113,6 @@ void TIM3_IRQHandler(void)
   * @param  None
   * @retval None
   */
-
-PROCESS_NAME(thread_comm);
-extern HPacket hpacket;
 void USART1_IRQHandler(void)
 {
 	USART_TypeDef *pUart=USART1;
@@ -173,6 +170,8 @@ void USART1_IRQHandler(void)
   * @param  None
   * @retval None
   */
+PROCESS_NAME(thread_packet);
+extern HPacket hpacket;
 void USART2_IRQHandler(void)
 {
 	USART_TypeDef *pUart=USART2;
@@ -182,11 +181,9 @@ void USART2_IRQHandler(void)
   {
 		temp = USART_ReceiveData(pUart)& 0xff;
 	  if(packet_recv(temp,&hpacket)!=NULL)
-		{
-			//发送一个事件给Comm任务
-			process_post(&thread_comm,PROCESS_EVENT_PACKET,(void*)&hpacket.p);
-			//关接收
-			disable_485_rx();
+		{	
+			process_post(&thread_packet,PROCESS_EVENT_PACKET,(void*)&hpacket.p);//发送一个事件给packet任务
+			disable_485_rx();//关接收
 		}
 		//ld_uart_isp(2,&temp,0);
 		USART_ClearITPendingBit(pUart, USART_IT_RXNE);						
@@ -201,13 +198,15 @@ void USART2_IRQHandler(void)
 			}
 			else
 			{
-				 //使能接收
-				 enable_485_rx();
-				 // pUart->CR1 &= ~(USART_FLAG_TXE | USART_FLAG_TC);
 					USART_ITConfig(pUart, USART_IT_TXE, DISABLE);
-					//USART_ITConfig(pUart, USART_IT_TC, ENABLE);
 			}
 	}	
+	
+	if(USART_GetFlagStatus(pUart,USART_FLAG_TC)==SET)
+	{
+		enable_485_rx();
+		USART_ClearFlag(pUart,USART_FLAG_TC);	//读SR
+	}
 	
 	if(USART_GetFlagStatus(pUart,USART_FLAG_ORE)==SET)
 	{

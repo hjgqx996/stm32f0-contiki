@@ -62,14 +62,14 @@ int packet_send(HPacket*hp, U8 cmd,U16 len,U8*data)
 {
 	packet *p = &hp->p;
 	if(hp==NULL)return FALSE;
-	memset(hp,0,sizeof(HPacket));
+	//memset(hp,0,sizeof(HPacket));
 	p->AA=0xAA;
 	p->BB=0xBB;
 	p->addr=system.addr485;
 	p->cmd=cmd;
 	p->hlen=len>>8;
 	p->llen=len&0xFF;
-	if(len>0)
+	if(len>0&&p->data!=data)
 		memcpy(p->data,data,len);
 	if(len>(PACKET_DATA_MAX-7))return FALSE;
 	p->data[len] = cs8((U8*)p,len+6);

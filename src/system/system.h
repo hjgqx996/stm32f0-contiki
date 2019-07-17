@@ -19,9 +19,6 @@ typedef enum{
 typedef struct{
 	volatile U8 addr485;                 //485地址
 	volatile U8 addr_ch[CHANNEL_MAX];    //通道地址
-	
-	volatile LeaseState ls;              //系统租借状态
-	
 }System;
 
 extern System system;

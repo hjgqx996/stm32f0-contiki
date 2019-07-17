@@ -30,10 +30,12 @@ typedef enum{ TRUE=1,FALSE=!TRUE}  BOOL;
 /*===================================================
                 键值定义
 ====================================================*/
-#define key_baibi    1   //摆臂开关
-#define key_daowei   2   //到位开关
+#define KEY_BAI_BI_INDEX    1   //摆臂开关
+#define KEY_DAO_WEI_INDEX   2   //到位开关
 #define KV(type,ch)              (type*0x00200000+ch) //通道键值
 #define is_key_value(v,type,ch)  if((type*0x00200000+ch)==(v&0x7FFFFFFF))  //判断键值是不是ch的
+#define KEY_BAI_BI(ch)               ld_gpio_get(ch->map->io_sw)
+#define KEY_DAO_WEI(ch)              ld_gpio_get(ch->map->io_detect)
 
 /*===================================================
                 配置类型
@@ -103,5 +105,4 @@ typedef struct{
                os 延时
 ====================================================*/
 #define os_delay(et,time) 		 etimer_set(&et, (time/(1000/CLOCK_SECOND)));PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et))
-#define wait_event  os_delay
 #endif

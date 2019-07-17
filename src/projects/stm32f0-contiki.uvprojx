@@ -403,11 +403,6 @@
               <FilePath>..\app\thread_comm.c</FilePath>
             </File>
             <File>
-              <FileName>thread_return.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\app\thread_return.c</FilePath>
-            </File>
-            <File>
               <FileName>thread_channel.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\app\thread_channel.c</FilePath>
@@ -541,6 +536,61 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>dev</GroupName>
+          <Files>
+            <File>
+              <FileName>driver_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\driver_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>dev.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\dev.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>iic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\iic.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>ir.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\ir.c</FilePath>
+            </File>
+            <File>
+              <FileName>74hc595.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\74hc595.c</FilePath>
+            </File>
+            <File>
+              <FileName>flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\key.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>cpu</GroupName>
           <Files>
             <File>
@@ -607,66 +657,6 @@
               <FileName>stm32f0xx_syscfg.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\cpu\src\stm32f0xx_syscfg.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>dev</GroupName>
-          <Files>
-            <File>
-              <FileName>driver_config.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\driver_config.c</FilePath>
-            </File>
-            <File>
-              <FileName>dev.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\dev.c</FilePath>
-            </File>
-            <File>
-              <FileName>gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>iic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\iic.c</FilePath>
-            </File>
-            <File>
-              <FileName>uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>ir.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\ir.c</FilePath>
-            </File>
-            <File>
-              <FileName>switch.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\switch.c</FilePath>
-            </File>
-            <File>
-              <FileName>74hc595.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\74hc595.c</FilePath>
-            </File>
-            <File>
-              <FileName>flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\flash.c</FilePath>
-            </File>
-            <File>
-              <FileName>timer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\timer.c</FilePath>
-            </File>
-            <File>
-              <FileName>key.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\key.c</FilePath>
             </File>
           </Files>
         </Group>

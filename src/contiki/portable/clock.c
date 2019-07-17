@@ -19,6 +19,12 @@ void   SysTick_Handler(void)
     current_seconds++;
     second_countdown = CLOCK_SECOND;
   }
+	
+	//仓道灯闪
+	{
+		extern void channels_les_flash_timer(int timer_ms);
+		channels_les_flash_timer(1000/CLOCK_SECOND);
+	}
 }
 
 /*初始化系统定时器*/

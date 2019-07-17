@@ -58,6 +58,7 @@ typedef struct{
 	U8 data[IR_DATA_MAX]; //接收数据
 	U8 tmp;          			//缓存一字节
 	
+	BOOL inited;          //初始化标志，未初始化，状态机不能运行
 	////////////////////////////////
 	FSM fsm;         //状态机私有变量
 }IR_Type;
@@ -78,7 +79,7 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 	//////////////////////////////////
 	Start(开始)
 	{
-    if(pir->start==TRUE)
+    if(pir->start==TRUE && pir->inited==TRUE)
 			goto 发送命令码;
 	}
 	//////////////////////////////////
@@ -221,9 +222,10 @@ void ld_ir_init(U8 ch,U8 io_ir,U8 io_re)
 	irs[ch].io_re=io_re;
 	irs[ch].start=FALSE;
 	irs[ch].state=IR_State_NULL;
+	irs[ch].inited = TRUE;
 	ir_unlock();
 }
-void id_ir_timer_init(void)
+void ld_ir_timer_init(void)
 {
 	timer_init();
 }
@@ -243,10 +245,11 @@ BOOL ld_ir_read_start(U8 ch,U8 cmd,U8 wanlen)
 	if(ch>IR_CHANNEL_MAX)return FALSE;
 	ch-=1;
 	ir_lock();
-	//红外已经开始读
-	if(irs[ch].start==TRUE)return TRUE;
-	//红外未开始读
-	if(irs[ch].start==FALSE)
+	if(irs[ch].inited==FALSE){ir_unlock();return FALSE;}//未初始化
+	
+	if(irs[ch].start==TRUE){ir_unlock();return TRUE;}//红外已经开始读
+	
+	if(irs[ch].start==FALSE)//红外未开始读
   {
 		//开始读
 		irs[ch].cmd = cmd;
@@ -255,7 +258,6 @@ BOOL ld_ir_read_start(U8 ch,U8 cmd,U8 wanlen)
 		
 		//复位状态机
     memset(&irs[ch].fsm,0,sizeof(FSM));
-	
 		ir_unlock();
 		return TRUE;
 	}
@@ -269,7 +271,7 @@ BOOL ld_ir_read_start(U8 ch,U8 cmd,U8 wanlen)
 *        :  1: 正在读
 *        :  2: 读正确
 */
-int ld_ir_read_isok(U8 ch)
+int ld_ir_read_isok(U8 ch,U8*dataout,U8 size)
 {
 	int err = -1;
 	ch-=1;
@@ -281,39 +283,64 @@ int ld_ir_read_isok(U8 ch)
 	}else{
 		err = 1;
 	}
+	//正确时，弹出数据
+	if(err==2 && dataout!= NULL)memcpy(dataout,irs[ch].data,size);
 	END:
 	ir_unlock();
 	return err;
 }
-
-
 
 /*===================================================
                 测试红外读
 ====================================================*/
 #include "contiki.h"
 static struct etimer et_testir;
-PROCESS(testir_thread, "归还任务");
+PROCESS(testir_thread, "测试红外");
+AUTOSTART_PROCESSES(testir_thread);
 PROCESS_THREAD(testir_thread, ev, data)  
 {
 	PROCESS_BEGIN();
-	ld_ir_init(1,6,7);
-	ld_ir_init(2,16,17);
-	ld_ir_init(3,26,27);
-	ld_ir_init(4,36,37);
-	ld_ir_init(5,46,47);
-	id_ir_timer_init();
-	
+  os_delay(et_testir,500);
 	while(1)
 	{
-//		ld_ir_timer_100us();
-//		ld_ir_read_start(1,0x10,7);
+		
+		static int i = 0;
+		static int sucess=0;
+		//读id
+		i=0;
 		ld_ir_read_start(2,10,7);
-//		ld_ir_read_start(3,0x10,7);
-//		ld_ir_read_start(4,0x10,7);
-//		ld_ir_read_start(5,0x10,7);
-		os_delay(et_testir,2000);
+		while(ld_ir_read_isok(2,NULL,0)!=2){
+			os_delay(et_testir,10);
+			i++;
+			if(i>=200){
+				ld_gpio_set(18,0);
+				break;
+			}
+		}
+		
+		if(ld_ir_read_isok(2,NULL,0)==2)sucess++;
+		
+		//读数据
+		i=0;
+	  ld_ir_read_start(2,20,13);
+		while(ld_ir_read_isok(2,NULL,0)!=2){
+			os_delay(et_testir,10);
+			i++;
+			if(i>=200){
+				ld_gpio_set(18,0);
+				break;
+			}
+		}
+		if(ld_ir_read_isok(2,NULL,0)==2)sucess++;
+		
+		//成功
+		if(sucess==2)
+		{
+			ld_gpio_set(18,1);
+			os_delay(et_testir,500);
+		}
+		sucess=0;
 	}
 	PROCESS_END();
 }
-//AUTOSTART_PROCESSES(testir_thread);
+

@@ -11,14 +11,12 @@ PROCESS(thread_system, "系统任务");
 PROCESS_THREAD(thread_system, ev, data)  
 {
 	PROCESS_BEGIN();
-
 	while(1)
 	{
 		 ld_gpio_set(1,0);
 		 os_delay(et_system,500);
 		 ld_gpio_set(1,1);
 		 os_delay(et_system,500);
-		 ld_gpio_set(2,1);//使能485发送
 	}
 
 	PROCESS_END();
@@ -26,5 +24,5 @@ PROCESS_THREAD(thread_system, ev, data)
 
 
 
-//AUTOSTART_PROCESSES(thread_system);
+AUTOSTART_PROCESSES(thread_system);
 
