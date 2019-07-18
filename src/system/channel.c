@@ -35,6 +35,7 @@ BOOL channel_data_init(void)
 		chs[i].map = &channel_config_map[i]; //io
 		//chs[i].addr = //addr 仓道地址
 		ld_ir_init(i+1,channel_config_map[i].io_ir,channel_config_map[i].io_re);
+		ld_iic_init(i+1,channel_config_map[i].io_sda,channel_config_map[i].io_scl);
 	}	
 	ld_ir_timer_init();//红外配置
 }
@@ -76,9 +77,56 @@ Channel*channel_data_get_by_addr(U8 addr)
 	return NULL;
 }
 /*----------------------------------
-6代宝操作:加密 解密
+充电宝操作重定向:是否忙,读 ,是否完成
 -----------------------------------*/
+BOOL channel_read_busy(U8 ch,READ_TYPE_MODE mode)//ch :1-n
+{
+	if(mode == RTM_IIC)return ld_iic_busy(ch);
+	if(mode == RTM_IR )return ld_ir_busy (ch);
+	return TRUE;
+}
 
+BOOL channel_read_start(U8 ch,READ_TYPE_MODE mode,BOOL opposite,READ_TYPE_CMD cmd)
+{
+	U8 wanlen=0;
+	if(mode == RTM_IIC)
+	{
+		switch(cmd)
+		{
+			case RC_READ_ID:wanlen=10;break;
+			case RC_READ_DATA:wanlen=13;break;
+			case RC_OUTPUT:wanlen=1;break;
+			case RC_LOCK:case RC_UNLOCK: case RC_UNLOCK_1HOUR: wanlen=0;break;
+			default: return FALSE;
+		}
+		return ld_iic_read_start(ch,opposite, cmd,wanlen);
+	}
+	else if(mode ==RTM_IR){
+		switch(cmd)
+		{
+			case RC_READ_ID:wanlen=7;break;
+			case RC_READ_DATA:wanlen=13;break;
+			case RC_OUTPUT:return FALSE;
+			case RC_LOCK:case RC_UNLOCK: case RC_UNLOCK_1HOUR: wanlen=2;break;
+			default: return FALSE;
+		}
+		return ld_ir_read_start(ch,opposite, cmd,wanlen);
+	}
+	else return FALSE;
+}
+
+int channel_read_end(U8 ch,READ_TYPE_MODE mode,U8*dataout)
+{
+	U8 wanlen=0;
+	if(mode == RTM_IIC)
+	{
+		return ld_iic_read_isok(ch,dataout,0);
+	}
+	else if(mode ==RTM_IR){
+		return ld_ir_read_isok(ch,dataout,0);
+	}
+	else return FALSE;
+}
 
 
 /*----------------------------------

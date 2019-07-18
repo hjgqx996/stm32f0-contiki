@@ -18,7 +18,8 @@
 #define SDA_READ()		ld_gpio_get(sda)
 #define SCL_READ()		ld_gpio_get(scl)
 
-#define delayus(n)   cpu_us_delay(n)
+//extern void cpu_us_delay(int us);
+//#define delayus(n)   cpu_us_delay(n)
 
 #define i2c_start()     		I2C_Start(sda,scl)
 #define i2c_restart()   		I2C_Restart(sda,scl)
@@ -321,6 +322,8 @@ BOOL ld_bq27541_read_id_end(U8 sda,U8 scl,U8*dataout)
 			//失败6次，充电宝编号 清0
 			return FALSE;
 		}
+		else
+			memcpy(dataout,temp,10);
 	}else{
 		memcpy(dataout,temp,10);
 	}
@@ -345,8 +348,6 @@ BOOL ld_bq27541_de_encrypt_charge_start(U8 sda,U8 scl,U8 cmd)
   i2c_send_byte(BQ27541_ADD_WR); 
 	i2c_check_ack()
 	i2c_send_byte(0x62); 
-  i2c_check_ack()
-	i2c_send_byte(0x01); 
   i2c_check_ack()
 	i2c_stop();
 	
@@ -407,39 +408,341 @@ BOOL ld_bq27541_check_ack(U8 sda,U8 scl)
 	return TRUE;
 }
 
+/*bq27541充电宝输出标志*/
+BOOL ld_bq27541_output_flag(U8 sda,U8 scl,U8*data)
+{
+	U16 tmp;
+	if(bq27541_read_word(sda,scl,0x62,&tmp)==FALSE)return FALSE;
+	if(bq27541_read_byte(sda,scl,0x71,(U8*)&tmp)==FALSE)return FALSE;
+	*data=(U8)tmp;
+	return TRUE;
+}
 
 /*===================================================
                 标准化接口，像红外一样的接口
 ====================================================*/
+#include "channel.h"
+#define IIC_DATA_MAX      16
+#define IIC_CHANNEL_MAX   5
+
+/*状态*/
+typedef enum{	
+	IIC_State_NULL=0,     
+	IIC_State_Error=1,
+	IIC_State_OK   =2,       //读取数据正确
+}IIC_STATE;
+
 typedef struct{
-	U8 io_ir;        			//红外发送io
-	U8 io_re;        			//红外接收io
-	U8 cmd;          			//发送命令	
-	U8 wanlen;       			//要接收的数据长度
-	U8 len;          			//实际接收到的数据长度
-	BOOL start;      			//TRUE: 开始  FALSE:结束
-	S8 state;        			//错误码		
-	S32 counter;     			//计数
-	U8 data[IR_DATA_MAX]; //接收数据
+	U8 sda;        			//红外发送io
+	U8 scl;        			//红外接收io
+	BOOL opposite;      //反向
+	READ_TYPE_CMD cmd;  //发送命令	
+	U8 wanlen;       	  //要接收的数据长度
+	U8 len;          		//实际接收到的数据长度
+	BOOL start;      		//TRUE: 开始  FALSE:结束
+	IIC_STATE state;    //错误码		
+	S32 counter;     		//计数
+	U16 data[IIC_DATA_MAX/2]; //接收数据
 	U8 tmp;          			//缓存一字节
 	
 	BOOL inited;          //初始化标志，未初始化，状态机不能运行
 	////////////////////////////////
 	FSM fsm;         //状态机私有变量
-}IR_Type;
+}IIC_Type;
+static IIC_Type iics[IIC_CHANNEL_MAX];
+#define iic_lock()
+#define iic_unlock()
+#define sda_port()   ((piic->opposite)?(piic->scl):(piic->sda))
+#define scl_port()   ((piic->opposite)?(piic->sda):(piic->scl))
 
+const unsigned char IIC_DATA_CMDS[] ={//循环次数 /温度 /剩余容量  /电流
+																		0x2a,    0x06, 0x04,      0x14,
+};
+static void iic_fsm(IIC_Type*piic,FSM*fsm)
+{
+	U8 tmp=0;
+	fsm_time_set(time(0));
+	
+	Start(开始)
+	{
+		if((piic==NULL) || (piic->inited==FALSE) || (piic->inited==FALSE))return;
+		if(piic->start)
+		{
+			
+			if(ld_bq27541_check_ack(sda_port(),scl_port()))//检测应答
+			{
+				switch(piic->cmd)
+				{
+					//读ic
+					case RC_READ_ID:
+						if(ld_bq27541_read_id_start(sda_port(),scl_port()))
+						{goto 开始读id延时50ms;}
+						else 
+							goto IIC_FSM_Error;
+						
+					//读数据
+					case RC_READ_DATA:
+						if(ld_bq27541_read_words(sda_port(),scl_port(),(U8*)IIC_DATA_CMDS,4,piic->data))
+						{ piic->len=8; goto IIC_FSM_Sucess;}
+						else
+							goto IIC_FSM_Error;
+						
+					//加解密	
+					case RC_LOCK:if(tmp==0)tmp=0x06;
+					case RC_UNLOCK:if(tmp==0)tmp=0x05;
+					case RC_UNLOCK_1HOUR:if(tmp==0)tmp=0x07;
+						if(ld_bq27541_de_encrypt_charge_start(sda_port(),scl_port(),tmp))
+						{goto 开始加解密延时50ms;}
+						else 
+							goto IIC_FSM_Error;
+						
+					//输出标志
+					case RC_OUTPUT:
+						if(ld_bq27541_output_flag(sda_port(),scl_port(),(U8*)piic->data))
+						{piic->len=1;goto IIC_FSM_Sucess;}
+						else 
+							goto IIC_FSM_Error;
+					default:
+						goto IIC_FSM_Error;
+				}			
+				
+			}
+			else
+			{//检测应答失败
+			  goto IIC_FSM_Error;
+			}				
+		}
+	}
+	
+	State(开始读id延时50ms)
+	{
+		waitmsx(50);
+		goto 结束读id;
+	}
+	State(结束读id)
+	{
+	  if(ld_bq27541_read_id_end(sda_port(),scl_port(),(U8*)piic->data))
+		{piic->len=13;goto IIC_FSM_Sucess;}
+		else
+			goto IIC_FSM_Error;
+	}
+	
+	State(开始加解密延时50ms){
+		waitmsx(50);
+		goto 结束加解密;
+	}
+	State(结束加解密)
+	{
+		if(ld_bq27541_de_encrypt_charge_end(sda_port(),scl_port()))
+			goto IIC_FSM_Sucess;
+		else 
+			goto IIC_FSM_Error;
+	}
+	
+	Default()
+	return ;
+	
+	IIC_FSM_Error:
+	 piic->start=FALSE;
+	 piic->state=IIC_State_Error;
+	 memset(&piic->fsm,0,sizeof(FSM));
+	 return;
+	IIC_FSM_Sucess:
+	 piic->start=FALSE;
+	 piic->state=IIC_State_OK;
+	 memset(&piic->fsm,0,sizeof(FSM));
+	 return;
+}
+
+
+#include "contiki.h"
+static struct etimer et_iic;
+PROCESS(thread_iic, "iic任务");
+AUTOSTART_PROCESSES(thread_iic);
+PROCESS_THREAD(thread_iic, ev, data)  
+{
+	PROCESS_BEGIN();
+	while(1)
+	{
+		static U8 i = 0;
+		for(i=0;i<IIC_CHANNEL_MAX;i++)
+		{
+			if((iics[i].inited==TRUE) && (iics[i].start==TRUE))
+			{
+				iic_fsm(iics+i,&(iics+i)->fsm);
+			}
+		}
+		os_delay(et_iic,10);
+	}
+	PROCESS_END();
+}
+
+
+/*===================================================
+                全局函数
+====================================================*/
+/*初始化配置
+* ch    :仓道号 1-n
+* sda :数据端口
+* scl :时钟端口
+*/
 void ld_iic_init(U8 ch,U8 sda,U8 scl)
 {
-	
-
+	ch-=1;
+	iic_lock();
+	if(ch>=IIC_CHANNEL_MAX){
+		iic_unlock();return;
+	}
+  memset(&iics[ch],0,sizeof(IIC_Type));
+	iics[ch].sda=sda;
+	iics[ch].scl=scl;
+	iics[ch].start=FALSE;
+	iics[ch].state=IIC_State_NULL;
+	iics[ch].inited = TRUE;
+	iic_unlock();
 }
 BOOL ld_iic_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)//(ch:1-n,opposite:TRUE反向, cmd 命令, 长度)
 {
-
+ 	ch-=1;
+	iic_lock();
+	if( (ch>=IIC_CHANNEL_MAX) || (iics[ch].inited==FALSE) ){
+		iic_unlock();return FALSE;
+	}
+	iics[ch].start=TRUE;
+	iics[ch].state=IIC_State_NULL;
+	iics[ch].cmd = (READ_TYPE_CMD)cmd;
+	iics[ch].wanlen=wanlen;
+	iics[ch].opposite=opposite;
+	iic_unlock();
 
 }
+
+BOOL ld_iic_busy(U8 ch)
+{
+	BOOL r = 0;
+	ch-=1;
+	iic_lock();
+	if(ch>=IIC_CHANNEL_MAX){iic_unlock();return FALSE;}
+	r = iics[ch].start;
+	iic_unlock();
+	return r;
+}
+
+
+/*查看是否读完成
+* return : <0：error
+*        :  0: 无操作
+*        :  1: 正在读
+*        :  2: 读正确
+*/
 int ld_iic_read_isok(U8 ch,U8*dataout,U8 size)
 {
-
+	int err = -1;
+	ch-=1;
+  iic_lock();
+	if(ch>=IIC_CHANNEL_MAX)goto END;
+	if(iics[ch].start==FALSE)
+	{
+		err=(int)iics[ch].state;
+	}else{
+		err = 1;
+	}
+	//正确时，弹出数据:格式化输出
+	if(err==IIC_State_OK && dataout!= NULL)
+	{
+		//格式化红外数据输出
+		switch(iics[ch].cmd)
+		{
+			case RC_READ_ID:
+				memcpy(dataout,iics[ch].data,10);
+	    break;
+			
+			case RC_READ_DATA://[0] 版本号 [1] 电量 [2] 温度 [3] 故障码 [4-5] 循环次数 [6-7] 容量 [8-9] 电芯电压 [10-11] 电流 (低位在前)
+			{
+				#define dat   ((U8*)(iics[ch].data))
+				#define dat16 iics[ch].data
+				U8 cs = 0xFF-cs8(dat,12);
+				dataout[0]=0;
+				dataout[1]=(U8)dat16[2];
+				dataout[2]=(dat16[1]-2732)/10;
+				dataout[3]=0;
+				dataout[4]=dat[0];
+				dataout[5]=dat[1];//循环次数
+				dataout[6]=dataout[7]=0;//容量
+				dataout[8]=dataout[9]=0;//电压
+				dataout[10]=dat[6];
+				dataout[11]=dat[7];
+			}break;
+			
+			case RC_LOCK:         
+			case RC_UNLOCK:
+			case RC_UNLOCK_1HOUR:
+				break;
+			case RC_OUTPUT:      //[0]输出标志
+				dataout[0] = dat[0];
+			break;
+      default:goto END;
+		}
+	}
+	END:
+	iic_unlock();
+	return err;
 }
 
+
+///*===================================================
+//                IIC测试
+//====================================================*/
+//static struct etimer et_iic_test;
+//PROCESS(thread_iic_test, "iic测试任务");
+//AUTOSTART_PROCESSES(thread_iic_test);
+//PROCESS_THREAD(thread_iic_test, ev, data)  
+//{
+//	U8 dataout[13];
+//	PROCESS_BEGIN();
+//	while(1)
+//	{
+//		
+//		ld_iic_read_start(2,FALSE,RC_READ_ID,10);
+//		os_delay(et_iic_test,200);
+//		ld_iic_read_isok(2,dataout,10);
+//		os_delay(et_iic_test,10);
+//		
+//		ld_iic_read_start(2,FALSE,RC_READ_DATA,13);
+//		os_delay(et_iic_test,200);
+//		ld_iic_read_isok(2,dataout,13);
+//    os_delay(et_iic_test,10);
+//		
+//		ld_iic_read_start(2,FALSE,RC_LOCK,0);
+//		os_delay(et_iic_test,200);
+//		ld_iic_read_isok(2,dataout,0);
+//		os_delay(et_iic_test,0);
+//		
+//		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
+//		os_delay(et_iic_test,200);
+//		ld_iic_read_isok(2,dataout,1);
+//		os_delay(et_iic_test,10);
+//		
+//		ld_iic_read_start(2,FALSE,RC_UNLOCK,0);
+//		os_delay(et_iic_test,200);
+//		ld_iic_read_isok(2,dataout,0);
+//		os_delay(et_iic_test,10);
+//		
+//		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
+//		os_delay(et_iic_test,200);
+//		ld_iic_read_isok(2,dataout,1);
+//		os_delay(et_iic_test,10);
+
+//		ld_iic_read_start(2,FALSE,RC_UNLOCK_1HOUR,0);
+//		os_delay(et_iic_test,200);
+//		ld_iic_read_isok(2,dataout,0);
+//		os_delay(et_iic_test,10);
+//		
+//		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
+//		os_delay(et_iic_test,200);
+//		ld_iic_read_isok(2,dataout,1);
+//		os_delay(et_iic_test,10);
+
+//	}
+//	PROCESS_END();
+//}

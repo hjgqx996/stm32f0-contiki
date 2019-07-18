@@ -86,8 +86,15 @@ typedef struct{
 	/*--------------配置接口--------------------------*/
 	ChannelConfigureMap*map;        //通道控制io配置
 	
+	/*--------------iic方向切换------------------------*/
+	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
+	U8  iic_dir_counter;             //出错计数
+	
+	/*--------------iic,ir切换------------------------*/
+	U8  iic_ir_mode;                 //iic方向 0:正常方向  1:方向反转
+	int iic_ir_mode_counter;         //出错计数
+	
 	/*--------------运行状态数据----------------------*/
-	U8 iic_dir;                     //iic方向 0:正常方向  1:方向反转
 	ChannelState state;             //运行状态
 	ChannelWarn  warn;              //运行告警
 	ChannelError error;             //运行错误
@@ -100,10 +107,27 @@ typedef struct{
 	int  flash_now;                 //计时
 	
 	FSM insert;                     //充电宝进入仓道状态机变量:私有
-	FSM read;                       //充电宝读状态机
 }Channel;
 
 #pragma pack()
+
+/*===================================================
+                 充电宝统一红外iic读类型
+====================================================*/
+/*  命令 */
+typedef enum{
+	RC_READ_ID   =10,      //:读充电ID
+	RC_READ_DATA =20,      //:读数据
+	RC_UNLOCK    =30,      //:解锁05
+	RC_LOCK      =50,      //:上锁06
+	RC_UNLOCK_1HOUR =40,   //:解锁1小时07
+	RC_OUTPUT,             //:读输出标志
+}READ_TYPE_CMD;          //充电宝命令
+/*  通讯方式 */
+typedef enum{
+	RTM_IIC=0,
+	RTM_IR=1,
+}READ_TYPE_MODE;
 
 /*===================================================
                 全局函数
@@ -129,6 +153,13 @@ Channel*channel_data_get_by_addr(U8 addr);
 /*通道灯闪烁控制*/
 void channel_led_flash(U8 ch,U8 seconds);
 void channels_les_flash_timer(int timer_ms);
+
+/*----------------------------------
+充电宝操作重定向:是否忙,读 ,是否完成
+-----------------------------------*/
+BOOL channel_read_busy(U8 ch,READ_TYPE_MODE mode);
+BOOL channel_read_start(U8 ch,READ_TYPE_MODE mode,BOOL opposite,READ_TYPE_CMD cmd);
+int channel_read_end(U8 ch,READ_TYPE_MODE mode,U8*dataout);
 
 #endif
 

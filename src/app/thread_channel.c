@@ -1,110 +1,44 @@
 #include "includes.h"
 
-/*===================================================
-                充电宝读-状态机
-			通过发送消息的方式，统一iic,ir读写接口
-			50ms的长延时被状态机伪阻塞
-====================================================*/
-#define READ_TYPE_DATA_MAX  16
-/*  命令 */
-typedef enum{
-	READ_TYPE_READ_ID,        //:读充电ID
-	READ_READ_DATA,           //:读数据
-	READ_READ_UNLOCK,         //:解锁05
-	READ_READ_LOCK,           //:上锁06
-	READ_UNLOCK_1HOUR,        //:解锁1小时07
-	READ_OUTPUT,              //:读输出标志
-}READ_TYPE_CMD;//充电宝命令
+//到位开关有效
+#define isvalid_daowe()  ld_gpio_get(ch->map->io_detect) 
+//摆臂开关有效
+#define isvalid_baibi()  ld_gpio_get(ch->map->io_sw) 
 
-
-/*读写方式*/
-typedef enum{
-	READ_TYPE_MODE_IIC=0,
-  READ_TYPE_MODE_IR,
-}READ_TYPE_MODE;
-
-/*读写配置*/
-typedef struct{  
-	READ_TYPE_MODE mode;  // 0:iic   1:红外
-	//===========iic数据================//
-	U8 sda;
-	U8 scl;
-	//===========红外===================//
-  U8 ch;//1-n
-	//===========命令===================//
-	READ_TYPE_CMD cmd;
-}Read_Type_Ctrl;
-
-/*消息结构体*/
-typedef struct{
-	BOOL used;            //TRUE :有效
-	BOOL start;           //FALSE:完成   TRUE:开始
-	Read_Type_Ctrl ctrl;  //控制
-	U8 data[READ_TYPE_DATA_MAX];            //数据缓冲
-	FSM fsm;              //状态机
-}Read_Type;
-
-static Read_Type rts[CHANNEL_MAX * 2];
-static void fsm_read(Read_Type*rt,FSM*fsm)
+//错误计数，判断选择哪种方式来通讯
+static READ_TYPE_MODE iic_ir_select_poll(Channel*ch,BOOL error)
 {
-	fsm_time_set(time(0));
+	READ_TYPE_MODE mode;
+  if(system.iic_ir_mode==SIIM_ONLY_IR) {return RTM_IR;}	//强制使用 ir		
+	if(system.iic_ir_mode==SIIM_ONLY_IIC){mode = RTM_IIC;goto READ_TYPE_MODE_IIC;}//强制使用 iic	
 	
-	Start(开始){
-		
-		if(rt->used==TRUE && rt->start==TRUE)
-		{
-			
-		}
-		
-		
-		//iic
-		if(rt->ctrl.mode==READ_TYPE_MODE_IIC)
-		{
-		
-		}
-		else if(rt->ctrl.mode == READ_TYPE_MODE_IR)
-		{
-			
-		}	
-	}
+	READ_TYPE_MODE_IIC_IR://方式切换
+  mode = ch->iic_ir_mode;
+	if(mode==RTM_IR)
+		ch->iic_ir_mode_counter+=(error==TRUE)?1:0;//切换错误累加
 	
-
-}
-
-/*===================================================
-                充电宝读任务
-====================================================*/
-static struct etimer et_bao;
-PROCESS(thread_bao, "通道任务");
-AUTOSTART_PROCESSES(thread_bao);
-PROCESS_THREAD(thread_bao, ev, data)  
-{
-	PROCESS_BEGIN();
-  channel_data_init();//初始化仓道数据
-	while(1)
+	if(ch->iic_ir_mode_counter>=IIC_IR_SWITCH_ERROR_MAX)//切换
 	{
-    U8 i=0;
-		for(;i<CHANNEL_MAX*2;i++)
-		{
-			if(rts[i].used){fsm_read(rts+i,&(rts+i)->fsm);}//运行所有操作状态机
-		}
-		os_delay(et_bao,10);
+		ch->iic_ir_mode=0x01&(!ch->iic_ir_mode);
+		ch->iic_dir_counter=ch->iic_ir_mode_counter=0;
+		mode = ch->iic_ir_mode;
+		return mode;
 	}
-	PROCESS_END();
-}
-
-/*===================================================
-                充电宝读对外接口
-====================================================*/
-/*读取一个充电宝的数据*/
-BOOL ld_bao_read_start(Read_Type_Ctrl ctrl)
-{
-
-}
-/*查询是否读成功, 成功就返回数据*/
-BOOL ld_bao_read_isok(Read_Type_Ctrl ctrl,U8*dataout)
-{
 	
+	READ_TYPE_MODE_IIC://方向切换
+	ch->iic_dir_counter+=(error==TRUE)?1:0;//错误累加
+	if(ch->iic_dir_counter>=IIC_DIR_SWITCH_MAX)
+	{
+		ch->iic_dir=(!ch->iic_dir)&0x01;
+		ch->iic_dir_counter=0;	
+		ch->iic_ir_mode_counter++;//切换错误累加
+	}
+	return mode;
+}
+/*保存数据*/
+static void save_data(Channel*ch,U8*data)
+{
+
 }
 
 /*===================================================
@@ -115,14 +49,44 @@ PROCESS(thread_channel, "通道任务");
 AUTOSTART_PROCESSES(thread_channel);
 PROCESS_THREAD(thread_channel, ev, data)  
 {
+	static U8 i = 0;
+	static Channel *ch;
+	static READ_TYPE_MODE mode;
+	static U8 buf[13];
 	PROCESS_BEGIN();
   channel_data_init();//初始化仓道数据
 	while(1)
 	{
-
+		for(i=1;i<=CHANNEL_MAX;i++){
+			ch = channel_data_get(i);
+			if(ch==NULL)continue;
+			
+			if(isvalid_baibi() && isvalid_daowe() )//判断充电宝是否有效
+			{		
+				mode = iic_ir_select_poll(ch,FALSE);
+        if(channel_read_busy(i,mode))continue;//忙，下一个仓道
+				
+				//读取ID
+				if(!channel_read_start(i,mode,ch->iic_dir,RC_READ_ID))
+					iic_ir_select_poll(ch,TRUE);//错误一次
+				while(channel_read_busy(i,mode)){os_delay(et_channel,20);}//等待空闲
+				while(channel_read_end(i,mode,buf)!=2){os_delay(et_channel,20);}//等待完成
+				memcpy(ch->id,buf,10);
+				
+				//读取数据
+				if(!channel_read_start(i,mode,ch->iic_dir,RC_READ_DATA))
+				iic_ir_select_poll(ch,TRUE);//错误一次
+				while(channel_read_busy(i,mode)){os_delay(et_channel,20);}//等待空闲
+				while(channel_read_end(i,mode,buf)!=2){os_delay(et_channel,20);}//等待完成
+				save_data(ch,buf);
+				
+				//6代以上，禁止输出,7代可以使用红外通讯
+				
+			}
+			
+		}
+     os_delay(et_channel,2800);
 	}
 
 	PROCESS_END();
 }
-
-

@@ -13,12 +13,19 @@ typedef enum{
 
 }LeaseState;
 
+/*通讯方式*/
+typedef enum{
+	SIIM_ONLY_IIC=1,   //只使用IIC
+	SIIM_ONLY_IR,      //只使用IR
+	SIIM_IIC_IR,       //IIC,IR同时使用
+}SYSTEM_IIC_IR_MODE;
 
 
 /*系统数据*/
 typedef struct{
-	volatile U8 addr485;                 //485地址
-	volatile U8 addr_ch[CHANNEL_MAX];    //通道地址
+	volatile U8 addr485;                 					//485地址
+	volatile U8 addr_ch[CHANNEL_MAX];    					//通道地址
+	volatile SYSTEM_IIC_IR_MODE iic_ir_mode;      //通讯方式
 }System;
 
 extern System system;

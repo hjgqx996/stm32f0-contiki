@@ -1,7 +1,7 @@
 #include "types.h"
 #include "string.h"
-
-
+#include "lib.h"
+#include "channel.h"
 /*===================================================
                 配置文件
 ====================================================*/
@@ -73,13 +73,13 @@ static IR_Type irs[IR_CHANNEL_MAX];
 * 1.状态机开始请使用 ld_ir_read_start
 * 2.读取是否成功使用 ld_ir_read_isok
 */
-static void ir_fsm(IR_Type*pir,FSM*fsm)
+static void ir_fsm(IR_Type*pir,FSM*fsm,U32 tick)
 {
-	fsm_time_add(FSM_TICK);//状态机时间	
+	fsm_time_add(tick);//状态机时间	
 	//////////////////////////////////
 	Start(开始)
 	{
-    if(pir->start==TRUE && pir->inited==TRUE)
+    if( (pir->start==TRUE) && (pir->inited==TRUE) )
 			goto 发送命令码;
 	}
 	//////////////////////////////////
@@ -205,6 +205,7 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 /*===================================================
                 全局函数
 ====================================================*/
+#include "channel.h"
 /*初始化配置
 * ch    :仓道号 1-n
 * io_ir :发送端口
@@ -233,13 +234,12 @@ void ld_ir_timer_init(void)
 //定时器中断服务，用于收发时序
 void ld_ir_timer_100us(void)
 {
-//	int i=0;
-//	for(;i<IR_CHANNEL_MAX;i++)
-//		ir_fsm(&irs[i],&irs[i].fsm);
-	ir_fsm(&irs[1],&irs[1].fsm);
+	int i=0;
+	for(;i<IR_CHANNEL_MAX;i++)
+		ir_fsm(&irs[i],&irs[i].fsm,(i==0)?FSM_TICK:0);
 }
 
-//开始读取红外数据   (ch:1-n,opposite:TRUE反向, cmd 命令, 长度)
+//开始读取红外数据   (ch:1-n,opposite:TRUE反向(未使用), cmd 命令, 长度)
 BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 {
 	if(ch>IR_CHANNEL_MAX)return FALSE;
@@ -255,15 +255,26 @@ BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 		irs[ch].cmd = cmd;
 		irs[ch].wanlen=wanlen;
 		irs[ch].start=TRUE;
-		
-		//复位状态机
-    memset(&irs[ch].fsm,0,sizeof(FSM));
+		memset(irs[ch].data,0,IR_DATA_MAX);
+    memset(&irs[ch].fsm,0,sizeof(FSM));//复位状态机
 		ir_unlock();
 		return TRUE;
 	}
 	ir_unlock();
 	return FALSE;
 }
+
+BOOL ld_ir_busy(U8 ch)
+{
+	BOOL r = 0;
+	ch-=1;
+	ir_lock();
+	if(ch>=IR_CHANNEL_MAX){ir_unlock();return FALSE;}
+	r = irs[ch].start;
+	ir_unlock();
+	return r;
+}
+
 
 /*查看是否读完成
 * return : <0：error
@@ -276,71 +287,100 @@ int ld_ir_read_isok(U8 ch,U8*dataout,U8 size)
 	int err = -1;
 	ch-=1;
   ir_lock();
-	if(ch>=IR_CHANNEL_MAX)goto END;
+	if(ch>=IR_CHANNEL_MAX||irs[ch].inited==FALSE)goto END;
 	if(irs[ch].start==FALSE)
 	{
 		err=(int)irs[ch].state;
 	}else{
 		err = 1;
 	}
-	//正确时，弹出数据
-	if(err==2 && dataout!= NULL)memcpy(dataout,irs[ch].data,size);
+	//正确时，弹出数据:格式化输出
+	if(err==2 && dataout!= NULL)
+	{
+		//格式化红外数据输出
+		switch(irs[ch].cmd)
+		{
+			case RC_READ_ID:
+			{
+				U8 cs = 0xFF-cs8(irs[ch].data,6);
+				U8 i = 0;
+				if(cs!=irs[ch].data[6]){err=-1;goto END;}//检验失败
+				memset(dataout,10,0);
+				for(i=0;i<6;i++){dataout[9-i]=irs[ch].data[i];}
+			}break;
+			
+			case RC_READ_DATA://[0] 版本号 [1] 电量 [2] 温度 [3] 故障码 [4-5] 循环次数 [6-7] 容量 [8-9] 电芯电压 [10-11] 电流 (低位在前)
+			{
+				U8 cs = 0xFF-cs8(irs[ch].data,12);
+				if(cs!=irs[ch].data[12]){err=-1;goto END;}//检验失败
+				dataout[0]=irs[ch].data[0];
+				dataout[1]=irs[ch].data[3];
+				dataout[2]=irs[ch].data[4];
+				dataout[3]=irs[ch].data[11];
+				dataout[4]=irs[ch].data[6];
+				dataout[5]=irs[ch].data[5];
+				dataout[6]=irs[ch].data[8];
+				dataout[7]=irs[ch].data[7];
+				dataout[8]=irs[ch].data[10];
+				dataout[9]=irs[ch].data[9];
+				dataout[10]=irs[ch].data[2];
+				dataout[11]=irs[ch].data[1];
+			}break;
+			
+			case RC_LOCK:         //[0]输出标志
+			case RC_UNLOCK:
+			case RC_UNLOCK_1HOUR:
+			{
+				if((0xFF-irs[ch].data[0])!=irs[ch].data[1]){err=-1;goto END;}//检验失败
+				dataout[0] = irs[ch].data[0];
+			}break;
+			case RC_OUTPUT:
+				break;
+      default:goto END;
+		}
+
+	}
 	END:
 	ir_unlock();
 	return err;
 }
 
-/*===================================================
-                测试红外读
-====================================================*/
-#include "contiki.h"
-static struct etimer et_testir;
-PROCESS(testir_thread, "测试红外");
+///*===================================================
+//                测试红外读
+//====================================================*/
+//#include "contiki.h"
+//static struct etimer et_testir;
+//PROCESS(testir_thread, "测试红外");
 //AUTOSTART_PROCESSES(testir_thread);
-PROCESS_THREAD(testir_thread, ev, data)  
-{
-	PROCESS_BEGIN();
-  os_delay(et_testir,500);
-	while(1)
-	{
+//PROCESS_THREAD(testir_thread, ev, data)  
+//{
+//	U8 dataout[13];
+//	PROCESS_BEGIN();
+//  os_delay(et_testir,500);
+//	while(1)
+//	{
+//	  ld_ir_read_start(2,FALSE,RC_READ_ID,7);
+//		os_delay(et_testir,1000);
+//		ld_ir_read_isok(2,dataout,10);
 		
-		static int i = 0;
-		static int sucess=0;
-		//读id
-		i=0;
-		ld_ir_read_start(2,10,7);
-		while(ld_ir_read_isok(2,NULL,0)!=2){
-			os_delay(et_testir,10);
-			i++;
-			if(i>=200){
-				ld_gpio_set(18,0);
-				break;
-			}
-		}
+//		ld_ir_read_start(2,FALSE,RC_READ_DATA,13);
+//		os_delay(et_testir,1000);
+//		ld_ir_read_isok(2,dataout,13);
+//		
+//		ld_ir_read_start(2,FALSE,RC_LOCK,2);
+//		os_delay(et_testir,1000);
+//		ld_ir_read_isok(2,dataout,1);
+//		
+//		ld_ir_read_start(2,FALSE,RC_UNLOCK,2);
+//		os_delay(et_testir,1000);
+//		ld_ir_read_isok(2,dataout,1);
+
+//		ld_ir_read_start(2,FALSE,RC_UNLOCK_1HOUR,2);
+//		os_delay(et_testir,1000);
+//		ld_ir_read_isok(2,dataout,1);
 		
-		if(ld_ir_read_isok(2,NULL,0)==2)sucess++;
-		
-		//读数据
-		i=0;
-	  ld_ir_read_start(2,20,13);
-		while(ld_ir_read_isok(2,NULL,0)!=2){
-			os_delay(et_testir,10);
-			i++;
-			if(i>=200){
-				ld_gpio_set(18,0);
-				break;
-			}
-		}
-		if(ld_ir_read_isok(2,NULL,0)==2)sucess++;
-		
-		//成功
-		if(sucess==2)
-		{
-			ld_gpio_set(18,1);
-			os_delay(et_testir,500);
-		}
-		sucess=0;
-	}
-	PROCESS_END();
-}
+//		os_delay(et_testir,1000);
+//	}
+//	PROCESS_END();
+//}
 

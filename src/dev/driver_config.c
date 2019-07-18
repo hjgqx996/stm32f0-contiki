@@ -86,20 +86,20 @@ t_uart_map uart_map[] = {
 };
 const unsigned char uart_number = sizeof(uart_map) /(sizeof(t_uart_map)) - 1;
 
-/*************************
-			Key
-*************************/
-#define KEY(p,pin,v)  {IN(p,pin) v},
-const unsigned char keyDownLevel = 1;  //按下电平
-t_key_map key_map[]=
-{
-	//摆臂开关                到位开关
-  KEY(B,10,KV(KEY_BAI_BI_INDEX,1)) KEY(B,15,KV(KEY_DAO_WEI_INDEX,1)) 
-	KEY(B,1 ,KV(KEY_BAI_BI_INDEX,2)) KEY(A,8 ,KV(KEY_DAO_WEI_INDEX,2)) 
-	KEY(A,0 ,KV(KEY_BAI_BI_INDEX,3)) KEY(F,6 ,KV(KEY_DAO_WEI_INDEX,3)) 
-	KEY(C,13,KV(KEY_BAI_BI_INDEX,4)) KEY(F,7 ,KV(KEY_DAO_WEI_INDEX,4)) 
-	KEY(C,9 ,KV(KEY_BAI_BI_INDEX,5)) KEY(A,12,KV(KEY_DAO_WEI_INDEX,5)) 
-  0
-};
-const unsigned char 		key_number = sizeof(key_map)/sizeof(t_key_map) - 1;       //io 个数
+///*************************
+//			Key
+//*************************/
+//#define KEY(p,pin,v)  {IN(p,pin) v},
+//const unsigned char keyDownLevel = 1;  //按下电平
+//t_key_map key_map[]=
+//{
+//	//摆臂开关                到位开关
+//  KEY(B,10,KV(KEY_BAI_BI_INDEX,1)) KEY(B,15,KV(KEY_DAO_WEI_INDEX,1)) 
+//	KEY(B,1 ,KV(KEY_BAI_BI_INDEX,2)) KEY(A,8 ,KV(KEY_DAO_WEI_INDEX,2)) 
+//	KEY(A,0 ,KV(KEY_BAI_BI_INDEX,3)) KEY(F,6 ,KV(KEY_DAO_WEI_INDEX,3)) 
+//	KEY(C,13,KV(KEY_BAI_BI_INDEX,4)) KEY(F,7 ,KV(KEY_DAO_WEI_INDEX,4)) 
+//	KEY(C,9 ,KV(KEY_BAI_BI_INDEX,5)) KEY(A,12,KV(KEY_DAO_WEI_INDEX,5)) 
+//  0
+//};
+//const unsigned char 		key_number = sizeof(key_map)/sizeof(t_key_map) - 1;       //io 个数
 

@@ -37,6 +37,7 @@ typedef enum{ TRUE=1,FALSE=!TRUE}  BOOL;
 #define KEY_BAI_BI(ch)               ld_gpio_get(ch->map->io_sw)
 #define KEY_DAO_WEI(ch)              ld_gpio_get(ch->map->io_detect)
 
+
 /*===================================================
                 配置类型
 ====================================================*/
@@ -96,6 +97,7 @@ typedef struct{
 
 /*延时ms*/
 #define waitms(ms)               Waitx((ms*1000),10000,20000)
+#define waitmsx(ms)              Waitx(ms,10000,20000)
 /*延时us>100us*/
 #define waitus(us)               Waitx(us,10000,20000)
 /*设置状态机当前时间*/

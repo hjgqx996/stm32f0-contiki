@@ -12,8 +12,8 @@ static void charge_fsm(U8 channel,void*arg)
 	Channel*ch;	
   fsm_time_set(time(0));//状态机时间
 
-	Start(检测充电宝进入){
-		//检测条件:     检测成功->识别充电宝
+	Start(充电宝进入){
+		
 				
 	}
 	
