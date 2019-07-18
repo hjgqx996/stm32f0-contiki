@@ -12,9 +12,9 @@ typedef int32_t S32;
 typedef uint64_t U64;
 typedef int64_t S64;
 typedef enum{ TRUE=1,FALSE=!TRUE}  BOOL;
-#ifndef time_t
-#define time_t unsigned int
-#endif
+//#ifndef time_t
+//#define time_t unsigned int
+//#endif
 
 #ifndef NULL
 #define NULL 0
@@ -106,5 +106,16 @@ typedef struct{
 /*===================================================
                os 延时
 ====================================================*/
-#define os_delay(et,time) 		 etimer_set(&et, (time/(1000/CLOCK_SECOND)));PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et))
+#define os_delay(name,time) 		 etimer_set(&(et_##name), (time/(1000/CLOCK_SECOND)));PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et_##name))
+/*简化auto start 线程写法*/
+#define AUTOSTART_THREAD_WITH_TIMEOUT(name) \
+																						static struct etimer et_##name; \
+																						PROCESS(thread_##name, #name); \
+																						AUTOSTART_PROCESSES(thread_##name); \
+																						PROCESS_THREAD(thread_##name, ev, data)  
+#define AUTOSTART_THREAD_WITHOUT_TIMEOUT(name) \
+																						PROCESS(thread_##name, #name); \
+																						AUTOSTART_PROCESSES(thread_##name); \
+																						PROCESS_THREAD(thread_##name, ev, data) 
+
 #endif

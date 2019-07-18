@@ -12,4 +12,7 @@ void ld_dev_init(void)
 	
 	//gpio
 	ld_gpio_init();
+	
+	//uart
+	ld_uart_init();
 }

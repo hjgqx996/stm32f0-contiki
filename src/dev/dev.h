@@ -6,7 +6,10 @@
                 系统运行时间ms
 ====================================================*/
 extern void cpu_us_delay(int us);
+extern void cpu_ms_delay(int ms);
 #define delayus(n)   cpu_us_delay(n)  //us延时
+#define delayms(n)   cpu_ms_delay(n)
+void cpu_nvic_reset(void);
 
 time_t time(time_t*t);
 /*===================================================
@@ -19,7 +22,7 @@ extern U8 ld_gpio_get(U32 index);
 /*===================================================
                 uart
 ====================================================*/
-int ld_uart_init();
+int ld_uart_init(void);
 /*
 	打开串口
 	

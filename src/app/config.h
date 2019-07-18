@@ -13,6 +13,7 @@ typedef struct{
 typedef enum{
 	PROCESS_EVENT_PACKET           =0x40,   //事件:数据包接收
 	PROCESS_EVENT_COMM_LEASE,               //事件:租借数据包处理
+	PROCESS_EVENT_COMM_CTRL,                //事件:控制命令
 }PROCESS_EVENT;
 
 
@@ -75,6 +76,12 @@ typedef enum{
 #define Cmd_success   			  0x01
 /*********************************************************/
 
+/******************更新固件0x06**************************/
+#define deal_fault	        0x00      
+#define updata_model        0x01      
+#define normal_model			  0x02      
+/*********************************************************/
+
 /******************红外命令*******************************/
 #define IR_GETID          	10   //读取ID
 #define IR_GETDATA          20   //获取数据
@@ -92,3 +99,4 @@ extern ChannelConfigureMap channel_config_map[];
 
 
 #endif
+

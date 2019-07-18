@@ -1,6 +1,4 @@
-#include "contiki.h"
-#include "types.h"
-#include "channel.h"
+#include "includes.h"
 /*===================================================
                 本地函数
 ====================================================*/
@@ -98,15 +96,12 @@ static void charge_fsm(U8 channel,void*arg)
 /*===================================================
                 全局函数
 ====================================================*/
-static struct etimer et_insert;
-PROCESS(thread_insert, "进入流程");
-//AUTOSTART_PROCESSES(thread_insert);
-PROCESS_THREAD(thread_insert, ev, data)  
+AUTOSTART_THREAD_WITH_TIMEOUT(insert)
 {
 	PROCESS_BEGIN();
 	while(1)
 	{
-		os_delay(et_insert,10);
+		os_delay(insert,10);
 	}
 	PROCESS_END();
 }

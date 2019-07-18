@@ -46,7 +46,7 @@ typedef enum{
 	IR_State_OK   =2,       //读取数据正确
 }IR_STATE;
 
-typedef struct{
+  typedef struct{
 	U8 io_ir;        			//红外发送io
 	U8 io_re;        			//红外接收io
 	U8 cmd;          			//发送命令	
@@ -236,7 +236,7 @@ void ld_ir_timer_100us(void)
 {
 	int i=0;
 	for(;i<IR_CHANNEL_MAX;i++)
-		ir_fsm(&irs[i],&irs[i].fsm,(i==0)?FSM_TICK:0);
+		ir_fsm(&irs[i],&irs[i].fsm,((i==0)?FSM_TICK:0));
 }
 
 //开始读取红外数据   (ch:1-n,opposite:TRUE反向(未使用), cmd 命令, 长度)
@@ -349,37 +349,34 @@ int ld_ir_read_isok(U8 ch,U8*dataout,U8 size)
 //                测试红外读
 //====================================================*/
 //#include "contiki.h"
-//static struct etimer et_testir;
-//PROCESS(testir_thread, "测试红外");
-//AUTOSTART_PROCESSES(testir_thread);
-//PROCESS_THREAD(testir_thread, ev, data)  
+//AUTOSTART_THREAD_WITH_TIMEOUT(ir_test)
 //{
 //	U8 dataout[13];
 //	PROCESS_BEGIN();
-//  os_delay(et_testir,500);
+//  os_delay(ir_test,500);
 //	while(1)
 //	{
 //	  ld_ir_read_start(2,FALSE,RC_READ_ID,7);
-//		os_delay(et_testir,1000);
+//		os_delay(ir_test,1000);
 //		ld_ir_read_isok(2,dataout,10);
 		
 //		ld_ir_read_start(2,FALSE,RC_READ_DATA,13);
-//		os_delay(et_testir,1000);
+//		os_delay(ir_test,1000);
 //		ld_ir_read_isok(2,dataout,13);
 //		
 //		ld_ir_read_start(2,FALSE,RC_LOCK,2);
-//		os_delay(et_testir,1000);
+//		os_delay(ir_test,1000);
 //		ld_ir_read_isok(2,dataout,1);
 //		
 //		ld_ir_read_start(2,FALSE,RC_UNLOCK,2);
-//		os_delay(et_testir,1000);
+//		os_delay(ir_test,1000);
 //		ld_ir_read_isok(2,dataout,1);
 
 //		ld_ir_read_start(2,FALSE,RC_UNLOCK_1HOUR,2);
-//		os_delay(et_testir,1000);
+//		os_delay(ir_test,1000);
 //		ld_ir_read_isok(2,dataout,1);
 		
-//		os_delay(et_testir,1000);
+//		os_delay(ir_test,1000);
 //	}
 //	PROCESS_END();
 //}

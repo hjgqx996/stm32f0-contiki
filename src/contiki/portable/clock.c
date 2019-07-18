@@ -3,6 +3,7 @@
 #include <sys/cc.h>
 #include <sys/etimer.h>
 #include "types.h"
+#include "time.h"
 static volatile clock_time_t current_clock = 0;
 static volatile unsigned long current_seconds = 0;
 static unsigned int second_countdown = CLOCK_SECOND;

@@ -63,9 +63,9 @@ typedef struct{
 
 /*充电宝输出标志*/
 typedef enum{
-	BAO_ALLOW   = 0x05,  //充电宝允许输出
-	BAO_NOTALLOW= 0x06,  //充电宝不允许输出
-	BAO_ALLOW_ONE_HOUR = 0x07,  //允许输出1小时
+	BAO_ALLOW   = 0x05,  					//充电宝允许输出
+	BAO_NOTALLOW= 0x06,  					//充电宝不允许输出
+	BAO_ALLOW_ONE_HOUR = 0x07,  	//允许输出1小时
 }BaoOutput;
 
 /*仓道数据结构*/
@@ -91,8 +91,8 @@ typedef struct{
 	U8  iic_dir_counter;             //出错计数
 	
 	/*--------------iic,ir切换------------------------*/
-	U8  iic_ir_mode;                 //iic方向 0:正常方向  1:方向反转
-	int iic_ir_mode_counter;         //出错计数
+	U8 iic_ir_mode;                 //iic方向 0:正常方向  1:方向反转
+	U8 iic_ir_mode_counter;         //出错计数
 	
 	/*--------------运行状态数据----------------------*/
 	ChannelState state;             //运行状态
@@ -148,7 +148,15 @@ Channel*channel_data_get(U8 channel);
 *channel:1-n
 */
 Channel*channel_data_get_by_addr(U8 addr);
-
+int channel_data_get_index(Channel*ch);
+/*----------------------------------
+仓道申请充电
+仓道申请断电
+挂起所有充电ms
+-----------------------------------*/
+void channel_charge(U8 ch);
+void channel_discharge(U8 ch);
+void channel_discharge_all(int ms);
 
 /*通道灯闪烁控制*/
 void channel_led_flash(U8 ch,U8 seconds);

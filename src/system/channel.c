@@ -3,7 +3,7 @@
 功能:与仓道操作相关函数
 ====================================================*/
 #include "includes.h"
-
+#include "stm32f0xx.h"
 /*===================================================
                 配置文件
 ====================================================*/
@@ -76,6 +76,18 @@ Channel*channel_data_get_by_addr(U8 addr)
 	}
 	return NULL;
 }
+/*获取仓道索引,error:return <0: return :1-n*/
+int channel_data_get_index(Channel*ch)
+{
+	U32 coffset = 0;
+	U8 index = 0;
+	coffset = (U32)ch - (U32)chs;
+	if(coffset%sizeof(Channel)==0)index=coffset/sizeof(Channel);
+	else return -1;
+	if(index>=CHANNEL_MAX)return -1;
+	return index+1;
+}
+
 /*----------------------------------
 充电宝操作重定向:是否忙,读 ,是否完成
 -----------------------------------*/
@@ -152,6 +164,7 @@ void channel_error_check(U8 ch)
 /*----------------------------------
 仓道申请充电
 仓道申请断电
+挂起所有充电ms
 -----------------------------------*/
 void channel_charge(U8 ch)
 {
@@ -164,6 +177,10 @@ void channel_discharge(U8 ch)
 	
 	//从排队的列表中删除本仓道
 //	queue_delete(ch);
+}
+void channel_discharge_all(int ms)
+{
+
 }
 
 /*----------------------------------
@@ -204,7 +221,7 @@ void channels_les_flash_timer(int timer_ms)
 		}
 		else{
 			//电量大于50%灯亮
-			if(ch->Ufsoc>CHANNEL_LED_LIGHT_UFSOC && 1/*充电宝有效()*/)
+			if(ch->Ufsoc>CHANNEL_LED_LIGHT_UFSOC && ch->state.read_ok)
 			{
 				ld_gpio_set(ch->map->io_led,HIGH);
 			}

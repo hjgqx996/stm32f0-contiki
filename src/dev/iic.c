@@ -458,6 +458,21 @@ static IIC_Type iics[IIC_CHANNEL_MAX];
 const unsigned char IIC_DATA_CMDS[] ={//循环次数 /温度 /剩余容量  /电流
 																		0x2a,    0x06, 0x04,      0x14,
 };
+
+/*
+*  iic 状态机
+*  初衷: 把iic中的50ms硬延时释放出来，让cpu可以做其它事情
+*  接口实现:   ld_iic_read_start 启动状态机进行读
+*              ld_iic_read_isok  查看状态机是否完成读操作
+*  状态机实现:
+           开始--->检测应答---->
+              (1)读id           ld_bq27541_read_id_start---->延时50ms(状态机释放cpu)---->ld_bq27541_read_id_end
+              (2)读数据         ld_bq27541_read_words
+              (3)加解密         ld_bq27541_de_encrypt_charge_start---->延时50ms(状态机释放cpu)---->ld_bq27541_de_encrypt_charge_end
+              (4)读输出         ld_bq27541_output_flag
+*  想要运行状态机，必须不断重入，这里使用线程   AUTOSTART_THREAD_WITH_TIMEOUT(iic)
+   来实现状态机的不断重入
+*/
 static void iic_fsm(IIC_Type*piic,FSM*fsm)
 {
 	U8 tmp=0;
@@ -514,11 +529,7 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 		}
 	}
 	
-	State(开始读id延时50ms)
-	{
-		waitmsx(50);
-		goto 结束读id;
-	}
+	State(开始读id延时50ms){waitmsx(50);goto 结束读id;}
 	State(结束读id)
 	{
 	  if(ld_bq27541_read_id_end(sda_port(),scl_port(),(U8*)piic->data))
@@ -527,10 +538,7 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 			goto IIC_FSM_Error;
 	}
 	
-	State(开始加解密延时50ms){
-		waitmsx(50);
-		goto 结束加解密;
-	}
+	State(开始加解密延时50ms){waitmsx(50);goto 结束加解密;}
 	State(结束加解密)
 	{
 		if(ld_bq27541_de_encrypt_charge_end(sda_port(),scl_port()))
@@ -554,12 +562,8 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 	 return;
 }
 
-
 #include "contiki.h"
-static struct etimer et_iic;
-PROCESS(thread_iic, "iic任务");
-AUTOSTART_PROCESSES(thread_iic);
-PROCESS_THREAD(thread_iic, ev, data)  
+AUTOSTART_THREAD_WITH_TIMEOUT(iic)
 {
 	PROCESS_BEGIN();
 	while(1)
@@ -572,11 +576,10 @@ PROCESS_THREAD(thread_iic, ev, data)
 				iic_fsm(iics+i,&(iics+i)->fsm);
 			}
 		}
-		os_delay(et_iic,10);
+		os_delay(iic,10);
 	}
 	PROCESS_END();
 }
-
 
 /*===================================================
                 全局函数
@@ -601,6 +604,7 @@ void ld_iic_init(U8 ch,U8 sda,U8 scl)
 	iics[ch].inited = TRUE;
 	iic_unlock();
 }
+//启动读
 BOOL ld_iic_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)//(ch:1-n,opposite:TRUE反向, cmd 命令, 长度)
 {
  	ch-=1;
@@ -616,7 +620,7 @@ BOOL ld_iic_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)//(ch:1-n,opposite:T
 	iic_unlock();
 
 }
-
+//是否忙
 BOOL ld_iic_busy(U8 ch)
 {
 	BOOL r = 0;
@@ -689,14 +693,10 @@ int ld_iic_read_isok(U8 ch,U8*dataout,U8 size)
 	return err;
 }
 
-
 ///*===================================================
 //                IIC测试
 //====================================================*/
-//static struct etimer et_iic_test;
-//PROCESS(thread_iic_test, "iic测试任务");
-//AUTOSTART_PROCESSES(thread_iic_test);
-//PROCESS_THREAD(thread_iic_test, ev, data)  
+//AUTOSTART_THREAD_WITH_TIMEOUT(iic_test)
 //{
 //	U8 dataout[13];
 //	PROCESS_BEGIN();
@@ -704,44 +704,44 @@ int ld_iic_read_isok(U8 ch,U8*dataout,U8 size)
 //	{
 //		
 //		ld_iic_read_start(2,FALSE,RC_READ_ID,10);
-//		os_delay(et_iic_test,200);
+//		os_delay(iic_test,200);
 //		ld_iic_read_isok(2,dataout,10);
-//		os_delay(et_iic_test,10);
+//		os_delay(iic_test,10);
 //		
 //		ld_iic_read_start(2,FALSE,RC_READ_DATA,13);
-//		os_delay(et_iic_test,200);
+//		os_delay(iic_test,200);
 //		ld_iic_read_isok(2,dataout,13);
-//    os_delay(et_iic_test,10);
+//    os_delay(iic_test,10);
 //		
 //		ld_iic_read_start(2,FALSE,RC_LOCK,0);
-//		os_delay(et_iic_test,200);
+//		os_delay(iic_test,200);
 //		ld_iic_read_isok(2,dataout,0);
-//		os_delay(et_iic_test,0);
+//		os_delay(iic_test,0);
 //		
 //		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
-//		os_delay(et_iic_test,200);
+//		os_delay(iic_test,200);
 //		ld_iic_read_isok(2,dataout,1);
-//		os_delay(et_iic_test,10);
+//		os_delay(iic_test,10);
 //		
 //		ld_iic_read_start(2,FALSE,RC_UNLOCK,0);
-//		os_delay(et_iic_test,200);
+//		os_delay(iic_test,200);
 //		ld_iic_read_isok(2,dataout,0);
-//		os_delay(et_iic_test,10);
+//		os_delay(iic_test,10);
 //		
 //		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
-//		os_delay(et_iic_test,200);
+//		os_delay(iic_test,200);
 //		ld_iic_read_isok(2,dataout,1);
-//		os_delay(et_iic_test,10);
+//		os_delay(iic_test,10);
 
 //		ld_iic_read_start(2,FALSE,RC_UNLOCK_1HOUR,0);
-//		os_delay(et_iic_test,200);
+//		os_delay(iic_test,200);
 //		ld_iic_read_isok(2,dataout,0);
-//		os_delay(et_iic_test,10);
+//		os_delay(iic_test,10);
 //		
 //		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
-//		os_delay(et_iic_test,200);
+//		os_delay(iic_test,200);
 //		ld_iic_read_isok(2,dataout,1);
-//		os_delay(et_iic_test,10);
+//		os_delay(iic_test,10);
 
 //	}
 //	PROCESS_END();
