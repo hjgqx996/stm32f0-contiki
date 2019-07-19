@@ -34,7 +34,11 @@ typedef struct{
 	volatile	 U16    firmware_version;
 	volatile	 U16    software_version;
 	volatile	 U8     firmware_MD5[16];
-	                 U8     firmware_updata_flag;   //固件更新标志位  0x88为更新状态
+	           U8     firmware_updata_flag;   //固件更新标志位  0x88为更新状态
+	
+	/*---------------led 0 闪烁控制----------------*/
+	U8 led_flash_mode;     //1: 100ms  2:500ms  3:2000ms
+	U32 led_flash_time;    //ms
 }System;
 
 

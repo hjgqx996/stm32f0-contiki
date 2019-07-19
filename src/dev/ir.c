@@ -53,7 +53,7 @@ typedef enum{
 	U8 wanlen;       			//要接收的数据长度
 	U8 len;          			//实际接收到的数据长度
 	BOOL start;      			//TRUE: 开始  FALSE:结束
-	S8 state;        			//错误码		
+	IR_STATE state;        			//错误码		
 	S32 counter;     			//计数
 	U8 data[IR_DATA_MAX]; //接收数据
 	U8 tmp;          			//缓存一字节
@@ -275,6 +275,14 @@ BOOL ld_ir_busy(U8 ch)
 	return r;
 }
 
+BOOL ld_ir_cmd(U8 ch,U8 cmd)
+{
+	ch-=1;
+	ir_lock();
+	if(ch>=IR_CHANNEL_MAX){ir_unlock();return FALSE;}
+	ir_unlock();
+	return (cmd==irs[ch].cmd);
+}
 
 /*查看是否读完成
 * return : <0：error

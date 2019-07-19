@@ -21,6 +21,8 @@ void   SysTick_Handler(void)
     second_countdown = CLOCK_SECOND;
   }
 	
+	ld_system_led_timer(10);
+	
 	//≤÷µ¿µ∆…¡
 	{
 		extern void channels_les_flash_timer(int timer_ms);

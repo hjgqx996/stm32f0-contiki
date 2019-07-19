@@ -427,8 +427,8 @@ BOOL ld_bq27541_output_flag(U8 sda,U8 scl,U8*data)
 
 /*状态*/
 typedef enum{	
+	IIC_State_Error=-1,
 	IIC_State_NULL=0,     
-	IIC_State_Error=1,
 	IIC_State_OK   =2,       //读取数据正确
 }IIC_STATE;
 
@@ -533,7 +533,10 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 	State(结束读id)
 	{
 	  if(ld_bq27541_read_id_end(sda_port(),scl_port(),(U8*)piic->data))
-		{piic->len=13;goto IIC_FSM_Sucess;}
+		{
+			piic->len=13;
+			goto IIC_FSM_Sucess;
+		}
 		else
 			goto IIC_FSM_Error;
 	}
@@ -542,7 +545,12 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 	State(结束加解密)
 	{
 		if(ld_bq27541_de_encrypt_charge_end(sda_port(),scl_port()))
-			goto IIC_FSM_Sucess;
+		{
+			if(ld_bq27541_output_flag(sda_port(),scl_port(),(U8*)piic->data))//读取标志
+				goto IIC_FSM_Sucess;
+			else 
+				goto IIC_FSM_Error;
+		}	
 		else 
 			goto IIC_FSM_Error;
 	}
@@ -631,7 +639,15 @@ BOOL ld_iic_busy(U8 ch)
 	iic_unlock();
 	return r;
 }
-
+//是否命令
+BOOL ld_iic_cmd(U8 ch,U8 cmd)
+{
+	ch-=1;
+	iic_lock();
+	if(ch>=IIC_CHANNEL_MAX){iic_unlock();return FALSE;}
+	iic_unlock();
+	return (cmd==iics[ch].cmd);
+}
 
 /*查看是否读完成
 * return : <0：error
@@ -681,7 +697,6 @@ int ld_iic_read_isok(U8 ch,U8*dataout,U8 size)
 			case RC_LOCK:         
 			case RC_UNLOCK:
 			case RC_UNLOCK_1HOUR:
-				break;
 			case RC_OUTPUT:      //[0]输出标志
 				dataout[0] = dat[0];
 			break;
@@ -708,40 +723,40 @@ int ld_iic_read_isok(U8 ch,U8*dataout,U8 size)
 //		ld_iic_read_isok(2,dataout,10);
 //		os_delay(iic_test,10);
 //		
-//		ld_iic_read_start(2,FALSE,RC_READ_DATA,13);
-//		os_delay(iic_test,200);
-//		ld_iic_read_isok(2,dataout,13);
-//    os_delay(iic_test,10);
-//		
-//		ld_iic_read_start(2,FALSE,RC_LOCK,0);
-//		os_delay(iic_test,200);
-//		ld_iic_read_isok(2,dataout,0);
-//		os_delay(iic_test,0);
-//		
-//		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
-//		os_delay(iic_test,200);
-//		ld_iic_read_isok(2,dataout,1);
-//		os_delay(iic_test,10);
-//		
-//		ld_iic_read_start(2,FALSE,RC_UNLOCK,0);
-//		os_delay(iic_test,200);
-//		ld_iic_read_isok(2,dataout,0);
-//		os_delay(iic_test,10);
-//		
-//		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
-//		os_delay(iic_test,200);
-//		ld_iic_read_isok(2,dataout,1);
-//		os_delay(iic_test,10);
+////		ld_iic_read_start(2,FALSE,RC_READ_DATA,13);
+////		os_delay(iic_test,200);
+////		ld_iic_read_isok(2,dataout,13);
+////    os_delay(iic_test,10);
+////		
+////		ld_iic_read_start(2,FALSE,RC_LOCK,0);
+////		os_delay(iic_test,200);
+////		ld_iic_read_isok(2,dataout,0);
+////		os_delay(iic_test,0);
+////		
+////		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
+////		os_delay(iic_test,200);
+////		ld_iic_read_isok(2,dataout,1);
+////		os_delay(iic_test,10);
+////		
+////		ld_iic_read_start(2,FALSE,RC_UNLOCK,0);
+////		os_delay(iic_test,200);
+////		ld_iic_read_isok(2,dataout,0);
+////		os_delay(iic_test,10);
+////		
+////		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
+////		os_delay(iic_test,200);
+////		ld_iic_read_isok(2,dataout,1);
+////		os_delay(iic_test,10);
 
-//		ld_iic_read_start(2,FALSE,RC_UNLOCK_1HOUR,0);
-//		os_delay(iic_test,200);
-//		ld_iic_read_isok(2,dataout,0);
-//		os_delay(iic_test,10);
-//		
-//		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
-//		os_delay(iic_test,200);
-//		ld_iic_read_isok(2,dataout,1);
-//		os_delay(iic_test,10);
+////		ld_iic_read_start(2,FALSE,RC_UNLOCK_1HOUR,0);
+////		os_delay(iic_test,200);
+////		ld_iic_read_isok(2,dataout,0);
+////		os_delay(iic_test,10);
+////		
+////		ld_iic_read_start(2,FALSE,RC_OUTPUT,1);
+////		os_delay(iic_test,200);
+////		ld_iic_read_isok(2,dataout,1);
+////		os_delay(iic_test,10);
 
 //	}
 //	PROCESS_END();

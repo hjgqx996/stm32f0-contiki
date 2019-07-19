@@ -60,6 +60,7 @@ void ld_ir_timer_100us(void);
 BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen);
 int ld_ir_read_isok(U8 ch,U8*dataout,U8 size);
 BOOL ld_ir_busy(U8 ch);
+BOOL ld_ir_cmd(U8 ch,U8 cmd);
 /*===================================================
                 iic数据接口
 ====================================================*/
@@ -75,5 +76,5 @@ void ld_iic_init(U8 ch,U8 sda,U8 scl);
 BOOL ld_iic_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen);//(ch:1-n,opposite:TRUE反向, cmd 命令, 长度)
 int ld_iic_read_isok(U8 ch,U8*dataout,U8 size);//0: 无操作  1: 正在读 2: 读正确
 BOOL ld_iic_busy(U8 ch);
-
+BOOL ld_iic_cmd(U8 ch,U8 cmd);
 #endif

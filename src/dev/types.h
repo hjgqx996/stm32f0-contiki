@@ -11,10 +11,11 @@ typedef uint32_t U32;
 typedef int32_t S32;
 typedef uint64_t U64;
 typedef int64_t S64;
-typedef enum{ TRUE=1,FALSE=!TRUE}  BOOL;
-//#ifndef time_t
-//#define time_t unsigned int
-//#endif
+typedef enum{TRUE=1,FALSE=!TRUE}  BOOL;
+
+#ifndef time_t
+#define time_t unsigned int
+#endif
 
 #ifndef NULL
 #define NULL 0
@@ -64,15 +65,18 @@ typedef struct{
 *   好处是:  编写编程简单，方便维护，方便修改与调试
 */
 /*状态机数据结构*/
+#pragma pack(1)
 typedef struct{
-	U16   save;     //在状态机中使用for(...){waitms(...)},时必须保存当前状态,用于状态完成后恢复
-  U16   line;    //状态，保存状态所在的行号
-  char*	name;     //状态名，保存当前状态的名称
-	volatile U32   end;      //延时结束时间
+	U16   save;     					//在状态机中使用for(...){waitms(...)},时必须保存当前状态,用于状态完成后恢复
+  U16   line;    						//状态，保存状态所在的行号
+  char*	name;     					//状态名，保存当前状态的名称
+	volatile U32   end;      	//延时结束时间
 	//状态机内循环时，必须使用私有static变量for(i....)  for(j...)
 	U8   i;         //相当于i
 	U8   j;         //相当于j 
+	U8   tmp;       //相当于tmp
 }FSM;
+#pragma pack()
 
 //定义开始状态：它是一个switch-case 0
 #define Start(sname)             switch(fsm->line){case 0:fsm->name=#sname;

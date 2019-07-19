@@ -12,5 +12,8 @@ BOOL buffer_cmp(U8* pbuf,volatile U8* pbuf1, U8 len);
 /*ÀÛ¼ÓºÍ*/
 U8 cs8(volatile U8*data,U32 len);
 
+
+//¾ö¶Ïtime out
+#define istimeout(start32,end32)  if((start32-end32)>0x80000000)
 #endif
 

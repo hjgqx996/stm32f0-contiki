@@ -44,11 +44,24 @@ typedef enum{
 //<o>仓道灯亮时，充电量最小电量%
 #define CHANNEL_LED_LIGHT_UFSOC   50
 
-//<o>红外iic切换时，通讯失败次数
-#define IIC_IR_SWITCH_ERROR_MAX   3
+//<o>红外---->iic切换时，通讯失败次数
+#define IR_TO_IIC_SWITCH_ERROR_MAX   2
+
+//<o>iic---->红外切换时，通讯失败次数
+#define IIC_TO_IR_SWITCH_ERROR_MAX   3
 
 //<o>iic切换方向时，通讯失败次数
 #define IIC_DIR_SWITCH_MAX        3
+
+//<o>循环读充电宝时长(ms)
+#define BAO_READ_DATA_MAX_MS      2800
+
+//<o>告警温度(度)
+#define BAO_WARN_TEMPERATURE      60
+//<o>故障温度(度)
+#define BAO_ERROR_TEMPERATURE      65
+//<o>读失败尝试次数
+#define BAO_READ_ERROR_RETYR_TIMES         6
 
 //判断是否是6代宝
 #define is_6_battery(ids)          if((ids[6]&0x0F)==0x06)              

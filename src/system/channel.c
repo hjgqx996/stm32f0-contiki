@@ -13,7 +13,7 @@
 ====================================================*/
 /*仓道充电宝编号是否为NULL*/
 const U8 null_id[10] = {0,0,0,0,0,0,0,0,0,0};
-BOOL channel_id_is_not_null(U8*id){return buffer_cmp((U8*)null_id,id,CHANNEL_ID_MAX);}
+BOOL channel_id_is_not_null(U8*id){return !buffer_cmp((U8*)null_id,id,CHANNEL_ID_MAX);}
 static Channel chs[CHANNEL_MAX]={0};
 /*===================================================
                 本地函数
@@ -46,11 +46,19 @@ BOOL channel_data_clear_by_addr(U8 ch_addr)
 	{
 		if(chs[i].addr==ch_addr)
 		{
-			memset(&chs[i],0,sizeof(Channel));
+			
+			memset((void*)&(chs[i].Ufsoc),0,sizeof(Channel)-((int)&(chs[i].Ufsoc) - (int)&chs[i]));//除地址外，其它清0
 			return TRUE;
 		}
 	}
 	return FALSE;
+}
+BOOL channel_data_clear(U8 ch)
+{
+	Channel*pch = channel_data_get(ch);
+	if(pch==NULL)return FALSE;
+	memset((void*)&(pch->Ufsoc),0,sizeof(Channel)-((int)&(pch->Ufsoc) - (int)pch));//除地址外，其它清0
+	return TRUE;
 }
 
 
@@ -89,77 +97,79 @@ int channel_data_get_index(Channel*ch)
 }
 
 /*----------------------------------
-充电宝操作重定向:是否忙,读 ,是否完成
------------------------------------*/
-BOOL channel_read_busy(U8 ch,READ_TYPE_MODE mode)//ch :1-n
-{
-	if(mode == RTM_IIC)return ld_iic_busy(ch);
-	if(mode == RTM_IR )return ld_ir_busy (ch);
-	return TRUE;
-}
-
-BOOL channel_read_start(U8 ch,READ_TYPE_MODE mode,BOOL opposite,READ_TYPE_CMD cmd)
-{
-	U8 wanlen=0;
-	if(mode == RTM_IIC)
-	{
-		switch(cmd)
-		{
-			case RC_READ_ID:wanlen=10;break;
-			case RC_READ_DATA:wanlen=13;break;
-			case RC_OUTPUT:wanlen=1;break;
-			case RC_LOCK:case RC_UNLOCK: case RC_UNLOCK_1HOUR: wanlen=0;break;
-			default: return FALSE;
-		}
-		return ld_iic_read_start(ch,opposite, cmd,wanlen);
-	}
-	else if(mode ==RTM_IR){
-		switch(cmd)
-		{
-			case RC_READ_ID:wanlen=7;break;
-			case RC_READ_DATA:wanlen=13;break;
-			case RC_OUTPUT:return FALSE;
-			case RC_LOCK:case RC_UNLOCK: case RC_UNLOCK_1HOUR: wanlen=2;break;
-			default: return FALSE;
-		}
-		return ld_ir_read_start(ch,opposite, cmd,wanlen);
-	}
-	else return FALSE;
-}
-
-int channel_read_end(U8 ch,READ_TYPE_MODE mode,U8*dataout)
-{
-	U8 wanlen=0;
-	if(mode == RTM_IIC)
-	{
-		return ld_iic_read_isok(ch,dataout,0);
-	}
-	else if(mode ==RTM_IR){
-		return ld_ir_read_isok(ch,dataout,0);
-	}
-	else return FALSE;
-}
-
-
-/*----------------------------------
 仓道运行状态
 仓道告警
 仓道错误
 -----------------------------------*/
 void channel_state_check(U8 ch)
 {
-
+  Channel*pch = channel_data_get(ch);
+	if(pch==NULL)return;
+	/*有宝,读取正常*/
+	if(isvalid_daowe() && isvalid_baibi() && pch->readok>=2 && channel_id_is_not_null(pch->id))
+	{
+		pch->state.read_ok=1;
+	  pch->state.read_error=0;
+	}
+	
+	/*有宝,读取不正常*/
+	if(isvalid_daowe() && (pch->readok<2 || channel_id_is_not_null(pch->id)==FALSE))
+	{
+		pch->state.read_error=1;
+		pch->state.read_ok=0;
+	}
+	/*正在充电*/
+	pch->state.charging = isin5v();
+	/*-----充电完成--:在充电流程里做--*/
+	
+	/*-----iic or ir------------------*/
+	pch->state.read_from_ir = pch->iic_ir_mode;
 }
 
 void channel_warn_check(U8 ch)
 {
-
+	#define out5v()  ld_gpio_get(pch->map->io_sw)
+  Channel*pch = channel_data_get(ch);
+	if(pch==NULL)return; 
+	/*温度*/
+	if(pch->Temperature>BAO_WARN_TEMPERATURE)pch->warn.temperature=1;
+	else pch->warn.temperature=0;
+	/*弹仓:在事件中做*/
+	/*充电告警*/
+	if(isin5v() != isout5v())pch->warn.mp=1;
+	else pch->warn.mp=0;
 }
 
 void channel_error_check(U8 ch)
 {
+	Channel*pch = channel_data_get(ch);
+	if(pch==NULL)return; 
+	
+	//到位开关
+	if( (isvalid_daowe()==0) && (pch->state.read_ok==1) )pch->error.daowei=1;
+	else pch->error.daowei=0;
+	
+  //摆臂开关故障
+	if(  			( (isvalid_baibi()==0)&&(isvalid_daowe()==1)) 
+			|| 		( (isvalid_baibi()==1)&&(isvalid_daowe()==0)&&(pch->state.read_ok==0) )
+	  )
+	{
+		pch->error.baibi=1;
+	}else pch->error.baibi=0;
+	
+	//温度<0
+	if( (pch->Temperature<0) || (pch->Temperature>BAO_ERROR_TEMPERATURE) )pch->error.temp=1;
+	else pch->error.temp=0;
+	
+}
+//锁仓事件
+void channel_lock_event(U8 ch)
+{
+   
 
 }
+
+
 
 /*----------------------------------
 仓道申请充电
@@ -224,6 +234,10 @@ void channels_les_flash_timer(int timer_ms)
 			if(ch->Ufsoc>CHANNEL_LED_LIGHT_UFSOC && ch->state.read_ok)
 			{
 				ld_gpio_set(ch->map->io_led,HIGH);
+			}
+			else 
+			{
+				ld_gpio_set(ch->map->io_led,LOW);
 			}
 		}
 	}

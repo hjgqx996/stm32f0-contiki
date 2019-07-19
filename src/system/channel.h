@@ -52,10 +52,10 @@ typedef struct{
 	U8 \
 	lease:1,         //租借故障
 	motor:1,         //电磁阀/电机故障
-  sw:1,            //摆臂开关故障
+  baibi:1,            //摆臂开关故障
 	ir:1,            //红外识别故障
-	key:1,           //到位开关故障
-	bao:1,           //来电宝故障  temp<0 || temp>65
+	daowei:1,           //到位开关故障
+	temp:1,           //来电宝故障  temp<0 || temp>65
 	thimble:1,       //顶针识别故障
 	reversed:1;      //保留
 }ChannelError;
@@ -69,7 +69,11 @@ typedef enum{
 }BaoOutput;
 
 /*仓道数据结构*/
-typedef struct{
+typedef struct{	
+	/*--------------配置接口--------------------------*/
+	ChannelConfigureMap*map;        //通道控制io配置
+	U8 addr;                        //通道地址flash[]<----System.addr_ch-------Channel.addr
+	
 	/*-------------通道数据--------------------------*/
 	volatile U8  Ufsoc;             //剩余电量  %
 	volatile U16 Voltage;           //电压,单位 mV
@@ -80,11 +84,9 @@ typedef struct{
 	volatile U8 Ver;                //红外充电宝版本
 	
 	U8 id[10];                      //充电宝编号
-	U8 addr;                        //通道地址flash[]<----System.addr_ch-------Channel.addr
 	BaoOutput bao_output;           //充电宝输出标志 
-	
-	/*--------------配置接口--------------------------*/
-	ChannelConfigureMap*map;        //通道控制io配置
+	U8 readok;                      //读id,读数据，是否正常,计数>=2正常
+	S8 readerr;                     //读出错计数
 	
 	/*--------------iic方向切换------------------------*/
 	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
@@ -98,7 +100,9 @@ typedef struct{
 	ChannelState state;             //运行状态
 	ChannelWarn  warn;              //运行告警
 	ChannelError error;             //运行错误
-	
+	/*--------------与充电宝命令运行状态--------------*/
+	U8 cmd_state;  //命令运行时的状态
+	void*thread;   //命令运行时的线程,只支持单线程运行，不支持多线程并行
 	/*--------------异常弹仓--------------------------*/
 	
 	/*--------------仓道灯----------------------------*/
@@ -138,6 +142,7 @@ BOOL channel_id_is_not_null(U8*id);
 */
 BOOL channel_data_init(void);
 BOOL channel_data_clear_by_addr(U8 ch_addr);//清数据
+BOOL channel_data_clear(U8 ch);//清数据
 
 /*获取仓道数据
 *channel:1-n
@@ -163,12 +168,31 @@ void channel_led_flash(U8 ch,U8 seconds);
 void channels_les_flash_timer(int timer_ms);
 
 /*----------------------------------
-充电宝操作重定向:是否忙,读 ,是否完成
+仓道状态，告警，错误 
 -----------------------------------*/
-BOOL channel_read_busy(U8 ch,READ_TYPE_MODE mode);
-BOOL channel_read_start(U8 ch,READ_TYPE_MODE mode,BOOL opposite,READ_TYPE_CMD cmd);
-int channel_read_end(U8 ch,READ_TYPE_MODE mode,U8*dataout);
+void channel_state_check(U8 ch);
+void channel_warn_check(U8 ch);
+void channel_error_check(U8 ch);
 
+#define isvalid_daowe()  ld_gpio_get(pch->map->io_detect) //到位开关有效
+#define isvalid_baibi()  ld_gpio_get(pch->map->io_sw)     //摆臂开关有效
+#define isin5v()         ld_gpio_get(pch->map->io_mp_detect)//是否充电输入
+#define isout5v()        ld_gpio_get(pch->map->io_mp)     //是否充电输出
+#define is_ver_6()       ((pch->id[6]&0x0F)==0x06)        //6代宝
+#define is_ver_7()       ((pch->id[6]&0x0F)==0x07)        //7代宝
+#define is_ver_lte_5()   ((pch->id[6]&0x0F)==0x05)        //5代或以下
+/*===================================================
+                充电宝读状态机 
+返回:  
+state: 当前状态[input]
+   初始值=0;
+0:本命令未开始
+1:本命令在运行 
+2:本命令成功  
+3:本命令无法读取
+4:超时记错一次
+====================================================*/
+U8 channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout);
 #endif
 
 
