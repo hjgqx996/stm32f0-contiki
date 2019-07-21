@@ -26,11 +26,12 @@
 
 /*排队结构*/
 typedef struct{
-  U8 \
-	used:1,    //已经使用:1   还未使用:0
-	charge:1,  //允许充电:1   不许充电:0
-	reversed:6;//未使用位
-	Channel*ch;
+	U8 \
+	used:1,    				//已经使用:1   还未使用:0
+	charge:1,  				//允许充电:1   不许充电:0
+	reversed:6;				//未使用位
+	U16 charge_time;	//充电时间(秒)
+	U8 ch;     				//仓道号 1-n
 }Queue_Type;
 static Queue_Type list[MAX_CHANNEL];    //列表
 /*===================================================
@@ -54,30 +55,29 @@ AUTOSTART_THREAD_WITH_TIMEOUT(queue)
 /*===================================================
                 全局函数
 ====================================================*/
-/*注册一个仓道：我要充电
-* 返回: TRUE:注册成功
-*     : FALSE:注册失败
-*/
-BOOL queue_regist(Channel*ch)
+/*申请充电*/
+BOOL request_charge_on(U8 ch,U16 time)
+{
+
+
+}
+
+/*中止充电*/
+BOOL request_charge_off(U8 ch)
+{
+
+
+}
+
+/*挂起充电*/
+BOOL request_charge_hangup(U8 ch,U16 time)
+{}
+	
+BOOL request_charge_hangup_all(U16 ms)
 {
 
 }
 
-/*
-* 查询仓道是否可以充电
-* 返回:-1:出错   0:不充  1:可以充电
-*/
-int queue_isok(Channel*ch)
-{
 
-}
 
-/* 
-* 删除注册中的仓道:我不想充电了
-* 返回：TRUE :成功删除 
-*     ：FALSE:删除失败
-*/
-BOOL queue_delete(Channel*ch)
-{
 
-}

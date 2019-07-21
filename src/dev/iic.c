@@ -477,7 +477,7 @@ const unsigned char IIC_DATA_CMDS[] ={//循环次数 /温度 /剩余容量  /电流
 *              ld_iic_read_isok  查看状态机是否完成读操作
 *  状态机实现:
            开始--->检测应答---->
-              (1)读id           ld_bq27541_read_id_start-------------->延时50ms(状态机释放cpu)---->ld_bq27541_read_id_end
+              (1)读id         ld_bq27541_read_id_start-------------->延时50ms(状态机释放cpu)---->ld_bq27541_read_id_end
               (2)读数据         ld_bq27541_read_words
               (3)加解密         ld_bq27541_de_encrypt_charge_start---->延时50ms(状态机释放cpu)---->ld_bq27541_de_encrypt_charge_end
               (4)读输出         ld_bq27541_output_flag

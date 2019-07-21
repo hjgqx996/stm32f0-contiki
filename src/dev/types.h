@@ -62,14 +62,15 @@ typedef struct{
 /*状态机数据结构*/
 #pragma pack(1)
 typedef struct{
-	U16   save;     					//在状态机中使用for(...){waitms(...)},时必须保存当前状态,用于状态完成后恢复
-  U16   line;    						//状态，保存状态所在的行号
-  char*	name;     					//状态名，保存当前状态的名称
-	volatile U32   end;      	//延时结束时间
-	//状态机内循环时，必须使用私有static变量for(i....)  for(j...)
-	S8   i;         //相当于i
-	S8   j;         //相当于j 
-	U8   tmp;       //相当于tmp
+		U16   			save;	//在状态机中使用for(...){waitms(...)},时必须保存当前状态,用于状态完成后恢复
+		U16   			line;	//状态，保存状态所在的行号
+		char*			name;	//状态名，保存当前状态的名称
+		volatile U32	end;	//延时结束时间
+
+		//状态机内循环时，必须使用私有static变量for(i....)  for(j...)
+		S8   i;         //相当于i
+		S8   j;         //相当于j 
+		U16  tmp;       //相当于tmp
 }FSM;
 #pragma pack()
 
@@ -97,6 +98,7 @@ typedef struct{
 /*延时ms*/
 #define waitms(ms)               Waitx((ms*1000),10000,20000)
 #define waitmsx(ms)              Waitx(ms,10000,20000)
+
 /*延时us>100us*/
 #define waitus(us)               Waitx(us,10000,20000)
 /*设置状态机当前时间*/

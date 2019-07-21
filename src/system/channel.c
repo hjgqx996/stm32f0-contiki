@@ -107,14 +107,14 @@ void channel_state_check(U8 ch)
   Channel*pch = channel_data_get(ch);if(pch==NULL)return;
 	
 	/*有宝,读取正常*/
-	if(isvalid_daowe() && isvalid_baibi() && pch->readok>=2 && channel_id_is_not_null(pch->id))
+	if(isvalid_daowe() && isvalid_baibi() && is_readok() && channel_id_is_not_null(pch->id))
 	{
 		pch->state.read_ok=1;
 		pch->state.read_error=0;
 	}
 	
 	/*有宝,读取不正常*/
-	if(isvalid_daowe() && (pch->readok<2 || channel_id_is_not_null(pch->id)==FALSE))
+	if(isvalid_daowe() && ((!is_readok()) || channel_id_is_not_null(pch->id)==FALSE))
 	{
 		pch->state.read_error=1;
 		pch->state.read_ok=0;
@@ -171,30 +171,6 @@ void channel_lock_event(U8 ch)
 
 }
 
-
-
-/*----------------------------------
-仓道申请充电
-仓道申请断电
-挂起所有充电ms
------------------------------------*/
-void channel_charge(U8 ch)
-{
-
-
-}
-void channel_discharge(U8 ch)
-{
-  //仓道断电 
-	
-	//从排队的列表中删除本仓道
-//	queue_delete(ch);
-}
-void channel_discharge_all(int ms)
-{
-
-}
-
 /*----------------------------------
    仓道灯
 ch:仓道号   seconds:闪烁时间  timer_ms:定义器时间
@@ -229,7 +205,7 @@ void channels_les_flash_timer(int timer_ms)
 					ld_gpio_set(ch->map->io_led,LOW);//停止闪烁
 				}
 				else
-				ld_gpio_set(ch->map->io_led,ld_gpio_get(ch->map->io_led)==0?HIGH:LOW);
+					ld_gpio_set(ch->map->io_led,ld_gpio_get(ch->map->io_led)==0?HIGH:LOW);
 			}
 		}
 		else{

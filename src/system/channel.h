@@ -90,6 +90,7 @@ typedef struct{
 	U8 readok;                      //读id,读数据，是否正常,计数>=2正常
 	S8 readerr;                     //读出错计数
 
+
 	/*--------------iic方向切换------------------------*/
 	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
 	U8  iic_dir_counter;             //出错计数
@@ -135,45 +136,45 @@ typedef enum{
                 全局函数
 ====================================================*/
 BOOL channel_id_is_not_null(U8*id);
-/*
-* channel数据初始化
-*/
-BOOL channel_data_init(void);
+/*-----------------------------------------------------
+* channel 数据初始化 清0，地址设置
+-------------------------------------------------------*/
+BOOL channel_data_init(void);               //初始化 
 BOOL channel_data_clear_by_addr(U8 ch_addr);//清数据
-BOOL channel_data_clear(U8 ch);//清数据
+BOOL channel_data_clear(U8 ch);             //清数据
+void channel_addr_set(U8*addrs);            //设置仓道地址
 
-/*获取仓道数据
-*channel:1-n
-*/
+/*-----------------------------------------------------
+* channel 数据获取  索引
+-------------------------------------------------------*/
 Channel*channel_data_get(U8 channel);
-
-/*获取仓道数据--by addr
-*channel:1-n
-*/
 Channel*channel_data_get_by_addr(U8 addr);
 int channel_data_get_index(Channel*ch);
 
-void channel_addr_set(U8*addrs);//设置仓道地址
-/*----------------------------------
-仓道申请充电
-仓道申请断电
-挂起所有充电ms
------------------------------------*/
-void channel_charge(U8 ch);
-void channel_discharge(U8 ch);
-void channel_discharge_all(int ms);
 
-/*通道灯闪烁控制*/
+/*-----------------------------------------------------
+* channel 充电断电挂起
+-------------------------------------------------------*/
+BOOL request_charge_on(U8 ch,U16 time);/*申请充电*/
+BOOL request_charge_off(U8 ch);/*中止充电*/
+BOOL request_charge_hangup(U8 ch,U16 time);/*挂起充电*/
+BOOL request_charge_hangup_all(U16 ms);/*挂起所有输出*/
+/*-----------------------------------------------------
+* channel 灯闪
+-------------------------------------------------------*/
 void channel_led_flash(U8 ch,U8 seconds);
 void channels_les_flash_timer(int timer_ms);
 
-/*----------------------------------
+/*------------------------------------------------------
 仓道状态，告警，错误 
------------------------------------*/
+-------------------------------------------------------*/
 void channel_state_check(U8 ch);
 void channel_warn_check(U8 ch);
 void channel_error_check(U8 ch);
 
+/*------------------------------------------------------
+		判断
+-------------------------------------------------------*/
 #define isvalid_daowe()  ld_gpio_get(pch->map->io_detect) //到位开关有效
 #define isvalid_baibi()  ld_gpio_get(pch->map->io_sw)     //摆臂开关有效
 #define isin5v()         ld_gpio_get(pch->map->io_mp_detect)//是否充电输入
@@ -181,11 +182,10 @@ void channel_error_check(U8 ch);
 #define is_ver_6()       ((pch->id[6]&0x0F)==0x06)        //6代宝
 #define is_ver_7()       ((pch->id[6]&0x0F)==0x07)        //7代宝
 #define is_ver_lte_5()   ((pch->id[6]&0x0F)<=0x05)        //5代或以下
+#define is_readok()      (pch->state.read_ok)                 //判断读取成功
 /*===================================================
-                充电宝读状态机 
+仓道读: 包含 iic,ir 以及切换策略
 返回:  
-state: 当前状态[input]
-   初始值=0;
 0:本命令未开始
 1:本命令在运行 
 2:本命令成功  

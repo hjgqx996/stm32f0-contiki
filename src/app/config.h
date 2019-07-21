@@ -48,7 +48,7 @@ typedef enum{
 #define IIC_DIR_SWITCH_MAX        3
 
 //<o>循环读充电宝时长(ms)
-#define BAO_READ_DATA_MAX_MS      2800
+#define BAO_READ_DATA_MAX_MS      2500
 
 //<o>告警温度(度)
 #define BAO_WARN_TEMPERATURE      60

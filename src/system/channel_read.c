@@ -2,15 +2,15 @@
 /*===================================================
 功能:仓道<====(iic,ir策略)=====>充电宝
 1.策略包括:
-  (1)如果指定iic,就只能使用iic通讯
-	(2)如果指定ir,就只能使用ir通讯
-	(3)两者都可以通讯时，出错几次后切换
-	(4)iic单次出错几次后，切换方向，如果再错几次，就应该切换到ir
+			(1)如果指定iic,就只能使用iic通讯
+			(2)如果指定ir,就只能使用ir通讯
+			(3)两者都可以通讯时，出错几次后切换
+			(4)在使用iic时:出错几次后，切换方向，如果再错几次，就应该切换到ir
 
 2.功能包括:
-  (1)读id
-  (2)读数据
-  (3)解锁，上锁，解锁1小时,检查输出标志	
+			(1)读id
+			(2)读数据
+			(3)解锁，上锁，解锁1小时,检查输出标志	
 3.关于如何使用接口:
   while(channel_read(ch_index,cmd,dataout,timeout)==FALSE){ osdelay(...)}
   等待的时候，cpu被切换，不会影响其它程序的运行	
@@ -156,8 +156,8 @@ dataout:成功后返回的数据
 ====================================================*/
 U8 channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout)
 {
-	#define s (state[ch-1])
-	#define t (thread[ch-1])
+	#define s (state[ch-1])					//当前状态
+	#define t (thread[ch-1])				//当前线程
 	U8 ch = channel_data_get_index(pch);    //索引从 1 开始
 	READ_TYPE_MODE mode = pch->iic_ir_mode; //iic ir模式   
 	U8 dir = pch->iic_dir;                  //方向
@@ -199,7 +199,7 @@ U8 channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout)
 			} 
 	  }
 	}
-	
+	//命令已经结束
 	if(s>=2)
 	{
 		//超时
