@@ -4,9 +4,6 @@
 ====================================================*/
 #include "includes.h"
 #include "stm32f0xx.h"
-/*===================================================
-                配置文件
-====================================================*/
 
 /*===================================================
                 宏，类型
@@ -14,18 +11,15 @@
 /*仓道充电宝编号是否为NULL*/
 const U8 null_id[10] = {0,0,0,0,0,0,0,0,0,0};
 BOOL channel_id_is_not_null(U8*id){return !buffer_cmp((U8*)null_id,id,CHANNEL_ID_MAX);}
-static Channel chs[CHANNEL_MAX]={0};
-/*===================================================
-                本地函数
-====================================================*/
 
+/*所有的仓道数据缓存*/
+static Channel chs[CHANNEL_MAX]={0};
 
 /*===================================================
                 全局函数
 ====================================================*/
-/*
-* channel数据初始化
-*/
+
+/*--------------------channel数据初始化-------------*/
 BOOL channel_data_init(void)
 {
 	int i =0;
@@ -33,12 +27,12 @@ BOOL channel_data_init(void)
 	for(;i<CHANNEL_MAX;i++)
 	{
 		chs[i].map = &channel_config_map[i]; //io
-		//chs[i].addr = //addr 仓道地址
 		ld_ir_init(i+1,channel_config_map[i].io_ir,channel_config_map[i].io_re);
 		ld_iic_init(i+1,channel_config_map[i].io_sda,channel_config_map[i].io_scl);
 	}	
-	ld_ir_timer_init();//红外配置
 }
+
+/*---------------- 清除地址为ch_addr的数据---------- */
 BOOL channel_data_clear_by_addr(U8 ch_addr)
 {
 	int i =0;
@@ -46,13 +40,14 @@ BOOL channel_data_clear_by_addr(U8 ch_addr)
 	{
 		if(chs[i].addr==ch_addr)
 		{
-			
 			memset((void*)&(chs[i].Ufsoc),0,sizeof(Channel)-((int)&(chs[i].Ufsoc) - (int)&chs[i]));//除地址外，其它清0
 			return TRUE;
 		}
 	}
 	return FALSE;
 }
+
+/*--------------- 清除第ch(1-n)个仓道的数据----------- */
 BOOL channel_data_clear(U8 ch)
 {
 	Channel*pch = channel_data_get(ch);
@@ -61,19 +56,14 @@ BOOL channel_data_clear(U8 ch)
 	return TRUE;
 }
 
-
-/*获取仓道数据
-*channel:1-n
-*/
+/*-------------- 获取仓道数据 channel:1-n----------------*/
 Channel*channel_data_get(U8 channel)
 {
 	channel-=1;
 	if(channel>=CHANNEL_MAX)return NULL;
 	return &chs[channel];
 }
-/*获取仓道数据--by addr
-*channel:1-n
-*/
+/*--------------- 获取仓道数据--by addr-------------------*/
 Channel*channel_data_get_by_addr(U8 addr)
 {
 	int i =0;
@@ -84,7 +74,7 @@ Channel*channel_data_get_by_addr(U8 addr)
 	}
 	return NULL;
 }
-/*获取仓道索引,error:return <0: return :1-n*/
+/*------------获取仓道索引,error:return <0: return :1-n-----*/
 int channel_data_get_index(Channel*ch)
 {
 	U32 coffset = 0;
@@ -95,6 +85,17 @@ int channel_data_get_index(Channel*ch)
 	if(index>=CHANNEL_MAX)return -1;
 	return index+1;
 }
+/*-------------设置仓道地址----------------------------------*/
+void channel_addr_set(U8*addrs)
+{
+	int i=0;Channel *vch;
+	for(i=0;i<=CHANNEL_MAX;i++)
+	{
+		vch=channel_data_get(i+1);if(vch==NULL)continue;
+		vch->addr=addrs[i];//保存通道地址
+	}
+}
+	
 
 /*----------------------------------
 仓道运行状态
@@ -103,13 +104,13 @@ int channel_data_get_index(Channel*ch)
 -----------------------------------*/
 void channel_state_check(U8 ch)
 {
-  Channel*pch = channel_data_get(ch);
-	if(pch==NULL)return;
+  Channel*pch = channel_data_get(ch);if(pch==NULL)return;
+	
 	/*有宝,读取正常*/
 	if(isvalid_daowe() && isvalid_baibi() && pch->readok>=2 && channel_id_is_not_null(pch->id))
 	{
 		pch->state.read_ok=1;
-	  pch->state.read_error=0;
+		pch->state.read_error=0;
 	}
 	
 	/*有宝,读取不正常*/
@@ -128,13 +129,15 @@ void channel_state_check(U8 ch)
 
 void channel_warn_check(U8 ch)
 {
-	#define out5v()  ld_gpio_get(pch->map->io_sw)
-  Channel*pch = channel_data_get(ch);
-	if(pch==NULL)return; 
+    #define out5v()  ld_gpio_get(pch->map->io_sw)
+	Channel*pch = channel_data_get(ch);if(pch==NULL)return; 
+	
 	/*温度*/
 	if(pch->Temperature>BAO_WARN_TEMPERATURE)pch->warn.temperature=1;
 	else pch->warn.temperature=0;
+	
 	/*弹仓:在事件中做*/
+	
 	/*充电告警*/
 	if(isin5v() != isout5v())pch->warn.mp=1;
 	else pch->warn.mp=0;
@@ -142,14 +145,13 @@ void channel_warn_check(U8 ch)
 
 void channel_error_check(U8 ch)
 {
-	Channel*pch = channel_data_get(ch);
-	if(pch==NULL)return; 
+	Channel*pch = channel_data_get(ch);if(pch==NULL)return; 
 	
 	//到位开关
 	if( (isvalid_daowe()==0) && (pch->state.read_ok==1) )pch->error.daowei=1;
 	else pch->error.daowei=0;
 	
-  //摆臂开关故障
+	//摆臂开关故障
 	if(  			( (isvalid_baibi()==0)&&(isvalid_daowe()==1)) 
 			|| 		( (isvalid_baibi()==1)&&(isvalid_daowe()==0)&&(pch->state.read_ok==0) )
 	  )
@@ -221,7 +223,8 @@ void channels_les_flash_timer(int timer_ms)
 				//时间递减
 				ch->flash_now-=LEASE_LED_FLASH_TIME;
 				ch->flash_ms-=LEASE_LED_FLASH_TIME;
-				if(ch->flash_ms<LEASE_LED_FLASH_TIME){
+				if(ch->flash_ms<LEASE_LED_FLASH_TIME)
+				{
 					ch->flash=FALSE;
 					ld_gpio_set(ch->map->io_led,LOW);//停止闪烁
 				}
@@ -230,15 +233,10 @@ void channels_les_flash_timer(int timer_ms)
 			}
 		}
 		else{
-			//电量大于50%灯亮
-			if(ch->Ufsoc>CHANNEL_LED_LIGHT_UFSOC && ch->state.read_ok)
-			{
+			if(ch->Ufsoc>CHANNEL_LED_LIGHT_UFSOC && ch->state.read_ok)//电量大于50%灯亮
 				ld_gpio_set(ch->map->io_led,HIGH);
-			}
 			else 
-			{
 				ld_gpio_set(ch->map->io_led,LOW);
-			}
 		}
 	}
 }

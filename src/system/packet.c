@@ -54,14 +54,14 @@ HPacket *packet_recv(U8 data,HPacket*m)
 /*===================================================
            ·¢ËÍÊý¾Ý
 ====================================================*/
-int packet_send(HPacket*hp, U8 cmd,U16 len,U8*data)
+int packet_send(HPacket*hp, U8 cmd,U16 len,U8*data,U8 addr)
 {
 	packet *p = &hp->p;
 	if(hp==NULL)return FALSE;
 	//memset(hp,0,sizeof(HPacket));
 	p->AA=0xAA;
 	p->BB=0xBB;
-	p->addr=system.addr485;
+	p->addr=addr;
 	p->cmd=cmd;
 	p->hlen=len>>8;
 	p->llen=len&0xFF;

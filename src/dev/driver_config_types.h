@@ -19,26 +19,6 @@ typedef const struct
     U8 xSta;					    //初始状态，高低电平
 } t_gpio_map;
 
-//<h>/*数码管显示*/
-//</h>
-typedef enum{
-	TMT_1640 = 1,
-	TMT_1688 = 2,
-	TMT_1620 = 2,
-}TMxxxxType;
-typedef const struct{
-	t_gpio_map din;
-	t_gpio_map clk;
-	t_gpio_map nss;
-	char*      data;//行列对应的编码
-	U8 counter;  //一行多数个
-	U8 lines;    //行数
-	TMxxxxType type;     //类型,tm1640,tm1688
-	U8 mode;             //三线驱动器有显示模式
-	U8 light;            //亮度
-} t_tmxxxx_map;
-
-
 
 //<h>/*uart 配置类型*/
 //</h>

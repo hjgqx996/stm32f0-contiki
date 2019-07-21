@@ -9,4 +9,5 @@
 #include "packet.h"
 #include "system.h"
 #include "channel.h"
+#include "flash.h"
 #endif

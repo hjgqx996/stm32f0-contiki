@@ -233,6 +233,62 @@ void USART2_IRQHandler(void)
 	}	 			
 } 
 
+
+/*
+* 开关中断，触发充电状态机
+*/
+void EXTI4_15_IRQHandler(void)
+{ 
+  if(EXTI_GetITStatus(EXTI_Line6) != RESET)//通道3到位开关检测
+  { 
+		if(GPIO_ReadInputDataBit(GPIOF, GPIO_Pin_6)==1)
+		{
+
+		}	
+    /* Clear the EXTI line 6 pending bit */
+    EXTI_ClearITPendingBit(EXTI_Line6);
+  }
+	
+	if(EXTI_GetITStatus(EXTI_Line7) != RESET)//通道4到位开关检测
+  {
+		if(GPIO_ReadInputDataBit(GPIOF, GPIO_Pin_7)==1)
+		{
+      
+		}	
+    /* Clear the EXTI line 6 pending bit */
+    EXTI_ClearITPendingBit(EXTI_Line7);
+  }
+	
+	if(EXTI_GetITStatus(EXTI_Line8) != RESET)//通道2到位开关检测
+  {
+		if(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8)==1)
+		{
+
+		}	
+    /* Clear the EXTI line 6 pending bit */
+    EXTI_ClearITPendingBit(EXTI_Line8);
+  }
+	
+	if(EXTI_GetITStatus(EXTI_Line12) != RESET)//通道5到位开关检测
+  {
+		if(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_12)==1)
+		{
+
+		}	
+    /* Clear the EXTI line 6 pending bit */
+    EXTI_ClearITPendingBit(EXTI_Line12);
+  }
+	
+	if(EXTI_GetITStatus(EXTI_Line15) != RESET)//通道1到位开关检测
+  {
+		if(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_15)==1)
+		{
+
+		}	
+    /* Clear the EXTI line 6 pending bit */
+    EXTI_ClearITPendingBit(EXTI_Line15);
+  }
+}
 /******************************************************************************/
 /*                 STM32F0xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */

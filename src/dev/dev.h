@@ -2,6 +2,8 @@
 #define __DEV_H__
 #include "types.h"
 #include "time.h"
+
+void ld_dev_init(void);
 /*===================================================
                 系统运行时间ms
 ====================================================*/
@@ -54,7 +56,6 @@ int ld_uart_isp(U8 xUart,char*byte,U8 type);	//type: 0 接收    1发送
 * io_re :接收端口
 */
 void ld_ir_init(U8 ch,U8 io_ir,U8 io_re);
-void ld_ir_timer_init(void);
 void ld_ir_timer_100us(void);
 //===============标准化接口==========================//
 BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen);
@@ -77,4 +78,30 @@ BOOL ld_iic_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen);//(ch:1-n,opposite:
 int ld_iic_read_isok(U8 ch,U8*dataout,U8 size);//0: 无操作  1: 正在读 2: 读正确
 BOOL ld_iic_busy(U8 ch);
 BOOL ld_iic_cmd(U8 ch,U8 cmd);
+
+
+/*===================================================
+                flash读写数据接口
+====================================================*/
+void ld_flash_write(uint32_t WriteAddress, uint8_t *WriteBuf, int32_t WriteNum, uint32_t WriteAddr_page);
+void ld_flash_read(uint32_t ReadAddress, uint8_t *ReadBuf, int32_t ReadNum,uint32_t WriteAddr_page);
+
+/*===================================================
+                外部中断
+====================================================*/
+void ld_exti_init(void);
+
+/*===================================================
+                定时器
+====================================================*/
+
+void ld_timer3_init(void);
+/*===================================================
+                看门狗
+====================================================*/
+
+void ld_iwdg_init(void);
+void ld_iwdg_reload(void);
+
+
 #endif

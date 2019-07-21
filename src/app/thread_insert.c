@@ -1,29 +1,38 @@
 #include "includes.h"
+
+
 /*===================================================
-                本地函数
+                充电流程
+ 严格按照 <通道给充电宝充电的逻辑.pdf> 流程控制								
 ====================================================*/
-
-/*充电宝进入通道状态机*/
-static void charge_fsm(U8 channel,void*arg)
-{
-	FSM*fsm;
-	Channel*ch;	
-  fsm_time_set(time(0));//状态机时间
-
-	Start(充电宝进入){
+/*-----------------------------
+1.arg  0xFF (复位状态机)
+       0xFE (挂起当前状态)
+			 0xFD (恢复挂起的状态)
+2.运行过程
 		
-				
-	}
+	EXTI(外部中断)---->复位状态机--->insert线程运行状态机(识别,充电，补充)
+		
+-------------------------------*/
+static FSM insert_fsm_data[CHANNEL_MAX]; 					//状态机变量:私有
+void charge_fsm(U8 ch,void*arg)
+{
+	FSM*fsm =&insert_fsm_data[ch-1];
+	Channel*pch=channel_data_get(ch);	//仓道数据
+	fsm_time_set(time(0));            //状态机时间
+	if(pch==NULL)return; 
 	
-	State(识别充电宝)
+	Start(){
+			memset(fsm,0,sizeof(FSM));
+			if(isvalid_baibi())goto 识别;
+	}
+	State(识别)
 	{
-    //能识别-->停止充电
-		//不能识别->充电5秒
+		//等待读完成(识别在thread_channel中实现)
 	}
 	
 	State(充电5秒)
 	{
-	
 		//申请充电
 		
 		//等待5秒后，停止充电-->再一次识别充电宝
@@ -90,7 +99,7 @@ static void charge_fsm(U8 channel,void*arg)
 	
 	}
   Default()
-		
+	
 }
 
 /*===================================================
@@ -98,10 +107,16 @@ static void charge_fsm(U8 channel,void*arg)
 ====================================================*/
 AUTOSTART_THREAD_WITH_TIMEOUT(insert)
 {
+	static int i= 0;
 	PROCESS_BEGIN();
 	while(1)
 	{
-		os_delay(insert,10);
+		for(i=1;i<=CHANNEL_MAX;i++)
+		{
+			charge_fsm(i,NULL);
+		}
+		os_delay(insert,50);
+		ld_iwdg_reload();
 	}
 	PROCESS_END();
 }

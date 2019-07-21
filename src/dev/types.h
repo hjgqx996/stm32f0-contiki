@@ -13,9 +13,7 @@ typedef uint64_t U64;
 typedef int64_t S64;
 typedef enum{TRUE=1,FALSE=!TRUE}  BOOL;
 
-#ifndef time_t
-#define time_t unsigned int
-#endif
+#include "time.h"
 
 #ifndef NULL
 #define NULL 0
@@ -35,9 +33,6 @@ typedef enum{TRUE=1,FALSE=!TRUE}  BOOL;
 #define KEY_DAO_WEI_INDEX   2   //到位开关
 #define KV(type,ch)              (type*0x00200000+ch) //通道键值
 #define is_key_value(v,type,ch)  if((type*0x00200000+ch)==(v&0x7FFFFFFF))  //判断键值是不是ch的
-#define KEY_BAI_BI(ch)               ld_gpio_get(ch->map->io_sw)
-#define KEY_DAO_WEI(ch)              ld_gpio_get(ch->map->io_detect)
-
 
 /*===================================================
                 配置类型
@@ -72,14 +67,14 @@ typedef struct{
   char*	name;     					//状态名，保存当前状态的名称
 	volatile U32   end;      	//延时结束时间
 	//状态机内循环时，必须使用私有static变量for(i....)  for(j...)
-	U8   i;         //相当于i
-	U8   j;         //相当于j 
+	S8   i;         //相当于i
+	S8   j;         //相当于j 
 	U8   tmp;       //相当于tmp
 }FSM;
 #pragma pack()
 
 //定义开始状态：它是一个switch-case 0
-#define Start(sname)             switch(fsm->line){case 0:fsm->name=#sname;
+#define Start()             switch(fsm->line){case 0:fsm->name=NULL;
 	
 //定义一个状态: 它使用case __LINE__ 来定位
 #define State(sname)   \
@@ -110,7 +105,8 @@ typedef struct{
 /*===================================================
                os 延时
 ====================================================*/
-#define os_delay(name,time) 		 etimer_set(&(et_##name), (time/(1000/CLOCK_SECOND)));PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et_##name))
+#define os_delay(name,time) 		 etimer_set(&(et_##name),((U32)time)/(1000/CLOCK_SECOND));PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et_##name))
+
 /*简化auto start 线程写法*/
 #define AUTOSTART_THREAD_WITH_TIMEOUT(name) \
 																						static struct etimer et_##name; \

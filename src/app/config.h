@@ -4,12 +4,6 @@
 #define __CONFIG_H__
 #include "contiki.h"
 //===========================类型=============================//
-//读取充电宝-线程间通讯用
-typedef struct{
-	struct process* master;//请求线程
-  
-}ProcessData_iic_ir;
-
 typedef enum{
 	PROCESS_EVENT_PACKET           =0x40,   //事件:数据包接收
 	PROCESS_EVENT_COMM_LEASE,               //事件:租借数据包处理
@@ -41,13 +35,13 @@ typedef enum{
 //<o>租借时，仓道灯闪烁频率ms
 #define LEASE_LED_FLASH_TIME      200
 
-//<o>仓道灯亮时，充电量最小电量%
+//<o>仓道灯亮时，最小电量%
 #define CHANNEL_LED_LIGHT_UFSOC   50
 
-//<o>红外---->iic切换时，通讯失败次数
+//<o>红外---->iic    切换时，通讯失败次数
 #define IR_TO_IIC_SWITCH_ERROR_MAX   2
 
-//<o>iic---->红外切换时，通讯失败次数
+//<o>iic------>红外 切换时，通讯失败次数
 #define IIC_TO_IR_SWITCH_ERROR_MAX   3
 
 //<o>iic切换方向时，通讯失败次数
@@ -62,6 +56,13 @@ typedef enum{
 #define BAO_ERROR_TEMPERATURE      65
 //<o>读失败尝试次数
 #define BAO_READ_ERROR_RETYR_TIMES         6
+
+//<e> 是否使用bootloader
+#define USING_BOOT_LOADER                  0
+//<o> bootloader大小<0x0-0xFFFF:4>
+#define BOOT_LOADER_SIZE                   0x3000
+//</e>
+
 
 //判断是否是6代宝
 #define is_6_battery(ids)          if((ids[6]&0x0F)==0x06)              

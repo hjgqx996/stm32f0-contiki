@@ -11,15 +11,15 @@
 typedef const struct{
 	U8 io_motor;       //电磁阀io口
 	U8 io_sw;          //摆臂开关io口
-  U8 io_detect;      //到位开关io口
-	
-  U8 io_ir;          //红外发送io口
-  U8 io_re;          //红外接收io口
-	
-  U8 io_led;         //led灯io口
-  U8 io_mp;          //充电使能io口
-  U8 io_mp_detect;   //充电输出检测io口
-	
+	U8 io_detect;      //到位开关io口
+
+	U8 io_ir;          //红外发送io口
+	U8 io_re;          //红外接收io口
+
+	U8 io_led;         //led灯io口
+	U8 io_mp;          //充电使能io口
+	U8 io_mp_detect;   //充电输出检测io口
+
 	U8 io_sda;         //iic sda口
 	U8 io_scl;         //iic scl口
 }ChannelConfigureMap;
@@ -30,7 +30,7 @@ typedef struct{
 	U8 \
 	read_error:1,    //有宝，但是读取错误
 	read_ok:1,       //有宝，但是读取正确
-  reversed:3,      //保留
+	reversed:3,      //保留
 	read_from_ir:1,  //使用红外读取
 	full_charge:1,   //充电满
 	charging:1;      //有宝，数据读取正常，正在充电
@@ -41,7 +41,7 @@ typedef struct{
 	U8 \
 	temperature:1,   //温度报警 <0 || >60
 	eject:1,         //异常弹仓事件，本标志20分钟后清0
-  mp:1,            //5V充电输出报警(有输出但检测不到输出 或 无输出但检测到输出)
+	mp:1,            //5V充电输出报警(有输出但检测不到输出 或 无输出但检测到输出)
 	reversed:1,      //保留
 	restart:1,       //模组异常重启报警
 	reversed2:3;      //保留
@@ -52,7 +52,7 @@ typedef struct{
 	U8 \
 	lease:1,         //租借故障
 	motor:1,         //电磁阀/电机故障
-  baibi:1,            //摆臂开关故障
+	baibi:1,            //摆臂开关故障
 	ir:1,            //红外识别故障
 	daowei:1,           //到位开关故障
 	temp:1,           //来电宝故障  temp<0 || temp>65
@@ -73,44 +73,42 @@ typedef struct{
 	/*--------------配置接口--------------------------*/
 	ChannelConfigureMap*map;        //通道控制io配置
 	U8 addr;                        //通道地址flash[]<----System.addr_ch-------Channel.addr
-	
-	/*-------------通道数据--------------------------*/
-	volatile U8  Ufsoc;             //剩余电量  %
-	volatile U16 Voltage;           //电压,单位 mV
-	volatile U16 RemainingCapacity; //剩余容量 mAh
-	volatile U16 CycleCount;        //充电循环次数
-	volatile S16 AverageCurrent;    //充电平均电流  mA
-  volatile S8 Temperature;        //电芯温度	    度
-	volatile U8 Ver;                //红外充电宝版本
-	
+
+	/*-------------通道数据-----------------------------iic-----ir-*/
+	volatile U8  Ufsoc;             //剩余电量  %        有     有
+	volatile U16 Voltage;           //电压,单位 mV       无     有
+	volatile U16 RemainingCapacity; //剩余容量 mAh       无     有
+	volatile U16 CycleCount;        //充电循环次数       有     有
+	volatile S16 AverageCurrent;    //充电平均电流  mA   有     有
+	volatile S8 Temperature;        //电芯温度	    度   有     有
+	volatile U8 Ver;                //红外充电宝版本            有
+
 	U8 id[10];                      //充电宝编号
 	BaoOutput bao_output;           //充电宝输出标志 
+
+	/*--------------是否正常读------------------------*/
 	U8 readok;                      //读id,读数据，是否正常,计数>=2正常
 	S8 readerr;                     //读出错计数
-	
+
 	/*--------------iic方向切换------------------------*/
 	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
 	U8  iic_dir_counter;             //出错计数
-	
+
 	/*--------------iic,ir切换------------------------*/
 	U8 iic_ir_mode;                 //iic方向 0:正常方向  1:方向反转
 	U8 iic_ir_mode_counter;         //出错计数
-	
+
 	/*--------------运行状态数据----------------------*/
 	ChannelState state;             //运行状态
 	ChannelWarn  warn;              //运行告警
 	ChannelError error;             //运行错误
-	/*--------------与充电宝命令运行状态--------------*/
-	U8 cmd_state;  //命令运行时的状态
-	void*thread;   //命令运行时的线程,只支持单线程运行，不支持多线程并行
+
 	/*--------------异常弹仓--------------------------*/
-	
+
 	/*--------------仓道灯----------------------------*/
 	BOOL flash;                     //是否闪烁
-	int  flash_ms;                  //闪烁总时间(ms)
-	int  flash_now;                 //计时
-	
-	FSM insert;                     //充电宝进入仓道状态机变量:私有
+	volatile int  flash_ms;         //闪烁总时间(ms)
+	volatile int  flash_now;        //计时
 }Channel;
 
 #pragma pack()
@@ -154,6 +152,8 @@ Channel*channel_data_get(U8 channel);
 */
 Channel*channel_data_get_by_addr(U8 addr);
 int channel_data_get_index(Channel*ch);
+
+void channel_addr_set(U8*addrs);//设置仓道地址
 /*----------------------------------
 仓道申请充电
 仓道申请断电
@@ -180,7 +180,7 @@ void channel_error_check(U8 ch);
 #define isout5v()        ld_gpio_get(pch->map->io_mp)     //是否充电输出
 #define is_ver_6()       ((pch->id[6]&0x0F)==0x06)        //6代宝
 #define is_ver_7()       ((pch->id[6]&0x0F)==0x07)        //7代宝
-#define is_ver_lte_5()   ((pch->id[6]&0x0F)==0x05)        //5代或以下
+#define is_ver_lte_5()   ((pch->id[6]&0x0F)<=0x05)        //5代或以下
 /*===================================================
                 充电宝读状态机 
 返回:  

@@ -74,6 +74,30 @@ t_gpio_map gpio_map[]=
 };
 const unsigned char gpio_number = (sizeof(gpio_map)/sizeof(t_gpio_map)) - 1;
 
+/***********************
+			EXTI  配置常量
+***********************/
+#define exti(pp,pin)  {PORT_##pp,pin,pin,EXTI_Trigger_Rising},
+//<o> exti
+t_exti_map exti_map[]={
+	
+//	//摆臂      
+//	exti(B,10)  //仓道1
+//	exti(B, 1)  //仓道2
+//	exti(A, 0)  //仓道3
+//	exti(C,13)  //仓道4
+//	exti(C, 9)  //仓道5
+	
+	//到位
+	exti(B,15)  //仓道1
+	exti(A, 8)  //仓道2
+	exti(F, 6)  //仓道3
+	exti(F, 7)  //仓道4
+	exti(A,12)  //仓道5
+	
+	0
+};
+const unsigned char exti_number = (sizeof(exti_map) /sizeof(t_exti_map)) - 1;
 /*************************
 			Uart
 *************************/

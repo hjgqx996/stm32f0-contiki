@@ -247,16 +247,16 @@ static BOOL bq27541_read_power(U8 sda,U8 scl,U8*dataout)
 /*The bq27541 detects whether the SMBus enters the Off State by monitoring the SMBC and SMBD lines. When
 both signals are continually low for at least 2.0 s, the bq27541 detects the Off State. When the SMBC and SMBD
 lines go high, the bq27541 detects the On State and can begin communication within 1 ms. */
-static void bq27541_smb_on(U8 sda,U8 scl)
-{
-	sda_out();
-	SDA_H();
-	SCL_H();
-	delayus(5000); //不可取，建议外部延时
-}
+//static void bq27541_smb_on(U8 sda,U8 scl)
+//{
+//	sda_out();
+//	SDA_H();
+//	SCL_H();
+//	delayus(5000); //不可取，建议外部延时
+//}
 
 /*===================================================
-                全局函数
+                BQ27541全局函数
 ====================================================*/
 
 /*
@@ -420,6 +420,19 @@ BOOL ld_bq27541_output_flag(U8 sda,U8 scl,U8*data)
 
 /*===================================================
                 标准化接口，像红外一样的接口
+设计初衷:
+  1.红外使用 定时器+状态机 来实现，对外接口是： 启动 + 查询结果
+  2.iic读时间比较短，但是有两个50ms的硬延时
+    状态机可以把硬延时去掉，但是要使用线程不断重入
+  3.实现:
+     
+        线程: AUTOSTART_THREAD_WITH_TIMEOUT(iic)
+              while(1){状态机}
+
+        状态机：(开始)  ---- (延时)  ----  (结束)
+                  /|\                        /|\
+                   |                          |
+        对外接口  启动-------os延时等待------查询
 ====================================================*/
 #include "channel.h"
 #define IIC_DATA_MAX      16
@@ -452,8 +465,6 @@ typedef struct{
 static IIC_Type iics[IIC_CHANNEL_MAX];
 #define iic_lock()
 #define iic_unlock()
-#define sda_port()   ((piic->opposite)?(piic->scl):(piic->sda))
-#define scl_port()   ((piic->opposite)?(piic->sda):(piic->scl))
 
 const unsigned char IIC_DATA_CMDS[] ={//循环次数 /温度 /剩余容量  /电流
 																		0x2a,    0x06, 0x04,      0x14,
@@ -466,7 +477,7 @@ const unsigned char IIC_DATA_CMDS[] ={//循环次数 /温度 /剩余容量  /电流
 *              ld_iic_read_isok  查看状态机是否完成读操作
 *  状态机实现:
            开始--->检测应答---->
-              (1)读id           ld_bq27541_read_id_start---->延时50ms(状态机释放cpu)---->ld_bq27541_read_id_end
+              (1)读id           ld_bq27541_read_id_start-------------->延时50ms(状态机释放cpu)---->ld_bq27541_read_id_end
               (2)读数据         ld_bq27541_read_words
               (3)加解密         ld_bq27541_de_encrypt_charge_start---->延时50ms(状态机释放cpu)---->ld_bq27541_de_encrypt_charge_end
               (4)读输出         ld_bq27541_output_flag
@@ -477,50 +488,45 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 {
 	U8 tmp=0;
 	fsm_time_set(time(0));
+	U8 sda = (piic->opposite)?(piic->scl):(piic->sda);
+	U8 scl = (piic->opposite)?(piic->sda):(piic->scl);
+	if(piic==NULL)return;
 	
-	Start(开始)
+	Start()
 	{
-		if((piic==NULL) || (piic->inited==FALSE) || (piic->inited==FALSE))return;
+		if( (piic->inited==FALSE) || (piic->inited==FALSE))return;
 		if(piic->start)
 		{
-			
-			if(ld_bq27541_check_ack(sda_port(),scl_port()))//检测应答
+			if(ld_bq27541_check_ack(sda,scl))//检测应答
 			{
 				switch(piic->cmd)
-				{
-					//读ic
-					case RC_READ_ID:
-						if(ld_bq27541_read_id_start(sda_port(),scl_port()))
-						{goto 开始读id延时50ms;}
+				{	
+					case RC_READ_ID://读ic
+						if(ld_bq27541_read_id_start(sda,scl))
+							goto 读id延时50ms;
 						else 
 							goto IIC_FSM_Error;
-						
-					//读数据
-					case RC_READ_DATA:
-						if(ld_bq27541_read_words(sda_port(),scl_port(),(U8*)IIC_DATA_CMDS,4,piic->data))
-						{ piic->len=8; goto IIC_FSM_Sucess;}
+				
+					case RC_READ_DATA://读数据
+						if(ld_bq27541_read_words(sda,scl,(U8*)IIC_DATA_CMDS,4,piic->data)){ piic->len=8; goto IIC_FSM_Sucess;}
 						else
 							goto IIC_FSM_Error;
 						
-					//加解密	
-					case RC_LOCK:if(tmp==0)tmp=0x06;
+					case RC_LOCK:if(tmp==0)tmp=0x06;//加解密	
 					case RC_UNLOCK:if(tmp==0)tmp=0x05;
 					case RC_UNLOCK_1HOUR:if(tmp==0)tmp=0x07;
-						if(ld_bq27541_de_encrypt_charge_start(sda_port(),scl_port(),tmp))
-						{goto 开始加解密延时50ms;}
+						if(ld_bq27541_de_encrypt_charge_start(sda,scl,tmp))goto 加解密延时50ms;
 						else 
 							goto IIC_FSM_Error;
 						
 					//输出标志
 					case RC_OUTPUT:
-						if(ld_bq27541_output_flag(sda_port(),scl_port(),(U8*)piic->data))
-						{piic->len=1;goto IIC_FSM_Sucess;}
+						if(ld_bq27541_output_flag(sda,scl,(U8*)piic->data)){piic->len=1;goto IIC_FSM_Sucess;}
 						else 
 							goto IIC_FSM_Error;
 					default:
 						goto IIC_FSM_Error;
 				}			
-				
 			}
 			else
 			{//检测应答失败
@@ -529,10 +535,10 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 		}
 	}
 	
-	State(开始读id延时50ms){waitmsx(50);goto 结束读id;}
+	State(读id延时50ms){waitmsx(50);goto 结束读id;} //大费周章===>就是为了这句话，释放cpu
 	State(结束读id)
 	{
-	  if(ld_bq27541_read_id_end(sda_port(),scl_port(),(U8*)piic->data))
+	  if(ld_bq27541_read_id_end(sda,scl,(U8*)piic->data))
 		{
 			piic->len=13;
 			goto IIC_FSM_Sucess;
@@ -541,20 +547,16 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 			goto IIC_FSM_Error;
 	}
 	
-	State(开始加解密延时50ms){waitmsx(50);goto 结束加解密;}
+	State(加解密延时50ms){waitmsx(50);goto 结束加解密;}
 	State(结束加解密)
 	{
-		if(ld_bq27541_de_encrypt_charge_end(sda_port(),scl_port()))
-		{
-			if(ld_bq27541_output_flag(sda_port(),scl_port(),(U8*)piic->data))//读取标志
+		if(  ld_bq27541_de_encrypt_charge_end(sda,scl) 
+	    && ld_bq27541_output_flag(sda,scl,(U8*)piic->data)
+		  )//读取标志
 				goto IIC_FSM_Sucess;
 			else 
 				goto IIC_FSM_Error;
-		}	
-		else 
-			goto IIC_FSM_Error;
 	}
-	
 	Default()
 	return ;
 	
@@ -569,7 +571,9 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 	 memset(&piic->fsm,0,sizeof(FSM));
 	 return;
 }
-
+/*===================================================
+            状态机运行所在的线程
+====================================================*/
 #include "contiki.h"
 AUTOSTART_THREAD_WITH_TIMEOUT(iic)
 {
@@ -577,11 +581,11 @@ AUTOSTART_THREAD_WITH_TIMEOUT(iic)
 	while(1)
 	{
 		static U8 i = 0;
-		for(i=0;i<IIC_CHANNEL_MAX;i++)
+		for(i=0;i<IIC_CHANNEL_MAX;i++)//遍历所有iic通道
 		{
 			if((iics[i].inited==TRUE) && (iics[i].start==TRUE))
 			{
-				iic_fsm(iics+i,&(iics+i)->fsm);
+				iic_fsm(iics+i,&(iics+i)->fsm);//交给状态机处理
 			}
 		}
 		os_delay(iic,10);

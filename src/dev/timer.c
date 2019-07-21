@@ -4,7 +4,7 @@
 
 /*使用定时器3,频率100us*/
 #include "stm32f0xx_tim.h"
-void timer_init()
+void ld_timer3_init(void)
 {
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
   NVIC_InitTypeDef NVIC_InitStructure;

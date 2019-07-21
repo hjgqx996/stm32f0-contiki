@@ -10,9 +10,7 @@
 					3.多个B类出现时，按电量最大的排队，
 					4.
 ====================================================*/
-#include "lib.h"
-#include "channel.h"
-#include "string.h"
+#include "includes.h"
 
 
 /*最大仓道数*/
@@ -38,85 +36,17 @@ static Queue_Type list[MAX_CHANNEL];    //列表
 /*===================================================
                 本地函数
 ====================================================*/
-//初始化
-static void queue_init(void)
-{
-	memset(ready,0,sizeof(ready));
-	memset(urgent,0,sizeof(urgent));
-	memset(full,0,sizeof(full));
-}
-//插入一个列表
-static BOOL queue_insert(Queue_Type*qt,Channel*ch)
-{
-	int i = 0;
-	queue_lock();
-	for(;i<MAX_CHANNEL;i++){
-		if(qt[i].used==0){
-			memset(&qt[i],0,sizeof(Queue_Type));
-			qt[i].ch=ch;
-			queue_unlock();
-			return TRUE;
-		}
-	}
-	queue_unlock();
-	return FALSE;
-}
-
-//从一个列表删除
-static BOOL quque_remove(Queue_Type*qt,Channel*ch)
-{
-  int i = 0;
-	queue_lock();
-	for(;i<MAX_CHANNEL;i++){
-		if(qt[i].used==1&&qt[i].ch==ch){
-			memset(&qt[i],0,sizeof(Queue_Type));
-			queue_unlock();
-			return TRUE;
-		}
-	}
-	queue_unlock();
-	return FALSE;
-}
-
-/*查找列表中的仓道*/
-static Queue_Type*where_is_queue(Channel*ch)
-{
-	int i = 0;
-	Queue_Type*qt=NULL;
-	queue_lock();
-	for(;i<MAX_CHANNEL;i++){
-		if(ready[i].used==1&&ready[i].ch==ch){qt=&ready[i];goto WHERE_END;}
-		if(urgent[i].used==1&&urgent[i].ch==ch){qt=&urgent[i];goto WHERE_END;}
-		if(full[i].used==1&&full[i].ch==ch){qt=&full[i];goto WHERE_END;}
-	}
-			
-	WHERE_END:
-	queue_lock();
-	return qt;
-}
-  
-
 /*排队调度线程*/
-#include "contiki.h"
-static struct etimer et_queue;
-PROCESS(thread_queue, "充电调度");
-AUTOSTART_PROCESSES(thread_queue);
-PROCESS_THREAD(thread_queue, ev, data)  
+AUTOSTART_THREAD_WITH_TIMEOUT(queue)
 {
 	//当前正在充电的个数
-	static U8 charge_counter;                
+	static U8 charge_counter;   
+  memset(list,0,sizeof(list));	
 	PROCESS_BEGIN();
 	while(1)
 	{
 		
-		//1.紧急列表,先入先充
-		
-		//2.就绪列表,冒泡排序,电量大的先充
-		
-		//3.完成列表,冒泡排序,电量小的先充
-		
-		//延时10ms
-    os_delay(et_queue,10);
+    os_delay(queue,10);
 	}
 
 	PROCESS_END();
@@ -130,15 +60,7 @@ PROCESS_THREAD(thread_queue, ev, data)
 */
 BOOL queue_regist(Channel*ch)
 {
-  //电量==0 放入:紧急列表
-	//充电完成,放入:完成列表
-	//其它:放入就绪列表 
-	if(ch->Ufsoc==0)
-		return queue_insert(urgent,ch);
-	if(ch->cs.full_charge==1)
-		return queue_insert(full,ch);
-	else
-		return queue_insert(ready,ch);
+
 }
 
 /*
@@ -147,9 +69,7 @@ BOOL queue_regist(Channel*ch)
 */
 int queue_isok(Channel*ch)
 {
-  Queue_Type*qt = where_is_queue(ch);
-	if(qt==NULL)return -1;
-	return qt->charge;
+
 }
 
 /* 
@@ -159,10 +79,5 @@ int queue_isok(Channel*ch)
 */
 BOOL queue_delete(Channel*ch)
 {
-  Queue_Type *qt = where_is_queue(ch);
-	queue_lock();
-	if(qt==NULL){queue_unlock();return FALSE;}
-	memset(qt,0,sizeof(Queue_Type));
-	queue_unlock();
-	return TRUE;
+
 }

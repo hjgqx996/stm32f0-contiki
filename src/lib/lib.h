@@ -14,6 +14,6 @@ U8 cs8(volatile U8*data,U32 len);
 
 
 //¾ö¶Ïtime out
-#define istimeout(start32,end32)  if((start32-end32)>0x80000000)
+#define istimeout(now32,end32)  ((now32-end32)<0x80000000)
 #endif
 

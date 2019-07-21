@@ -14,10 +14,10 @@
 #define ir_unlock()
 
 //输出发送电平
-#define ir(data)       ld_gpio_set(pir->io_ir,data)
+#define ir(data)       ld_gpio_set(io_ir,data)
 
 //读取输入电平
-#define re()           ld_gpio_get(pir->io_re)
+#define re()           ld_gpio_get(io_re)
 
 //等待re直到re!=level,等待时间片为tick_us,等待总超时为timeout_us
 //默认等待时间片为FSM_TICK,可自行定义
@@ -75,9 +75,12 @@ static IR_Type irs[IR_CHANNEL_MAX];
 */
 static void ir_fsm(IR_Type*pir,FSM*fsm,U32 tick)
 {
+	U8 io_re = pir->io_re;
+	U8 io_ir = pir->io_ir;
+	
 	fsm_time_add(tick);//状态机时间	
 	//////////////////////////////////
-	Start(开始)
+	Start()
 	{
     if( (pir->start==TRUE) && (pir->inited==TRUE) )
 			goto 发送命令码;
@@ -218,7 +221,7 @@ void ld_ir_init(U8 ch,U8 io_ir,U8 io_re)
 	if(ch>=IR_CHANNEL_MAX){
 		ir_unlock();return;
 	}
-  memset(&irs[ch],0,sizeof(IR_Type));
+	memset(&irs[ch],0,sizeof(IR_Type));
 	irs[ch].io_ir=io_ir;
 	irs[ch].io_re=io_re;
 	irs[ch].start=FALSE;
@@ -226,11 +229,6 @@ void ld_ir_init(U8 ch,U8 io_ir,U8 io_re)
 	irs[ch].inited = TRUE;
 	ir_unlock();
 }
-void ld_ir_timer_init(void)
-{
-	timer_init();
-}
-
 //定时器中断服务，用于收发时序
 void ld_ir_timer_100us(void)
 {
@@ -256,7 +254,7 @@ BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 		irs[ch].wanlen=wanlen;
 		irs[ch].start=TRUE;
 		memset(irs[ch].data,0,IR_DATA_MAX);
-    memset(&irs[ch].fsm,0,sizeof(FSM));//复位状态机
+		memset(&irs[ch].fsm,0,sizeof(FSM));//复位状态机
 		ir_unlock();
 		return TRUE;
 	}
