@@ -120,7 +120,7 @@
 /** @addtogroup STM32F0xx_System_Private_Variables
   * @{
   */
-uint32_t SystemCoreClock    = 48000000;
+uint32_t SystemCoreClock    = 48000000;//48000000;
 __I uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 
 /**
@@ -286,9 +286,20 @@ static void SetSysClock(void)
   RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE_DIV1;
 
   /* PLL configuration = (HSI/2) * 12 = ~48 MHz */
-  RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
-  RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLMULL12);
-            
+		if(SystemCoreClock == 8000000)
+	{
+		RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
+		RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLMULL2);
+	}else if(SystemCoreClock == 16000000)
+	{
+		RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
+		RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLMULL4);
+	}else if (SystemCoreClock == 48000000)
+	{
+		RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
+		RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLMULL12);
+	}
+    
   /* Enable PLL */
   RCC->CR |= RCC_CR_PLLON;
 

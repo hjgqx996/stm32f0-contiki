@@ -1,6 +1,7 @@
 #include "includes.h"
 
 
+void charge_fsm(U8 ch,void*arg);
 /*===================================================
                 充电流程
  严格按照 <通道给充电宝充电的逻辑.pdf> 流程控制								
@@ -8,7 +9,21 @@
 #define timeout(x)  (x<=0)
 #define wait_timeout(condition,to,linenow)  end=to;line=linenow+1;case linenow+1: \
 														                if((end>0) && (!(condition)) )return;
-																												
+																						
+/*上电检测，如果发现在有充电宝，按充电流程走*/
+void recover_when_powerup(void)
+{
+	int i = 0;
+	for(i=1;i<=CHANNEL_MAX;i++)
+	{
+		Channel*pch = channel_data_get(i);
+		if(pch==NULL)continue;
+		if(isvalid_baibi() && isvalid_daowe() )
+		{
+			charge_fsm(i,(void*)0x99);
+		}
+	}
+}
 /*-----------------------------
 1.arg  0x99 开始
 
@@ -21,7 +36,8 @@ static U8   _line[CHANNEL_MAX]={0};//当前状态
 static U8   _last[CHANNEL_MAX]={0};//上一次状态          :counter
 static int  _end[CHANNEL_MAX]={0}; //超时 ms             :wait_timeout
 static int  _timeout[CHANNEL_MAX]={0};//秒 120秒电流计时 :ato
-static BOOL _hangup[CHANNEL_MAX]={0};//计时挂起          :hang
+static BOOL _hangup[CHANNEL_MAX]={FALSE};//计时挂起      :hang
+static BOOL _request[CHANNEL_MAX]={FALSE};//申请充电     :request
 static int  _btimeout[CHANNEL_MAX]={0};//补充计时        :bto
 	
 #define line _line[ch-1]
@@ -31,11 +47,12 @@ static int  _btimeout[CHANNEL_MAX]={0};//补充计时        :bto
 #define hang _hangup[ch-1]
 #define counter _last[ch-1]
 #define bto  _btimeout[ch-1]
+#define request _request[ch-1]
 
 //计时使用外部定时器,ms:中断时长
 void charge_fms_timer(int ms)
 {
-	int i = 0;
+	int ch = 1;
 	static int second = 0;
 	BOOL is_second = FALSE;
 	
@@ -47,12 +64,15 @@ void charge_fms_timer(int ms)
 		is_second=TRUE;
 	}	
 	
-	for(;i<CHANNEL_MAX;i++)
+	for(ch=1;ch<=CHANNEL_MAX;ch++)
 	{
-		if(_hangup[i])continue;
-		if(_end[i]>0)_end[i]-=ms; //倒计时
-		if(is_second && _timeout[i]>0)
-			_timeout[i]--;
+		if(hang)continue;
+		if(end>0)end-=ms; //倒计时
+		if(is_second)
+		{
+			if(ato)ato--;
+			if(bto)bto--;
+		}
 	}
 }
 
@@ -73,7 +93,7 @@ void charge_fsm(U8 ch,void*arg)
 		
 		//识别/再识别
 		case 2:
-						wait_timeout(is_readok(), 3000, 2);//3秒内是否识别
+						wait_timeout(is_has_read(), 3000, 2);//3秒内是否识别
 						/*---------------能识别---------------------------------*/
 						if(is_readok())
 						{						
@@ -94,7 +114,6 @@ void charge_fsm(U8 ch,void*arg)
 						}
 						return;
 					 }
-		break;
 
 		//充电5秒
 		case 4:
@@ -104,8 +123,8 @@ void charge_fsm(U8 ch,void*arg)
 							wait_timeout(0,5000, 6);//等待5秒
 							line=2;last=4;return;   //==》再识别一次
 						}
-						else{line=0;return;}//无输出//复位
-						break;
+						else{line=0;return;}//无输出//复位,从头开始 
+
 			 
 						
 		//充电10分钟
@@ -119,17 +138,17 @@ void charge_fsm(U8 ch,void*arg)
 						}
 						//无输出
 						else{line=20;return;}     //无输出==>停止充电
-						break;						
+						
 
 		//停止充电==>充电7小时
 		case 20:
 						request_charge_on(ch,7*3600,FALSE);//充电7小时
-						line=24;end=ato=counter=bto=0;return;
-		break;
+						line=24;ato=counter=bto=0;end =7*3600*1000;return;
+
 						
 		//充电7小时
 	  case 24:
-						if(timeout(end) || pch->state.full_charge)
+						if(timeout(end) || pch->state.full_charge)//充电满 or 超时
 						{
 							request_charge_off(ch);
 							end=ato=counter=bto=0;
@@ -148,6 +167,7 @@ void charge_fsm(U8 ch,void*arg)
 							{
 								end=ato=counter=bto=0;
 								request_charge_off(ch);
+								request=TRUE;
 								line=30;
 								return;
 							}
@@ -162,6 +182,7 @@ void charge_fsm(U8 ch,void*arg)
 						{
 							bto=3*3600;
 							request_charge_on(ch,bto,FALSE);
+							request=TRUE;
 						}
 					}
 					
@@ -169,34 +190,50 @@ void charge_fsm(U8 ch,void*arg)
 					{
 						end=ato=counter=bto=0;
 						request_charge_off(ch);
-						line=30;return;//充电完成
+						line=30;request=FALSE;
+						return;//充电完成
 						
 					}
 		break;
 					
 		//充电结束
-		case 30:				
+		case 30:
+					request=FALSE;
 		break;
 	}
 	
-	  //无输出时，挂起计时
+	  
 		if(line>=24)
 		{
-			if(isout5v()==0)
+			//申请输出，无输出时，挂起计时
+			if( ((isout5v()==0) && (request==TRUE)) )
 				hang=TRUE;
 			else 
 				hang=FALSE;
+			
+			//充电宝读不到,复位，从头开始
+			if( isvalid_baibi() && is_readerr() )
+			{
+				line=0;
+				return;
+			}
 	  }
 		
 		//判断充电电流<100mA持续2min
-		if( (pch->AverageCurrent<STOP_CURRENT_MAX) && (line>=24) && (pch->state.full_charge!=1))
+		if( (pch->AverageCurrent<STOP_CURRENT_MAX) && (line>=24) && (pch->state.full_charge!=1) && (pch->state.charging))
 		{
-			if(ato==0)ato=time(0)+1000*STOP_CURRENT_TIMEOUT;
-			else{
-				if(timeout(ato))
-					pch->state.full_charge=1;
-			}
-		}else ato=0;
+			if(ato==0)ato=STOP_CURRENT_TIMEOUT;
+		}
+		if( pch->AverageCurrent>=STOP_CURRENT_MAX)
+		{
+			ato = 0;
+		}
+		if(ato==1)
+		{
+			pch->state.full_charge=1;
+			request_charge_off(ch);  //申请断电
+			request=FALSE;           //		
+		}
 }
 
 /*===================================================
@@ -206,6 +243,10 @@ AUTOSTART_THREAD_WITH_TIMEOUT(insert)
 {
 	static int i= 0;
 	PROCESS_BEGIN();
+	
+	os_delay(insert,500);
+	recover_when_powerup();//上电检测到已经有宝，按插入流程充电
+	
 	while(1)
 	{
 		for(i=1;i<=CHANNEL_MAX;i++)

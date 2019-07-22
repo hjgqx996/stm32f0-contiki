@@ -63,6 +63,7 @@ typedef struct{
 
 /*充电宝输出标志*/
 typedef enum{
+	BAO_OUTPUT_NULL= 0x00,
 	BAO_ALLOW   = 0x05,  					//充电宝允许输出
 	BAO_NOTALLOW= 0x06,  					//充电宝不允许输出
 	BAO_ALLOW_ONE_HOUR = 0x07,  	//允许输出1小时
@@ -72,8 +73,15 @@ typedef enum{
 typedef struct{	
 	/*--------------配置接口--------------------------*/
 	ChannelConfigureMap*map;        //通道控制io配置
-	U8 addr;                        //通道地址flash[]<----System.addr_ch-------Channel.addr
-
+	U8 addr;    
+	//通道地址flash[]<----System.addr_ch-------Channel.addr
+	/*--------------iic方向切换------------------------*/
+	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
+	U8  iic_dir_counter;             //出错计数
+	/*--------------iic,ir切换------------------------*/
+	U8 iic_ir_mode;                 //iic方向 0:正常方向  1:方向反转
+	U8 iic_ir_mode_counter;         //出错计数
+	
 	/*-------------通道数据-----------------------------iic-----ir-*/
 	volatile U8  Ufsoc;             //剩余电量  %        有     有
 	volatile U16 Voltage;           //电压,单位 mV       无     有
@@ -90,20 +98,11 @@ typedef struct{
 	U8 readok;                      //读id,读数据，是否正常,计数>=2正常
 	S8 readerr;                     //读出错计数
 
-
-	/*--------------iic方向切换------------------------*/
-	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
-	U8  iic_dir_counter;             //出错计数
-
-	/*--------------iic,ir切换------------------------*/
-	U8 iic_ir_mode;                 //iic方向 0:正常方向  1:方向反转
-	U8 iic_ir_mode_counter;         //出错计数
-
 	/*--------------运行状态数据----------------------*/
 	ChannelState state;             //运行状态
 	ChannelWarn  warn;              //运行告警
 	ChannelError error;             //运行错误
-
+	
 	/*--------------异常弹仓--------------------------*/
 
 	/*--------------仓道灯----------------------------*/
@@ -182,7 +181,9 @@ void channel_error_check(U8 ch);
 #define is_ver_6()       ((pch->id[6]&0x0F)==0x06)        //6代宝
 #define is_ver_7()       ((pch->id[6]&0x0F)==0x07)        //7代宝
 #define is_ver_lte_5()   ((pch->id[6]&0x0F)<=0x05)        //5代或以下
-#define is_readok()      (pch->state.read_ok)                 //判断读取成功
+#define is_readok()      (pch->state.read_ok)             //判断读取成功
+#define is_readerr()     (pch->state.read_error)          //判断是否读失败
+#define is_has_read()    (pch->state.read_ok || pch->state.read_error) //判断是否已经读
 #define set_out5v()     ld_gpio_set(pch->map->io_mp,1) //输出5V
 #define reset_out5v()   ld_gpio_set(pch->map->io_mp,0) //不输出5V
 /*===================================================

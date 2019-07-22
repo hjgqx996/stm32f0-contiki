@@ -21,6 +21,9 @@ extern void ld_gpio_init(void);
 extern void ld_gpio_set(U32 index,U8 value);
 extern U8 ld_gpio_get(U32 index);
 
+extern void ld_hc595_init(void);
+extern void ld_hc595_reload(void);
+extern void ld_hc595_reload(void);
 /*===================================================
                 uart
 ====================================================*/

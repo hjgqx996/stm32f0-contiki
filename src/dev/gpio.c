@@ -2,12 +2,19 @@
 #include "driver_config_types.h"
 
 
-static U16 hc595data=0;//数据缓冲
+
+//static 
+	U16 hc595data=0;//数据缓冲
 /*===================================================
                 配置文件
 ====================================================*/
 extern t_gpio_map gpio_map[];
 extern const unsigned char gpio_number;
+
+extern void ld_hc595_init(void);
+void ld_hc595_send(uint32_t data);
+extern void ld_hc595_reload(void);
+
 /*===================================================
                 全局函数
 ====================================================*/
@@ -19,7 +26,7 @@ void ld_gpio_init(void)
 	{
 		 cpu_gpio_map_config(gpio_map,i);
 	}
-	HC595Init();
+	ld_hc595_init();
 }
 
 //设置电平
@@ -35,10 +42,11 @@ void ld_gpio_set(U32 index,U8 value)
 		}else{
 			hc595data|= (1<<gpio_map[index].xPin);
 		}
-		HC595Send(hc595data);
+		ld_hc595_send(hc595data);
 	}
 	else
    cpu_gpio_map_set(gpio_map,index,value);
+	
 }
 
 /*读取电平

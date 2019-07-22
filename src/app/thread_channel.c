@@ -30,14 +30,16 @@ void save_data(Channel*ch,U8*data)
 
 //约定 i:尝试次数 j:超时计数 
 #define read(cmd,times,timeout,sucess,fail,error) \
-	/*数据复位*/fsm->i=0;fsm->j=timeout/10; \
-	/*尝试3次*/		while(fsm->i++<times) \
+	/*数据复位*/  fsm->i=0; \
+	/*尝试3次*/		while(fsm->i<times) \
 								{ \
+	/*计数++*/			fsm->i++;fsm->j=timeout/20; \
 									do{ \
+										  waitmsx(20); \
 	/*读数据*/					err=channel_read(pch,cmd,dataout); \
 	/*完成跳出*/				if(err>=2)break; \
-	/*等待完成*/				waitms(10); \
-	/*本次超时*/			}while(fsm->j--!=0); \
+											fsm->j--; \
+	/*本次超时*/			}while(fsm->j!=0); \
 	/*成功*/				if(err==2) sucess \
 	/*失败*/				else fail \
 	/*几次都失败*/			if(fsm->i>=3)error \
@@ -60,8 +62,16 @@ static void read_data_fsm(Channel*pch,U8 ch)
 
 	fsm_time_set(time(0));
 	
-	if(pch->readerr>BAO_READ_ERROR_RETYR_TIMES)pch->readok=0;
-	if(pch->readok>=2){pch->readok=2;pch->readok=1;}
+	//根据失败次数，判断成功 or 失败
+	if(pch->readerr>=BAO_READ_ERROR_RETYR_TIMES) 
+	{
+		channel_data_clear(ch);
+		pch->readok=0; pch->readerr=0;pch->state.read_error=1;pch->state.read_ok=0;
+	}
+	if(pch->readok>=BAO_READ_OK_RETYR_TIMES)     
+	{
+		pch->readerr=0;pch->readok=0;pch->state.read_error=0;pch->state.read_ok=1;
+	}
 	
 	/*摆臂开关有效可以读数据*/
 	if(isvalid_baibi())
@@ -75,10 +85,11 @@ static void read_data_fsm(Channel*pch,U8 ch)
 			read(RC_READ_ID,2,1000,             //读id,2次----超时1s
 					{
 						memcpy(pch->id,dataout,10);   //成功
-						pch->readok++;goto data;
+						pch->readok++;pch->readerr=0;goto data;
 					},
 					{pch->readerr++;},              //失败
 					{fsm->line=0;return;});         //错误
+			
 		}
 
 		//读数据
@@ -91,14 +102,17 @@ static void read_data_fsm(Channel*pch,U8 ch)
 		//加密 6,7,8代宝(非租借条件下)
 		State(lock678)
 		{
-			if(is_ver_6() || is_ver_7())
+			if((is_ver_6() || is_ver_7()) && (is_system_lease()==FALSE) )
 			{
 				if(pch->bao_output!=0x06)
 				{
 					/*------读id--1次--超时1s---成功保存数据-------------------失败次数++-------- 都失败复位状态机*/
-					read(RC_LOCK ,1     ,1000  ,{pch->bao_output=dataout[0];},{pch->readerr++;},{fsm->line=0;return;});
+					read(RC_LOCK ,1     ,1000  ,{pch->bao_output=(BaoOutput)dataout[0];},{pch->readerr++;},{fsm->line=0;return;});
 				}
 			}
+			
+			/*延时*/
+			waitmsx(1000);
 			
 		  //复位状态机，从头开始
 			memset(fsm,0,sizeof(FSM));
@@ -109,7 +123,6 @@ static void read_data_fsm(Channel*pch,U8 ch)
 
 	/*摆臂开关无效数据清0*/
 	else {
-		delayms(1);
 		if(!isvalid_baibi())
 			channel_data_clear(ch);
 	}
@@ -122,48 +135,29 @@ static void read_data_fsm(Channel*pch,U8 ch)
 AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 {
 	U8 i = 0;
-	static time_t t = 0;
-	
 	PROCESS_BEGIN();          
 	while(1)
 	{
-		t=time(0);
 		for(i=1;i<=CHANNEL_MAX;i++)
-		{
+		{		
+		/*=====================状态位检测=========================*/
+							channel_state_check(i);
+		/*=====================告警位检测=========================*/
+							channel_warn_check(i);
+		/*=====================错误位检测=========================*/ 
+							channel_error_check(i);		
+		/*=====================读取充电宝=========================*/
 			Channel*pch = channel_data_get(i);
-				if(pch==NULL)continue;                        
-			read_data_fsm(pch,i);
+				if(pch==NULL)continue; 
+			  read_data_fsm(pch,i);
+		/*=====================系统灯=============================*/	
+			if(pch->error.baibi || pch->error.daowei )ld_system_flash_led(100); //开关错误，100ms
+			if( (time(0)/1000)%5==0 )ld_system_flash_led(2000);                 //5
 		}
-		
-		//读失败，不延时    读成功：最小延时2.8秒
-		if(t!=0) { t= (BAO_READ_DATA_MAX_MS -(time(0)>t?time(0)-t:(0xFFFFFFFF-t+time(0))))%BAO_READ_DATA_MAX_MS;}
-		if(t>0){os_delay(channel,t);}
+	  os_delay(channel,10);
 		ld_iwdg_reload();
 		
 	}
 	PROCESS_END();
 }
 
-/*===================================================
-						仓道任务: 实时检测仓道状态
-====================================================*/
-AUTOSTART_THREAD_WITH_TIMEOUT(channel_state)
-{
-	static U8 i = 0;
-	PROCESS_BEGIN();
-	while(1)
-	{
-		for(i=0;i<CHANNEL_MAX;i++)
-		{
-		/*=====================状态位检测=========================*/
-							channel_state_check(i+1);
-		/*=====================告警位检测=========================*/
-							channel_warn_check(i+1);
-		/*=====================错误位检测=========================*/ 
-							channel_error_check(i+1);
-		}
-		os_delay(channel_state,100);
-		ld_iwdg_reload();
-	}
-	PROCESS_END();
-}

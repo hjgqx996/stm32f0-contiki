@@ -97,7 +97,7 @@ void send_add_state(HPacket*hp,U8 add,U8 s)
 	uint8_t send_buf[2];
 	send_buf[0]=add;//控制命令
 	send_buf[1]=s;//处理结果		
-	packet_send(hp,0x06,2,&s,0xFF);//处理结果	
+	packet_send(hp,0x06,2,send_buf,0xFF);//处理结果	
 }
 
 /*===================================================
@@ -145,8 +145,9 @@ static void com_send_tick(HPacket*hp)
 }
 
 /*租借命令*/
-static volatile U8 lch=0;                      							//仓道位置
-static volatile U32 ltimeout=0;                							//超时时间	
+static volatile U8 lch=0;                      							 //仓道位置
+static volatile U32 ltimeout=0;                							 //超时时间	
+BOOL is_system_lease(void) {return (BOOL)( (lch!=0) && (ltimeout!=0));} //是否租借
 AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 {
 	static HPacket*hp;
@@ -166,12 +167,12 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 			lch = hp->p.data[0];      //保存数据:租借位置
 			ltimeout = 1000*hp->p.data[11];//保存数据:租借时间(ms)
 		
-			if(buffer_cmp(pch->id,hp->p.data+1,CHANNEL_ID_MAX)==FALSE){send_lease_state(hp,Lease_differ,lch);continue;}//充电宝编号不对
+			if(buffer_cmp(pch->id,hp->p.data+1,CHANNEL_ID_MAX)==FALSE){send_lease_state(hp,Lease_differ,lch);goto LEASE_RESET_CONTINUE;}//充电宝编号不对
 			
 			if(pch->state.read_ok)//充电宝是否有效
 			{
 				if(is_ver_6() || is_ver_7())//6代宝解锁,600ms,失败返回应答包
-					UnlockBao(RC_UNLOCK,600,comm_lease,{},{send_lease_state(hp,Lease_decrypt_fall,lch);continue;},2);
+					UnlockBao(RC_UNLOCK,600,comm_lease,{},{send_lease_state(hp,Lease_decrypt_fall,lch);goto LEASE_RESET_CONTINUE;},2);
 					
 				channel_led_flash(channel_data_get_index(pch),ltimeout);//闪灯	
 				request_charge_hangup_all(1);//关闭输出,1s
@@ -186,6 +187,9 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 				else
 					send_lease_state(hp,Lease_dianchifa_fall,lch);//电磁阀失败
 			}
+			
+			LEASE_RESET_CONTINUE:
+			lch=ltimeout=0;
 			continue;
 		}
 	}
@@ -310,7 +314,7 @@ static void com_process(HPacket*hp)
 	if(p->addr==system.addr485)
 		switch(p->cmd)
 		{
-			case PC_HEART_BREAK	:   ld_system_flash_led(2000);	com_send_tick(hp);		return;                         //系统灯2000ms闪，发送心跳
+			case PC_HEART_BREAK	:   ld_system_flash_led(500);	com_send_tick(hp);		return;                         //系统灯500ms闪，发送心跳
 			case PC_LEASE				:		process_post(&thread_comm_lease,PROCESS_EVENT_COMM_LEASE,(void*)hp);return; //同步处理,事件发送给了线程thread_lease
 			case PC_RETURN			:		com_return(hp);				return;
 			case PC_CTRL				:		process_post(&thread_comm_ctrl,PROCESS_EVENT_COMM_CTRL,(void*)hp);return;   //同步处理,事件发送给了线程thread_lease
@@ -319,7 +323,7 @@ static void com_process(HPacket*hp)
 			
 			case PC_UPDATE_DATA://数据放在bootloader接收这里不接收
 			default:break;
-			break;
+
 		}	
 	//烧录工具通讯
 	else if(p->addr==0xFE)

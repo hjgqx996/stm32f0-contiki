@@ -45,13 +45,13 @@ typedef enum{
 #define IR_TO_IIC_SWITCH_ERROR_MAX   2
 
 //<o>iic------>红外 切换时，通讯失败次数
-#define IIC_TO_IR_SWITCH_ERROR_MAX   3
+#define IIC_TO_IR_SWITCH_ERROR_MAX   2
 
 //<o>iic切换方向时，通讯失败次数
 #define IIC_DIR_SWITCH_MAX        3
 
 //<o>循环读充电宝时长(ms)
-#define BAO_READ_DATA_MAX_MS      2500
+#define BAO_READ_DATA_MAX_MS      1000
 
 //<o>告警温度(度)
 #define BAO_WARN_TEMPERATURE      60
@@ -59,6 +59,8 @@ typedef enum{
 #define BAO_ERROR_TEMPERATURE      65
 //<o>读失败尝试次数
 #define BAO_READ_ERROR_RETYR_TIMES         6
+//<o>读成功次数
+#define BAO_READ_OK_RETYR_TIMES            2
 
 //<e> 是否使用bootloader
 #define USING_BOOT_LOADER                  0

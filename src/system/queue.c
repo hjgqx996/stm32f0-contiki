@@ -18,8 +18,9 @@
 
 #define l list[ch]
 
-static BOOL inited = FALSE;
-
+static BOOL inited = FALSE;   //是否初始化
+static BOOL hangall = FALSE;  //是否挂起
+static U32  hangtime = 0;     //挂起时间
 /*排队结构*/
 #pragma pack(1)
 typedef struct{
@@ -38,12 +39,17 @@ static Queue_Type list[CHANNEL_MAX]={0,0,0,0,0,0,0,0};    //列表
 /*===================================================
                 本地函数
 ====================================================*/
+/*
+*  只有一个hard在最前面:保证有一个宝在充电
+*  [hard] [......] [hard][hard]...
+*/
 /*冒泡排序:hard==1,value=200   hard==0,value=剩余电量*/
 static void bubble_sort(void)
 {
 	int va = 0,vb=0;
 	int i=0,j=0;
   Channel*pcha,*pchb;
+	BOOL first = FALSE;
 	for(;i<CHANNEL_MAX-1;i++)
 	{
 		for(j=i+1;j<CHANNEL_MAX;j++)
@@ -51,8 +57,9 @@ static void bubble_sort(void)
 			pcha = channel_data_get(list[i].ch);
 			pchb = channel_data_get(list[j].ch);
 			if(pcha==NULL || pchb==NULL)continue;
-			va= (list[i].used)?( (list[i].hard)?(200):(pcha->Ufsoc)):(0);  //应急充电在前
-			vb= (list[j].used)?( (list[j].hard)?(200):(pchb->Ufsoc)):(0);  //之后，电量最大的依次排列
+			va= (list[i].used)?( (list[i].hard)?((first)?(0):(200)):(pcha->Ufsoc)):(0);  //应急充电在前
+			if(va==200 && first==FALSE)first=TRUE;
+			vb= (list[j].used)?( (list[j].hard)?((first)?(0):(200)):(pchb->Ufsoc)):(0);  //之后，电量最大的依次排列
 			if(va<vb)
 			{
 				//交换
@@ -72,17 +79,23 @@ static int charge_front(void)
 	Channel*pch;
 	for(;ch<CHANNEL_MAX;ch++) //选择前面的充电
 	{
-		pch = channel_data_get(ch+1);
+		pch = channel_data_get(l.ch);
 		if(pch==NULL)continue;
-		if(l.used)
+		if(l.used && (hangall==FALSE))
 		{
 			if(charge_counter<CHANNEL_CHARGE_MAX)
 			{	
 				charge_counter++;
+				l.charge=1;       //正在充电
 				set_out5v();
-			}else reset_out5v();
-		}else reset_out5v();
+				continue;
+			}
+		}			
+		//不充电
+		reset_out5v();
+		l.charge=0;
 	}	
+	return charge_counter;
 }
 
 /*计时*/
@@ -92,31 +105,42 @@ static void charge_timeout(void)
 	if(t==0)t=time(0)/1000;
 	if( t != (time(0)/1000) )
 	{
-		int ch=0;           
-		for(;ch<CHANNEL_MAX;ch++) //选择前面的充电
+		t = time(0)/1000;
+		//正常倒计时
+		if(hangall==FALSE)
 		{
-			if(l.used)
+			int ch=0;           
+			for(;ch<CHANNEL_MAX;ch++) //选择前面的充电
 			{
-				if(l.charge_time!=0)
-					l.charge_time--;
-				else
-					l.used=0;//停止充电
-			}
-		}		
+				if(l.used)
+				{
+					if(l.charge_time!=0)
+						l.charge_time--;
+					else
+						l.used=0;//停止充电
+				}
+			}		
+		}
+		//挂起倒计时
+		else{
+			if(hangtime>0)hangtime--;
+		}	
 	}
+	if(hangtime==0)hangall=FALSE;
 }
 
 /*排队调度线程*/
 AUTOSTART_THREAD_WITH_TIMEOUT(queue)
 {
-  
-  memset(list,0,sizeof(list));	
 	PROCESS_BEGIN();
 	while(1)
 	{
-		bubble_sort();          //排序
-		charge_timeout();			  //计时
-		charge_front();         //前面先充
+		if(hangall==FALSE)
+		{
+			bubble_sort();          //排序
+			charge_timeout();			  //计时
+			charge_front();         //前面先充		
+		}
     os_delay(queue,20);     
 	}
 
@@ -134,6 +158,19 @@ static void request_init(void)
 			l.ch=ch+1;
 		}
 	}
+	inited=TRUE;
+}
+static Queue_Type*request_channel_find(U8 channel)
+{
+	if(!inited)request_init();
+	{
+		int ch = 0;
+		for(;ch<CHANNEL_MAX;ch++)
+		{
+			if(l.ch==channel)return &l;
+		}
+	}
+	return NULL;
 }
 /*===================================================
                 全局函数
@@ -142,20 +179,40 @@ static void request_init(void)
 /*申请充电*/
 BOOL request_charge_on(U8 ch,U32 seconds,BOOL hard)
 {
+	Queue_Type *qt = request_channel_find(ch);
 	if(!inited)request_init();
-	if(ch==0 || ch>= CHANNEL_MAX)return FALSE;ch--;
-  
+	if(qt==NULL)return FALSE;
+  qt->hard=hard;
+	qt->charge_time = seconds;
+	qt->used=1;
+	return TRUE;
 }
+
 
 /*中止充电*/
 BOOL request_charge_off(U8 ch)
 {
-	if(!inited){request_init();return TRUE;}
-
+	if(!inited)request_init();
+	Queue_Type *qt = request_channel_find(ch);
+	qt->charge=qt->hard=qt->used=0;
+	qt->charge_time=0;
+  return TRUE;
 }
 
 /*挂起充电*/
 BOOL request_charge_hangup_all(U32 seconds)
 {
-	if(!inited){request_init();return TRUE;}
+	if(!inited)request_init();
+	{
+		int ch;
+		for(ch=1;ch<=CHANNEL_MAX;ch++)
+		{
+			Channel*pch = channel_data_get(ch);
+			if(pch==NULL)continue;
+			reset_out5v();
+		}
+		hangall=TRUE;
+		hangtime=seconds;
+		return TRUE;
+	}
 }

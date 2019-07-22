@@ -46,7 +46,7 @@ static READ_TYPE_MODE iic_ir_select_poll(Channel*ch,BOOL error,BOOL clear)
 	
 	if(system.iic_ir_mode==SIIM_IIC_IR)                                      //两者都可以用
 	{
-		mode = (ch->iic_ir_mode);
+		mode = (READ_TYPE_MODE)(ch->iic_ir_mode);
 		if(mode==RTM_IR)        //当前:红外
 		{
 		  ch->iic_ir_mode_counter+=(error==TRUE)?1:0;
@@ -77,7 +77,7 @@ static READ_TYPE_MODE iic_ir_select_poll(Channel*ch,BOOL error,BOOL clear)
 		}
 	}
 	
-	return ch->iic_ir_mode;
+	return (READ_TYPE_MODE)ch->iic_ir_mode;
 }
 /*----------------------------------
 充电宝操作重定向:是否忙,读 ,是否完成
@@ -108,7 +108,7 @@ static BOOL channel_read_start(U8 ch,READ_TYPE_CMD cmd,READ_TYPE_MODE mode,U8 di
 			case RC_LOCK:case RC_UNLOCK: case RC_UNLOCK_1HOUR: wanlen=1;break;
 			default: return FALSE;
 		}
-		return ld_iic_read_start(ch,dir, cmd,wanlen);
+		return ld_iic_read_start(ch,(BOOL)dir, (U8)cmd,wanlen);
 	}
 	else if(mode ==RTM_IR){
 		switch(cmd)
@@ -119,7 +119,7 @@ static BOOL channel_read_start(U8 ch,READ_TYPE_CMD cmd,READ_TYPE_MODE mode,U8 di
 			case RC_LOCK:case RC_UNLOCK: case RC_UNLOCK_1HOUR: wanlen=2;break;
 			default: return FALSE;
 		}
-		return ld_ir_read_start(ch,dir, cmd,wanlen);
+		return ld_ir_read_start(ch,(BOOL)dir, (U8)cmd,wanlen);
 	}
 	else return FALSE;
 }
@@ -159,7 +159,7 @@ U8 channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout)
 	#define s (state[ch-1])					//当前状态
 	#define t (thread[ch-1])				//当前线程
 	U8 ch = channel_data_get_index(pch);    //索引从 1 开始
-	READ_TYPE_MODE mode = pch->iic_ir_mode; //iic ir模式   
+	READ_TYPE_MODE mode = (READ_TYPE_MODE)pch->iic_ir_mode; //iic ir模式   
 	U8 dir = pch->iic_dir;                  //方向
 	if(ch==0||pch==NULL)return 0;
 
@@ -194,7 +194,7 @@ U8 channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout)
 			{
 				s=0;
 				t=0;
-				 (pch,FALSE,TRUE);//计数清0
+				iic_ir_select_poll(pch,FALSE,TRUE);//计数清0
 				return 2;
 			} 
 	  }
@@ -212,4 +212,5 @@ U8 channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout)
 		t=0;
     return 3;	
 	}
+	return s;
 }

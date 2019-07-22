@@ -10,7 +10,7 @@
 ====================================================*/
 /*仓道充电宝编号是否为NULL*/
 const U8 null_id[10] = {0,0,0,0,0,0,0,0,0,0};
-BOOL channel_id_is_not_null(U8*id){return !buffer_cmp((U8*)null_id,id,CHANNEL_ID_MAX);}
+BOOL channel_id_is_not_null(U8*id){return (buffer_cmp((U8*)null_id,id,CHANNEL_ID_MAX)==TRUE)?FALSE:TRUE;}
 
 /*所有的仓道数据缓存*/
 static Channel chs[CHANNEL_MAX]={0};
@@ -30,6 +30,7 @@ BOOL channel_data_init(void)
 		ld_ir_init(i+1,channel_config_map[i].io_ir,channel_config_map[i].io_re);
 		ld_iic_init(i+1,channel_config_map[i].io_sda,channel_config_map[i].io_scl);
 	}	
+	return TRUE;
 }
 
 /*---------------- 清除地址为ch_addr的数据---------- */
@@ -114,7 +115,7 @@ void channel_state_check(U8 ch)
 	}
 	
 	/*有宝,读取不正常*/
-	if(isvalid_daowe() && ((!is_readok()) || channel_id_is_not_null(pch->id)==FALSE))
+	if( (isvalid_daowe()) && ((is_readerr()) && (channel_id_is_not_null(pch->id))) )
 	{
 		pch->state.read_error=1;
 		pch->state.read_ok=0;
@@ -209,7 +210,7 @@ void channels_les_flash_timer(int timer_ms)
 			}
 		}
 		else{
-			if(ch->Ufsoc>CHANNEL_LED_LIGHT_UFSOC && ch->state.read_ok)//电量大于50%灯亮
+			if( (ch->Ufsoc>CHANNEL_LED_LIGHT_UFSOC) && (ch->state.read_ok) )//电量大于50%灯亮
 				ld_gpio_set(ch->map->io_led,HIGH);
 			else 
 				ld_gpio_set(ch->map->io_led,LOW);

@@ -49,4 +49,8 @@ extern System system;
 void ld_system_init(void);          /*系统数据初始化*/
 void ld_system_flash_led(int ms);  /*设置系统灯闪烁频率*/
 void ld_system_led_timer(int ms);  /*系统灯定时器处理*/
+
+
+BOOL is_system_lease(void);//是否租借
+
 #endif

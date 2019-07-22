@@ -14,9 +14,11 @@
 #define ir_unlock()
 
 //输出发送电平
+extern void ld_gpio_set(U32 index,U8 value);
 #define ir(data)       ld_gpio_set(io_ir,data)
 
 //读取输入电平
+extern U8 ld_gpio_get(U32 index);
 #define re()           ld_gpio_get(io_re)
 
 //等待re直到re!=level,等待时间片为tick_us,等待总超时为timeout_us
@@ -264,7 +266,7 @@ BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 
 BOOL ld_ir_busy(U8 ch)
 {
-	BOOL r = 0;
+	BOOL r = FALSE;
 	ch-=1;
 	ir_lock();
 	if(ch>=IR_CHANNEL_MAX){ir_unlock();return FALSE;}
@@ -279,7 +281,7 @@ BOOL ld_ir_cmd(U8 ch,U8 cmd)
 	ir_lock();
 	if(ch>=IR_CHANNEL_MAX){ir_unlock();return FALSE;}
 	ir_unlock();
-	return (cmd==irs[ch].cmd);
+	return (BOOL)(cmd==irs[ch].cmd);
 }
 
 /*查看是否读完成

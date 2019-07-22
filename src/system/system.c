@@ -10,7 +10,7 @@ System system;
 void ld_system_init(void)
 {
 	//µÿ÷∑ª÷∏¥ 
-	system.addr485 = 0x0c;
+	system.addr485 = 0x01;
 	system.addr_ch[0] = 1;
 	system.addr_ch[1] = 3;
 	system.addr_ch[2] = 5;
@@ -26,7 +26,6 @@ void ld_system_init(void)
 void ld_system_flash_led(int mode)
 {
   system.led_flash_mode = mode;
-	system.led_flash_time = 0;
 }
 
 

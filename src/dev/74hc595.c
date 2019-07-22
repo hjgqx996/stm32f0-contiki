@@ -6,7 +6,7 @@ static void delay(uint32_t t)
 	while(t--)
 		for (i = 0; i < 1; i++);
 }
-void HC595Init(void)
+void ld_hc595_init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStruct;
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
@@ -22,7 +22,16 @@ void HC595Init(void)
 	HC595_DATA_H();
 	HC595_CS_H();	
 }
-void HC595Send(uint32_t data)
+
+void ld_hc595_reload(void)
+{
+	HC595_CS_L();
+	delay(1);
+	delay(1);
+	HC595_CS_H();
+}
+
+void ld_hc595_send(uint32_t data)
 {
   uint8_t j;
   for (j = 0; j < 16; j++)
@@ -36,15 +45,9 @@ void HC595Send(uint32_t data)
     delay(1);			
     HC595_CLK_H();
   }
-	HC595Load();
+	ld_hc595_reload();
 }
-void HC595Load(void)
-{
-	HC595_CS_L();
-	delay(1);
-	delay(1);
-	HC595_CS_H();
-}
+
 
 
 

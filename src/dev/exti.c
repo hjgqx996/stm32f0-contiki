@@ -35,7 +35,7 @@ void ld_exti_init(void)
 		SYSCFG_EXTILineConfig(map->port, map->pin);
 		EXTI_InitStructure.EXTI_Line = 1<<(map->line);
 		EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-		EXTI_InitStructure.EXTI_Trigger = map->trigger;  
+		EXTI_InitStructure.EXTI_Trigger = (EXTITrigger_TypeDef)map->trigger;  
 		EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 		EXTI_Init(&EXTI_InitStructure);
 	
@@ -46,3 +46,4 @@ void ld_exti_init(void)
 		NVIC_Init(&NVIC_InitStructure);
 	}
 }
+

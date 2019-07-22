@@ -334,7 +334,7 @@ BOOL cpu_uart_isp(U8 port,char*byte,U8 type)
         //¶Á
         return cbuffer_read(&i->tx,byte);
     }
-    return 0;
+    return FALSE;
 }
 
 

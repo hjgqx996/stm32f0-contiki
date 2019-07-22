@@ -376,7 +376,7 @@ BOOL ld_bq27541_de_encrypt_charge_start(U8 sda,U8 scl,U8 cmd)
 }
 BOOL ld_bq27541_de_encrypt_charge_end(U8 sda,U8 scl)
 {
-	U8 data = 0;
+	U8 data;
 	i2c_start();
   i2c_send_byte(BQ27541_ADD_WR); 
 	i2c_check_ack()
@@ -630,12 +630,12 @@ BOOL ld_iic_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)//(ch:1-n,opposite:T
 	iics[ch].wanlen=wanlen;
 	iics[ch].opposite=opposite;
 	iic_unlock();
-
+	return TRUE;
 }
 //是否忙
 BOOL ld_iic_busy(U8 ch)
 {
-	BOOL r = 0;
+	BOOL r = FALSE;
 	ch-=1;
 	iic_lock();
 	if(ch>=IIC_CHANNEL_MAX){iic_unlock();return FALSE;}
@@ -650,7 +650,7 @@ BOOL ld_iic_cmd(U8 ch,U8 cmd)
 	iic_lock();
 	if(ch>=IIC_CHANNEL_MAX){iic_unlock();return FALSE;}
 	iic_unlock();
-	return (cmd==iics[ch].cmd);
+	return (BOOL)(cmd==iics[ch].cmd);
 }
 
 /*查看是否读完成
