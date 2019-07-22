@@ -140,19 +140,23 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 	{
 		for(i=1;i<=CHANNEL_MAX;i++)
 		{		
-		/*=====================状态位检测=========================*/
-							channel_state_check(i);
-		/*=====================告警位检测=========================*/
-							channel_warn_check(i);
-		/*=====================错误位检测=========================*/ 
-							channel_error_check(i);		
-		/*=====================读取充电宝=========================*/
-			Channel*pch = channel_data_get(i);
-				if(pch==NULL)continue; 
-			  read_data_fsm(pch,i);
-		/*=====================系统灯=============================*/	
-			if(pch->error.baibi || pch->error.daowei )ld_system_flash_led(100); //开关错误，100ms
-			if( (time(0)/1000)%5==0 )ld_system_flash_led(2000);                 //5
+			/*=====================状态位检测=========================*/
+								channel_state_check(i);
+			
+			/*=====================告警位检测=========================*/
+								channel_warn_check(i);
+			
+			/*=====================错误位检测=========================*/ 
+								channel_error_check(i);		
+				
+			/*=====================读取充电宝=========================*/
+				Channel*pch = channel_data_get(i);
+					if(pch==NULL)continue; 
+					read_data_fsm(pch,i);//读状态机
+				
+			/*=====================系统灯=============================*/	
+				if(pch->error.baibi || pch->error.daowei )ld_system_flash_led(100); //开关错误，100ms     //心跳包500ms
+				if( (time(0)/1000)%5==0 )ld_system_flash_led(2000);                 //5秒后复位为 2秒闪烁 	
 		}
 	  os_delay(channel,10);
 		ld_iwdg_reload();

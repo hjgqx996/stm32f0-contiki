@@ -1,15 +1,4 @@
 
-/*===================================================
-功能:充电排队算法
-算法描述:
-
-仓道分类: A.电量为0仓道    B.7小时内充电   C.充电完成可能补充
-
-          1.优先级 A类 > B类 >C类
-					2.多个A类出现时，先到先得，排队
-					3.多个B类出现时，按电量最大的排队，
-					4.
-====================================================*/
 #include "includes.h"
 
 /*互斥(contiki非抢占,所以不会多线程同时访问)*/
@@ -20,7 +9,7 @@
 
 static BOOL inited = FALSE;   //是否初始化
 static BOOL hangall = FALSE;  //是否挂起
-static U32  hangtime = 0;     //挂起时间
+static U32  hangtime = 0;     //挂起时间 秒
 /*排队结构*/
 #pragma pack(1)
 typedef struct{
@@ -57,13 +46,12 @@ static void bubble_sort(void)
 			pcha = channel_data_get(list[i].ch);
 			pchb = channel_data_get(list[j].ch);
 			if(pcha==NULL || pchb==NULL)continue;
-			va= (list[i].used)?( (list[i].hard)?((first)?(0):(200)):(pcha->Ufsoc)):(0);  //应急充电在前
+			va= (list[i].used)?( (list[i].hard)?((first)?(0):(200)):(pcha->Ufsoc)):(0);  //应急充电在前,有且只有一个,之后的排末尾
 			if(va==200 && first==FALSE)first=TRUE;
 			vb= (list[j].used)?( (list[j].hard)?((first)?(0):(200)):(pchb->Ufsoc)):(0);  //之后，电量最大的依次排列
 			if(va<vb)
 			{
-				//交换
-				Queue_Type t = list[i];
+				Queue_Type t = list[i];//交换
 				list[i] = list[j];
 				list[j] = t;
 			}
@@ -87,11 +75,11 @@ static int charge_front(void)
 			{	
 				charge_counter++;
 				l.charge=1;       //正在充电
-				set_out5v();
+				set_out5v();      //输出5V
 				continue;
 			}
 		}			
-		//不充电
+		//不充电:未排到,挂起的
 		reset_out5v();
 		l.charge=0;
 	}	
@@ -126,6 +114,7 @@ static void charge_timeout(void)
 			if(hangtime>0)hangtime--;
 		}	
 	}
+	//挂起超时，恢复倒计时
 	if(hangtime==0)hangall=FALSE;
 }
 
@@ -135,18 +124,15 @@ AUTOSTART_THREAD_WITH_TIMEOUT(queue)
 	PROCESS_BEGIN();
 	while(1)
 	{
-		if(hangall==FALSE)
-		{
-			bubble_sort();          //排序
-			charge_timeout();			  //计时
-			charge_front();         //前面先充		
-		}
-    os_delay(queue,20);     
+		bubble_sort();          //排序
+		charge_timeout();			  //计时
+		charge_front();         //前面先充		
+		os_delay(queue,20);     
 	}
-
 	PROCESS_END();
 }
 
+/*队列初始化*/
 static void request_init(void)
 {
 	memset(list,0,sizeof(list));
@@ -160,6 +146,7 @@ static void request_init(void)
 	}
 	inited=TRUE;
 }
+/*查找元素*/
 static Queue_Type*request_channel_find(U8 channel)
 {
 	if(!inited)request_init();
@@ -196,6 +183,11 @@ BOOL request_charge_off(U8 ch)
 	Queue_Type *qt = request_channel_find(ch);
 	qt->charge=qt->hard=qt->used=0;
 	qt->charge_time=0;
+	{
+		Channel*pch = channel_data_get(qt->ch);
+		if(pch==NULL)return FALSE;
+		reset_out5v();//马上断电
+	}
   return TRUE;
 }
 
@@ -209,10 +201,10 @@ BOOL request_charge_hangup_all(U32 seconds)
 		{
 			Channel*pch = channel_data_get(ch);
 			if(pch==NULL)continue;
-			reset_out5v();
+			reset_out5v();//禁止所有输出
 		}
 		hangall=TRUE;
-		hangtime=seconds;
+		hangtime=seconds; //挂起，并倒计时
 		return TRUE;
 	}
 }

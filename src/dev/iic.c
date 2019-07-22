@@ -486,12 +486,12 @@ const unsigned char IIC_DATA_CMDS[] ={//循环次数 /温度 /剩余容量  /电流
 */
 static void iic_fsm(IIC_Type*piic,FSM*fsm)
 {
-	U8 tmp=0;
+	U8 tmp=0,cmd;
 	fsm_time_set(time(0));
 	U8 sda = (piic->opposite)?(piic->scl):(piic->sda);
 	U8 scl = (piic->opposite)?(piic->sda):(piic->scl);
 	if(piic==NULL)return;
-	
+	cmd = piic->cmd;
 	Start()
 	{
 		if( (piic->inited==FALSE) || (piic->inited==FALSE))return;
@@ -499,63 +499,51 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 		{
 			if(ld_bq27541_check_ack(sda,scl))//检测应答
 			{
-				switch(piic->cmd)
-				{	
-					case RC_READ_ID://读ic
-						if(ld_bq27541_read_id_start(sda,scl))
-							goto 读id延时50ms;
-						else 
-							goto IIC_FSM_Error;
 				
-					case RC_READ_DATA://读数据
-						if(ld_bq27541_read_words(sda,scl,(U8*)IIC_DATA_CMDS,4,piic->data)){ piic->len=8; goto IIC_FSM_Sucess;}
-						else
-							goto IIC_FSM_Error;
-						
-					case RC_LOCK:if(tmp==0)tmp=0x06;//加解密	
-					case RC_UNLOCK:if(tmp==0)tmp=0x05;
-					case RC_UNLOCK_1HOUR:if(tmp==0)tmp=0x07;
-						if(ld_bq27541_de_encrypt_charge_start(sda,scl,tmp))goto 加解密延时50ms;
-						else 
-							goto IIC_FSM_Error;
-						
-					//输出标志
-					case RC_OUTPUT:
-						if(ld_bq27541_output_flag(sda,scl,(U8*)piic->data)){piic->len=1;goto IIC_FSM_Sucess;}
-						else 
-							goto IIC_FSM_Error;
-					default:
-						goto IIC_FSM_Error;
-				}			
+				/*--------------读id------------------------*/
+				if(cmd==RC_READ_ID)
+				{
+					if(ld_bq27541_read_id_start(sda,scl)==FALSE)goto IIC_FSM_Error;
+					waitmsx(50);//大费周章===>就是为了这句话，释放cpu
+					if(ld_bq27541_read_id_end(sda,scl,(U8*)piic->data)==FALSE)goto IIC_FSM_Error;
+					piic->len=13;
+					goto IIC_FSM_Sucess;
+				}
+				
+				/*--------------读数据------------------------*/
+				else if(cmd == RC_READ_DATA)
+				{
+					if( ld_bq27541_read_words(sda,scl,(U8*)IIC_DATA_CMDS,4,piic->data) == FALSE)goto IIC_FSM_Error;\
+					piic->len=8;
+					goto IIC_FSM_Sucess;
+				}
+
+				/*--------------加解密码------------------------*/
+				else if( (cmd	== RC_LOCK) || (cmd == RC_UNLOCK) || (cmd == RC_UNLOCK_1HOUR) )
+				{
+					if(cmd == RC_LOCK)				tmp = 0x06;
+					if(cmd == RC_UNLOCK) 			tmp = 0x05;
+					if(cmd == RC_UNLOCK_1HOUR)tmp = 0x07;
+					if(ld_bq27541_de_encrypt_charge_start(sda,scl,tmp)==FALSE)goto IIC_FSM_Error;
+					waitmsx(50);
+					if(  (ld_bq27541_de_encrypt_charge_end(sda,scl)==FALSE) || (ld_bq27541_output_flag(sda,scl,(U8*)piic->data)==FALSE) )goto IIC_FSM_Error;//读取标志
+					piic->len = 1;
+					goto IIC_FSM_Sucess;		
+				}
+        /*--------------输出标志------------------------*/
+				else if( cmd == RC_OUTPUT )
+				{
+					if(ld_bq27541_output_flag(sda,scl,(U8*)piic->data)==FALSE)goto IIC_FSM_Error;
+				  piic->len=1;
+				  goto IIC_FSM_Sucess;
+				}
+							
 			}
 			else
 			{//检测应答失败
 			  goto IIC_FSM_Error;
 			}				
 		}
-	}
-	
-	State(读id延时50ms){waitmsx(50);goto 结束读id;} //大费周章===>就是为了这句话，释放cpu
-	State(结束读id)
-	{
-	  if(ld_bq27541_read_id_end(sda,scl,(U8*)piic->data))
-		{
-			piic->len=13;
-			goto IIC_FSM_Sucess;
-		}
-		else
-			goto IIC_FSM_Error;
-	}
-	
-	State(加解密延时50ms){waitmsx(50);goto 结束加解密;}
-	State(结束加解密)
-	{
-		if(  ld_bq27541_de_encrypt_charge_end(sda,scl) 
-	    && ld_bq27541_output_flag(sda,scl,(U8*)piic->data)
-		  )//读取标志
-				goto IIC_FSM_Sucess;
-			else 
-				goto IIC_FSM_Error;
 	}
 	Default()
 	return ;

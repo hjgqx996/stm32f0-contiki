@@ -38,6 +38,12 @@ void   SysTick_Handler(void)
 		extern void charge_fms_timer(int ms);
 		charge_fms_timer(1000/CLOCK_SECOND);
 	}
+	
+	//弹仓事件
+	{
+		extern void channel_lock_timer(int ms);
+		channel_lock_timer(1000/CLOCK_SECOND);
+	}
 }
 
 /*初始化系统定时器*/

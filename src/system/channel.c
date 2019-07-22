@@ -98,11 +98,11 @@ void channel_addr_set(U8*addrs)
 }
 	
 
-/*----------------------------------
+/*-----------------------------------------------------------
 仓道运行状态
 仓道告警
 仓道错误
------------------------------------*/
+------------------------------------------------------------*/
 void channel_state_check(U8 ch)
 {
   Channel*pch = channel_data_get(ch);if(pch==NULL)return;
@@ -165,13 +165,6 @@ void channel_error_check(U8 ch)
 	else pch->error.temp=0;
 	
 }
-//锁仓事件
-void channel_lock_event(U8 ch)
-{
-   
-
-}
-
 /*----------------------------------
    仓道灯
 ch:仓道号   seconds:闪烁时间  timer_ms:定义器时间

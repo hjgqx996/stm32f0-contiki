@@ -84,19 +84,15 @@ static void ir_fsm(IR_Type*pir,FSM*fsm,U32 tick)
 	//////////////////////////////////
 	Start()
 	{
-    if( (pir->start==TRUE) && (pir->inited==TRUE) )
-			goto 发送命令码;
-	}
-	//////////////////////////////////
-	State(发送命令码)
-	{
-		//高低100ms
+    if( (pir->start==FALSE) || (pir->inited==FALSE) )return;
+		
+		/*---------- 高低100ms --------------------- */
 		ir(HIGH);
 		waitms(100);
 		ir(LOW);
 		waitms(100);
 		
-		//发送指令
+		/*---------- 发送指令 --------------------- */
 		for(fsm->i=0;fsm->i<(pir->cmd-1);fsm->i++)
 		{
 			ir(HIGH);
@@ -104,15 +100,13 @@ static void ir_fsm(IR_Type*pir,FSM*fsm,U32 tick)
 			ir(LOW); 
 			waitms(2);
 		}
+		
 		ir(HIGH);     
 		waitms(3);
 		ir(LOW); 
 		waitms(50);
-		goto 读取前导码;
-	}
-	//////////////////////////////////
-	State(读取前导码)
-	{
+		
+		/*---------- 读取导码 --------------------- */
 		//等待re拉高,超时时间60ms   //实测10300
 		wait_re_until_not(LOW,60000)  
 		if_re_higher(60000)
@@ -129,11 +123,8 @@ static void ir_fsm(IR_Type*pir,FSM*fsm,U32 tick)
 		if_re_not_between(2500,5000)
 			goto Header_Error;
 
-		goto 读取数据;
-	}
-	//////////////////////////////////
-	State(读取数据)
-	{
+		/*---------- 读取数据 --------------------- */
+
 		for(fsm->i=0;fsm->i<pir->wanlen;fsm->i++)
 		{
 			pir->tmp=0;

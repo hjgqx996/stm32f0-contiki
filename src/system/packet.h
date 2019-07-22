@@ -4,7 +4,7 @@
 
 
 //最大数据包长度
-#define PACKET_DATA_MAX     1024
+#define PACKET_DATA_MAX     400
 
 /*通讯协议命令码*/
 typedef enum{

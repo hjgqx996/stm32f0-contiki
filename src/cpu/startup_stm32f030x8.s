@@ -34,10 +34,10 @@
 ; Amount of memory (in bytes) allocated for Stack
 ; Tailor this value to your application needs
 ; <h> Stack Configuration
-;   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
+;   <o> Stack Size (in Bytes) 
 ; </h>
 
-Stack_Size      EQU     0x00000400
+Stack_Size      EQU     800
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size
@@ -45,10 +45,10 @@ __initial_sp
 
 
 ; <h> Heap Configuration
-;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
+;   <o>  Heap Size (in Bytes) 
 ; </h>
 
-Heap_Size       EQU     0x00000600
+Heap_Size       EQU     512
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 __heap_base
