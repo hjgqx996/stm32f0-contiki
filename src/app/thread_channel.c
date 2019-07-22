@@ -78,7 +78,7 @@ static void read_data_fsm(Channel*pch,U8 ch)
 						pch->readok++;goto data;
 					},
 					{pch->readerr++;},              //Ê§°Ü
-					{fsm->line=0;return;});               //´íÎó
+					{fsm->line=0;return;});         //´íÎó
 		}
 
 		//¶ÁÊı¾İ

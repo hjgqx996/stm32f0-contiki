@@ -5,55 +5,82 @@
                 充电流程
  严格按照 <通道给充电宝充电的逻辑.pdf> 流程控制								
 ====================================================*/
-#define timeout()  ((time(0)-end)<0x80000000)
-#define wait_timeout(condition,to,linenow)  end=time(0)+to;line=linenow+1;case linenow+1: \
-														if(((time(0)-end)>0x80000000) && (!(condition)) )return;
+#define timeout(x)  (x<=0)
+#define wait_timeout(condition,to,linenow)  end=to;line=linenow+1;case linenow+1: \
+														                if((end>0) && (!(condition)) )return;
 																												
 /*-----------------------------
-1.arg  0xFF (复位状态机)
-       0xFE (挂起当前状态)
-			 0xFD (恢复挂起的状态)
+1.arg  0x99 开始
+
 2.运行过程
 		
-	EXTI(外部中断)---->复位状态机--->insert线程运行状态机(识别,充电，补充)
+	EXTI(外部中断)---->开始--->insert线程运行状态机(识别,充电，补充)
 		
 -------------------------------*/
-static U8 _line[CHANNEL_MAX]={0};//当前状态
-static U8 _last[CHANNEL_MAX]={0};//上一次状态
-static U16 _end[CHANNEL_MAX]={0}; //超时
-
+static U8   _line[CHANNEL_MAX]={0};//当前状态
+static U8   _last[CHANNEL_MAX]={0};//上一次状态          :counter
+static int  _end[CHANNEL_MAX]={0}; //超时 ms             :wait_timeout
+static int  _timeout[CHANNEL_MAX]={0};//秒 120秒电流计时 :ato
+static BOOL _hangup[CHANNEL_MAX]={0};//计时挂起          :hang
+static int  _btimeout[CHANNEL_MAX]={0};//补充计时        :bto
+	
 #define line _line[ch-1]
 #define end _end[ch-1]
 #define last _last[ch-1]
+#define ato  _timeout[ch-1]
+#define hang _hangup[ch-1]
+#define counter _last[ch-1]
+#define bto  _btimeout[ch-1]
+
+//计时使用外部定时器,ms:中断时长
+void charge_fms_timer(int ms)
+{
+	int i = 0;
+	static int second = 0;
+	BOOL is_second = FALSE;
+	
+	//秒计时
+	second+=ms;
+	if(second>1000)
+	{	
+		second-=1000;
+		is_second=TRUE;
+	}	
+	
+	for(;i<CHANNEL_MAX;i++)
+	{
+		if(_hangup[i])continue;
+		if(_end[i]>0)_end[i]-=ms; //倒计时
+		if(is_second && _timeout[i]>0)
+			_timeout[i]--;
+	}
+}
+
 void charge_fsm(U8 ch,void*arg)
 {
-
 	Channel*pch=channel_data_get(ch);	//仓道数据
 	if(pch==NULL)return; 
-	
-	
-	//状态挂起
-	
-	
+
 	switch(line)
 	{	
 		//开始
 		case 0:
-						last=end=0;
+						last=end=ato=hang=0;
+					  if((int)arg==0x99){line=1;return;}
 			break;
 		//进入
-		case 1:	if(isvalid_baibi()){line++; last=1;}break; 
+		case 1:	if(isvalid_baibi()){line++; last=1;}return; 
 		
 		//识别/再识别
 		case 2:
-						wait_timeout(is_readok(), 10000, 2);//10秒内是否识别
+						wait_timeout(is_readok(), 3000, 2);//3秒内是否识别
 						/*---------------能识别---------------------------------*/
 						if(is_readok())
 						{						
 							if(pch->Ufsoc>0){line=20;return;} //电量>0===>停止充电
 							else {
 								line=10;
-								request_charge_on(ch,600);      //==>充电10分钟
+								request_charge_on(ch,600,TRUE);      //==>充电10分钟
 								return;
 							}
 							
@@ -61,7 +88,7 @@ void charge_fsm(U8 ch,void*arg)
 					 }else{	
 						if(last==1){
 							line=4;
-							request_charge_on(ch,5);			//==>充电5秒			
+							request_charge_on(ch,5,TRUE);			//==>充电5秒			
 						}else if(last==4){
 							line=0;                       //充电5秒无法识别，复位
 						}
@@ -71,8 +98,7 @@ void charge_fsm(U8 ch,void*arg)
 
 		//充电5秒
 		case 4:
-						wait_timeout(isout5v(), 7*3600*1000, 4);//7小时内是否输出
-						
+						wait_timeout(isout5v(), 7*3600*1000, 4);//7小时内是否输出	
 						if(isout5v())//有输出
 						{
 							wait_timeout(0,5000, 6);//等待5秒
@@ -95,83 +121,82 @@ void charge_fsm(U8 ch,void*arg)
 						else{line=20;return;}     //无输出==>停止充电
 						break;						
 
-		//停止充电
-		case 20:break;
-		
+		//停止充电==>充电7小时
+		case 20:
+						request_charge_on(ch,7*3600,FALSE);//充电7小时
+						line=24;end=ato=counter=bto=0;return;
 		break;
-	
+						
+		//充电7小时
+	  case 24:
+						if(timeout(end) || pch->state.full_charge)
+						{
+							request_charge_off(ch);
+							end=ato=counter=bto=0;
+							line=26;	
+						}
+		break;
+						
+		//充电完成
+		case 26:
+					if(pch->Ufsoc<BUCHONG_STOP_UFSOC_MAX && pch->Ufsoc>BUCHONG_1HOUR_STOP_UFSOC_MAX)//85%-99%,充电3次，时间1小时
+					{
+						if(timeout(bto))//补充
+						{
+							bto=3600;counter++;
+							if(counter>BUCHONG_1HOUR_TIMES)//3次后,充电结束
+							{
+								end=ato=counter=bto=0;
+								request_charge_off(ch);
+								line=30;
+								return;
+							}
+							request_charge_on(ch,bto,FALSE);
+						}
+					}
+					
+					if(pch->Ufsoc<=BUCHONG_1HOUR_STOP_UFSOC_MAX)//<=85%,无限补充/3hour
+					{
+						counter=0;
+						if(timeout(bto))
+						{
+							bto=3*3600;
+							request_charge_on(ch,bto,FALSE);
+						}
+					}
+					
+					if(pch->Ufsoc>=BUCHONG_STOP_UFSOC_MAX)
+					{
+						end=ato=counter=bto=0;
+						request_charge_off(ch);
+						line=30;return;//充电完成
+						
+					}
+		break;
+					
+		//充电结束
+		case 30:				
+		break;
 	}
 	
-	
-	
-	
-	
-//	Start(){
-//			memset(fsm,0,sizeof(FSM));
-//			if(isvalid_baibi())goto 识别;
-//	}
-//	State(识别)
-//	{
-//		wait_timeout(is_readok(),2000,10,{goto充电7小时;},{goto 充电5秒;});//等待读,读数据在 thread_channel中实现
-//	}
-//	
-//	State(充电5秒)
-//	{
-//		request_charge_on(ch,5);
-//		wait_timeout(isout5v(),25200000,1000,{break;},{fsm->line=0;return;});//等待7小时直到可以充电,超时从头开始
-//		waitms(5000);
-//		goto 再一次识别充电宝;
-//	}
-//	State(再一次识别充电宝)
-//	{
-//		wait_timeout(is_readok(),2000,10,
-//		{
-//			if(pch->Ufsoc==0)goto 充电10分钟;//电量为0充电10分钟
-//			if(pch->Ufsoc>0)goto 停止;
-//		},{goto 充电10分钟;}); 
-//	}
-//	State(充电10分钟)
-//	{
-//		request_charge_on(ch,600);
-//		wait_timeout(isout5v(),25200000,1000,{break;},{fsm->line=0;return;});//等待7小时直到可以充电,超时从头开始
-//		wait_timeout((pch->Ufsoc>0),600000,1000,{goto 停止;},{goto 停止;});  //充电10分钟直到电量>0
-//	}
-//	State(停止)
-//	{
-//		
-//	}
-//	State(充电7小时)
-//	{
-//		
-//		//申请充电
-//		
-////		//已经充电
-////		if(queue_isok(ch)==1)
-////		{
-////			//输出5V
-////		
-////			//已经充电7小时->补偿充电
-////			
-////			//电流<200mA,待续120秒->补偿充电
-////			
-////		}else{
-////			
-////		  //挂起计时
-////			
-////			//不输出5V
-////		}
-//		
-//	}
-//	
-//	State(补偿充电)
-//	{
-//	  //电量>95%:充电完成
-//		//电量>=85%,<=95%:1小时补充1次，3次机会
-//		//电量<85%,3小时补充一次，无限机会
-//	
-//	}
-//  Default()
-	
+	  //无输出时，挂起计时
+		if(line>=24)
+		{
+			if(isout5v()==0)
+				hang=TRUE;
+			else 
+				hang=FALSE;
+	  }
+		
+		//判断充电电流<100mA持续2min
+		if( (pch->AverageCurrent<STOP_CURRENT_MAX) && (line>=24) && (pch->state.full_charge!=1))
+		{
+			if(ato==0)ato=time(0)+1000*STOP_CURRENT_TIMEOUT;
+			else{
+				if(timeout(ato))
+					pch->state.full_charge=1;
+			}
+		}else ato=0;
 }
 
 /*===================================================

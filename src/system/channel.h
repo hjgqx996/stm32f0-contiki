@@ -155,10 +155,10 @@ int channel_data_get_index(Channel*ch);
 /*-----------------------------------------------------
 * channel 充电断电挂起
 -------------------------------------------------------*/
-BOOL request_charge_on(U8 ch,U16 time);/*申请充电*/
+BOOL request_charge_on(U8 ch,U32 seconds,BOOL hard);/*申请充电*/
 BOOL request_charge_off(U8 ch);/*中止充电*/
-BOOL request_charge_hangup(U8 ch,U16 time);/*挂起充电*/
-BOOL request_charge_hangup_all(U16 ms);/*挂起所有输出*/
+BOOL request_charge_hangup_all(U32 scondes);/*挂起所有输出*/
+
 /*-----------------------------------------------------
 * channel 灯闪
 -------------------------------------------------------*/
@@ -183,6 +183,8 @@ void channel_error_check(U8 ch);
 #define is_ver_7()       ((pch->id[6]&0x0F)==0x07)        //7代宝
 #define is_ver_lte_5()   ((pch->id[6]&0x0F)<=0x05)        //5代或以下
 #define is_readok()      (pch->state.read_ok)                 //判断读取成功
+#define set_out5v()     ld_gpio_set(pch->map->io_mp,1) //输出5V
+#define reset_out5v()   ld_gpio_set(pch->map->io_mp,0) //不输出5V
 /*===================================================
 仓道读: 包含 iic,ir 以及切换策略
 返回:  

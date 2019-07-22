@@ -174,7 +174,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 					UnlockBao(RC_UNLOCK,600,comm_lease,{},{send_lease_state(hp,Lease_decrypt_fall,lch);continue;},2);
 					
 				channel_led_flash(channel_data_get_index(pch),ltimeout);//闪灯	
-				request_charge_hangup_all(500);//关闭输出,500ms
+				request_charge_hangup_all(1);//关闭输出,1s
 				dian_ci_fa(pch,HIGH);      //电磁阀动作
 				os_delay(comm_lease,500);  //延时500ms
 				dian_ci_fa(pch,LOW);       //关闭电磁阀
@@ -251,7 +251,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_ctrl)
 			if(cmd==0x02||cmd==0x03)//强制开仓	
 			{					
 				channel_led_flash(channel_data_get_index(pch),ctrl_time);//闪灯	
-				request_charge_hangup_all(500);//关闭输出,500ms
+				request_charge_hangup_all(1);//关闭输出,1s
 				dian_ci_fa(pch,HIGH);      //电磁阀动作
 				os_delay(comm_ctrl,500);   //延时500ms
 				dian_ci_fa(pch,LOW);       //关闭电磁阀

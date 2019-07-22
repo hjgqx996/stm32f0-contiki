@@ -22,7 +22,10 @@ typedef enum{
 #define disable_485_rx()  enable_485_tx()
 
 //<o>仓道个数
-#define CHANNEL_MAX                5
+#define CHANNEL_MAX           5
+
+//<o>允许同时充电的最大仓道数
+#define CHANNEL_CHARGE_MAX    2
 
 //<o>仓道编号长度
 #define CHANNEL_ID_MAX             10
@@ -62,6 +65,33 @@ typedef enum{
 //<o> bootloader大小<0x0-0xFFFF:4>
 #define BOOT_LOADER_SIZE                   0x3000
 //</e>
+
+//<h>充电流程参数
+
+//<h> 补充
+//<o>停止补充电量%
+#define BUCHONG_STOP_UFSOC_MAX            95
+//<h>1小时补充
+//<o>停止补充电量%
+#define BUCHONG_1HOUR_STOP_UFSOC_MAX      85
+//<o>补充次数
+#define BUCHONG_1HOUR_TIMES               3
+//</h>
+
+//<o>无限补充时长 min
+//<i>当电量<=85%
+#define BUCHONG_CYCLE_TIMEOUT            180
+
+//</h>
+
+//<h>停止电流
+//<o>停止电流大小(ma)
+#define STOP_CURRENT_MAX                   100
+//<o>持续时间(s)
+#define STOP_CURRENT_TIMEOUT                120
+//</h>
+
+//</h>
 
 
 //判断是否是6代宝

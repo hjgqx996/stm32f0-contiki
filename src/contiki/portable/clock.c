@@ -21,12 +21,22 @@ void   SysTick_Handler(void)
     second_countdown = CLOCK_SECOND;
   }
 	
-	ld_system_led_timer(10);
+	//系统灯
+	{
+		extern void ld_system_led_timer(int ms);
+	  ld_system_led_timer(10);
+	}
 	
 	//仓道灯闪
 	{
 		extern void channels_les_flash_timer(int timer_ms);
 		channels_les_flash_timer(1000/CLOCK_SECOND);
+	}
+	
+	//充电状态机计时
+	{
+		extern void charge_fms_timer(int ms);
+		charge_fms_timer(1000/CLOCK_SECOND);
 	}
 }
 
