@@ -152,6 +152,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 {
 	static HPacket*hp;
 	static Channel*pch;
+	static U8 buffer[20];
 	PROCESS_BEGIN();
 	while(1){
 	  PROCESS_WAIT_EVENT();//等待事件过来
@@ -159,15 +160,14 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 		{
 			hp = (HPacket*)data;                  
 			pch = channel_data_get_by_addr(hp->p.data[0]);
-			
+			memcpy(buffer,hp->p.data,20);
 			send_ack(hp,0x02,0x01);//发送应答
 			if(pch==NULL)break;
-			
 			system.state = SYSTEM_STATE_LEASE;//系统状态:租借
-			lch = hp->p.data[0];      //保存数据:租借位置
-			ltimeout = 1000*hp->p.data[11];//保存数据:租借时间(ms)
+			lch = buffer[0];      //保存数据:租借位置
+			ltimeout = 10000*buffer[11];//保存数据:租借时间(ms)
 		
-			if(buffer_cmp(pch->id,hp->p.data+1,CHANNEL_ID_MAX)==FALSE){send_lease_state(hp,Lease_differ,lch);goto LEASE_RESET_CONTINUE;}//充电宝编号不对
+			if(buffer_cmp(pch->id,buffer+1,CHANNEL_ID_MAX)==FALSE){send_lease_state(hp,Lease_differ,lch);goto LEASE_RESET_CONTINUE;}//充电宝编号不对
 			
 			if(pch->state.read_ok)//充电宝是否有效
 			{
@@ -351,7 +351,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(packet)
 {
 	PROCESS_BEGIN();
   memset(&hpacket,0,sizeof(hpacket));         //缓冲清0 	                          
-	ld_uart_open(COM_485,115200,8,0,1,0,1050);  //打开串口
+	ld_uart_open(COM_485,115200,8,0,1,0,400);  //打开串口
 	enable_485_rx();                            //使能接收
 	while(1)
 	{	

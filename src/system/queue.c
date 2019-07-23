@@ -46,9 +46,8 @@ static void bubble_sort(void)
 			pcha = channel_data_get(list[i].ch);
 			pchb = channel_data_get(list[j].ch);
 			if(pcha==NULL || pchb==NULL)continue;
-			va= (list[i].used)?( (list[i].hard)?((first)?(0):(200)):(pcha->Ufsoc)):(0);  //应急充电在前,有且只有一个,之后的排末尾
-			if(va==200 && first==FALSE)first=TRUE;
-			vb= (list[j].used)?( (list[j].hard)?((first)?(0):(200)):(pchb->Ufsoc)):(0);  //之后，电量最大的依次排列
+			va= (list[i].used)?( (list[i].hard)?((first)?(1):(220)):(pcha->Ufsoc*2)):(0);  //应急充电在前,有且只有一个,之后的排末尾		
+			vb= (list[j].used)?( (list[j].hard)?((first)?(1):(220)):(pchb->Ufsoc*2)):(0);  //之后，电量最大的依次排列
 			if(va<vb)
 			{
 				Queue_Type t = list[i];//交换
@@ -56,6 +55,7 @@ static void bubble_sort(void)
 				list[j] = t;
 			}
 		}
+		if(list[0].used && list[0].hard && first==FALSE)first=TRUE;
 	}
 }
 
@@ -100,7 +100,7 @@ static void charge_timeout(void)
 			int ch=0;           
 			for(;ch<CHANNEL_MAX;ch++) //选择前面的充电
 			{
-				if(l.used)
+				if(l.used&&l.charge)    //充电计时,不充电不计时
 				{
 					if(l.charge_time!=0)
 						l.charge_time--;

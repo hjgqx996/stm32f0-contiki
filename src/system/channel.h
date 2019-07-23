@@ -73,8 +73,8 @@ typedef enum{
 typedef struct{	
 	/*--------------配置接口--------------------------*/
 	ChannelConfigureMap*map;        //通道控制io配置
-	U8 addr;    
-	//通道地址flash[]<----System.addr_ch-------Channel.addr
+	U8 addr;                        //通道地址flash[]<----System.addr_ch-------Channel.addr
+	
 	/*--------------iic方向切换------------------------*/
 	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
 	U8  iic_dir_counter;             //出错计数
@@ -82,6 +82,11 @@ typedef struct{
 	U8 iic_ir_mode;                 //iic方向 0:正常方向  1:方向反转
 	U8 iic_ir_mode_counter;         //出错计数
 	
+	/*--------------运行状态数据----------------------*/
+	ChannelState state;             //运行状态
+	ChannelWarn  warn;              //运行告警
+	ChannelError error;             //运行错误
+		
 	/*-------------通道数据-----------------------------iic-----ir-*/
 	volatile U8  Ufsoc;             //剩余电量  %        有     有
 	volatile U16 Voltage;           //电压,单位 mV       无     有
@@ -98,11 +103,7 @@ typedef struct{
 	U8 readok;                      //读id,读数据，是否正常,计数>=2正常
 	S8 readerr;                     //读出错计数
 
-	/*--------------运行状态数据----------------------*/
-	ChannelState state;             //运行状态
-	ChannelWarn  warn;              //运行告警
-	ChannelError error;             //运行错误
-	
+
 	/*--------------异常弹仓--------------------------*/
 
 	/*--------------仓道灯----------------------------*/

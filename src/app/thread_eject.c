@@ -25,15 +25,23 @@ void channel_lock_timer(int ms)
 		for(;i<=CHANNEL_MAX;i++)
 		{
 			//10分钟，
-			if(cle10min>0)cle10min-=10;
-			else{
-				Channel*pch = channel_data_get(i);
-				cle10min=0;
-				if(pch)pch->warn.eject=0;//事件标志清0
+			if(cle10min>0)
+			{
+				cle10min-=10;
+				if(cle10min<=0)
+				{
+					Channel*pch = channel_data_get(i);
+					cle10min=0;
+					if(pch)pch->warn.eject=0;//事件标志清0					
+				}
 			}
-			
-			if(cle2hour>0)cle2hour-=10;
-			else{clec=cleec=cle2hour=0;}//重新开始
+			if(cle2hour>0){
+				cle2hour-=10;
+				if(cle2hour<=0)
+				{
+					clec=cleec=cle2hour=0;//重新开始
+				}
+			}
 		}
 	}
 }
@@ -50,10 +58,10 @@ AUTOSTART_THREAD_WITH_TIMEOUT(eject)
 		for(i=1;i<=CHANNEL_MAX;i++)
 		{
 			pch=channel_data_get(i);
-			if( (isvalid_daowe()==0) && (isvalid_baibi()==1) && is_readerr() && cleec <EJECT_FAIL_TIMES )//(到位开关无效 && 摆臂开关有效 && 读不到数据)
+			if( (isvalid_daowe()==0) && (isvalid_baibi()==1) && (is_readok()==0) && (cleec <EJECT_FAIL_TIMES) )//(到位开关无效 && 摆臂开关有效 && 读不到数据)
 			{
 				delayus(300);//去抖
-				if( (isvalid_daowe()==0) && (isvalid_baibi()==1) && is_readerr() )
+				if( (isvalid_daowe()==0) && (isvalid_baibi()==1) && (is_readok()==0) )
 				{
 					clec++;
 					if(clec>=2)
@@ -79,7 +87,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(eject)
 		
 		//10秒钟检测一次
 		{
-			static time_t last = 0; if(last==0)last=time(0)+EJECT_INTERVAL;//上一次时间
+			static time_t last = 0;last=time(0)+EJECT_INTERVAL;//上一次时间
 			do{os_delay(eject,1000);}while( (time(0)-last)> 0x80000000 );//超时检测
 		}
 	}

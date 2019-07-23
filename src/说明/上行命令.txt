@@ -3,6 +3,7 @@
 
 租借:           长度   数据
 --->AA BB 01 02 00 0c  addr xx xx xx xx xx xx xx xx xx xx time cs
+    AA BB 01 02 00 0c  01  00 00 00 00 03 53 16 10 64 81 05 
                        子命令 结果
 <---AA BB 01 02 00 02  00      xx cs
 

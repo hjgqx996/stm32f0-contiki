@@ -37,7 +37,7 @@
 ;   <o> Stack Size (in Bytes) 
 ; </h>
 
-Stack_Size      EQU     800
+Stack_Size      EQU     1024
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size

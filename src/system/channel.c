@@ -112,14 +112,14 @@ void channel_state_check(U8 ch)
 	{
 		pch->state.read_ok=1;
 		pch->state.read_error=0;
-	}
+	}else pch->state.read_ok=0;
 	
 	/*有宝,读取不正常*/
-	if( (isvalid_daowe()) && ((is_readerr()) && (channel_id_is_not_null(pch->id))) )
+	if( (isvalid_daowe()) && ( is_readok()==0 || (channel_id_is_not_null(pch->id)==FALSE)) )
 	{
 		pch->state.read_error=1;
 		pch->state.read_ok=0;
-	}
+	}else pch->state.read_error=0;
 	/*正在充电*/
 	pch->state.charging = isin5v();
 	/*-----充电完成--:在充电流程里做--*/

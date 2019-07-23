@@ -35,6 +35,7 @@ static int  _timeout[CHANNEL_MAX]={0};//秒 120秒电流计时 :ato
 static BOOL _hangup[CHANNEL_MAX]={FALSE};//计时挂起      :hang
 static BOOL _request[CHANNEL_MAX]={FALSE};//申请充电     :request
 static int  _btimeout[CHANNEL_MAX]={0};//补充计时        :bto
+static int  _failcounter[CHANNEL_MAX]={0};     //充电宝不存在计数:failcounter
 	
 #define line    _line[ch-1]    //状态机当前行号
 #define end     _end[ch-1]     //ms超时
@@ -44,7 +45,7 @@ static int  _btimeout[CHANNEL_MAX]={0};//补充计时        :bto
 #define counter _last[ch-1]    // 1小时充电一次，充3次 的次数计数
 #define bto  _btimeout[ch-1]   // 3小时计时 1小时计时用,秒
 #define request _request[ch-1] //是否申请了充电: 7小时充电 补充时用
-
+#define failcounter     _failcounter[ch-1]
 //计时使用外部定时器,ms:中断时长
 void charge_fms_timer(int ms)
 {
@@ -96,7 +97,21 @@ void charge_fsm(U8 ch,void*arg)
 	Channel*pch=channel_data_get(ch);	      //仓道数据
 	if(pch==NULL)return; 
 
-	if(isvalid_baibi()==0){line=0;return;}  //仓道已经弹出
+	//检测有没有弹出
+	if( isvalid_baibi()==0 && line !=0 )
+	{
+		failcounter++;	
+		if(failcounter>10)
+		{
+			failcounter = line=0;request=FALSE;
+			request_charge_off(ch);
+			return;//仓道已经弹出,复位 
+		}
+	}  
+	else { failcounter=0;}
+	
+
+	
 	
 	switch(line)
 	{	
@@ -107,8 +122,8 @@ void charge_fsm(U8 ch,void*arg)
 			break;
 						
 		//进入
-		case 1:	if(isvalid_baibi()){line++; last=1;} //摆臂开关检测到,下一步
-		        else {line=0;}return;                //摆臂没检测到，复位
+		case 1:	if(isvalid_baibi()){line++; last=1;}return;//摆臂开关检测到,下一步
+		
 		//识别/再识别
 		case 2:
 						wait_timeout(is_has_read(), 3000, 2);//3秒内是否识别(thread_channel识别),读对读错，都退出
