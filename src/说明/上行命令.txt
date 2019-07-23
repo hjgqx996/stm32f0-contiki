@@ -1,0 +1,34 @@
+心跳:
+--->AA BB 01 01 00 00 67
+
+租借:           长度   数据
+--->AA BB 01 02 00 0c  addr xx xx xx xx xx xx xx xx xx xx time cs
+                       子命令 结果
+<---AA BB 01 02 00 02  00      xx cs
+
+<---AA BB 01 02 00 0D  01   result addr xx xx xx xx xx xx xx xx xx xx cs
+
+按键归还:
+--->AA BB 01 03 00 02 addr time cs
+
+                       子命令 结果
+<---AA BB 01 03 00 02  00      xx cs
+                       地址  结果  状态  告警  错误
+<---AA BB 01 03 00 06  addr result state warn error cs
+
+控制命令:cmd=1:重启  2:运维1小时 3:强制
+
+--->AA BB 01 04 00 0D  cmd addr xx xx xx xx xx xx xx xx xx xx time cs
+                       子命令 结果
+<---AA BB 01 04 00 02  00      xx cs
+
+                       子命令 结果
+<---AA BB 01 04 00 02  cmd      xx cs
+
+升级：
+
+
+
+烧录地址
+--->AA BB FE 06 00 06 485addr  ch1_addr ch2_addr ch3_addr ch4_addr ch5_addr cs
+<---AA BB FF 06 00 02 485addr  result cs

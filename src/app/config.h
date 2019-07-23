@@ -21,6 +21,11 @@ typedef enum{
 #define enable_485_rx()   disable_485_tx()
 #define disable_485_rx()  enable_485_tx()
 
+//<o>硬件编号<0x0-0xFFFF:4>
+#define HARDWARE_VERSION          0x0202
+//<o>软件编号<0x0-0xFFFF:4>
+#define SOFTWARE_VERSION          0x0001
+
 //<o>仓道个数
 #define CHANNEL_MAX           5
 
@@ -30,13 +35,8 @@ typedef enum{
 //<o>仓道编号长度
 #define CHANNEL_ID_MAX             10
 
-//<o>硬件编号<0x0-0xFFFF:4>
-#define HARDWARE_VERSION          0x0202
-//<o>软件编号<0x0-0xFFFF:4>
-#define SOFTWARE_VERSION          0x0001
-
 //<o>租借时，仓道灯闪烁频率ms
-#define LEASE_LED_FLASH_TIME      200
+#define LEASE_LED_FLASH_TIME      500
 
 //<o>仓道灯亮时，最小电量%
 #define CHANNEL_LED_LIGHT_UFSOC   50
@@ -51,7 +51,7 @@ typedef enum{
 #define IIC_DIR_SWITCH_MAX        3
 
 //<o>循环读充电宝时长(ms)
-#define BAO_READ_DATA_MAX_MS      1000
+#define BAO_READ_DATA_MAX_MS      2000
 
 //<o>告警温度(度)
 #define BAO_WARN_TEMPERATURE      60
@@ -62,17 +62,20 @@ typedef enum{
 //<o>读成功次数
 #define BAO_READ_OK_RETYR_TIMES            2
 
-//<e> 是否使用bootloader
-#define USING_BOOT_LOADER                  0
-//<o> bootloader大小<0x0-0xFFFF:4>
-#define BOOT_LOADER_SIZE                   0x3000
-//</e>
+//<h>锁仓事件
+//<o>检测时间间隔(ms)
+#define EJECT_INTERVAL                     10000
+//<o>弹仓失败几次后延时一段时间(次数)
+#define EJECT_FAIL_TIMES                    6
+//<o>弹仓失败几次后延时时间(秒)
+#define EJECT_FAIL_WAIT                     7200
+//</h>
 
 //<h>充电流程参数
 
 //<h> 补充
 //<o>停止补充电量%
-#define BUCHONG_STOP_UFSOC_MAX            95
+#define BUCHONG_STOP_UFSOC_MAX            99
 //<h>1小时补充
 //<o>停止补充电量%
 #define BUCHONG_1HOUR_STOP_UFSOC_MAX      85
@@ -94,6 +97,13 @@ typedef enum{
 //</h>
 
 //</h>
+//<e> 是否使用bootloader
+#define USING_BOOT_LOADER                  0
+//<o> bootloader大小<0x0-0xFFFF:4>
+#define BOOT_LOADER_SIZE                   0x3000
+//</e>
+
+
 
 
 //判断是否是6代宝

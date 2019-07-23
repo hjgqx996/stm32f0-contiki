@@ -100,7 +100,7 @@ void charge_fsm(U8 ch,void*arg)
 	
 	switch(line)
 	{	
-		//开始
+		//开始(等待中断触发/上电触发)
 		case 0:
 						last=end=ato=hang=0;
 					  if((int)arg==0x99){line=1;return;}   //中断触发,上电触发
@@ -188,7 +188,7 @@ void charge_fsm(U8 ch,void*arg)
 								end=ato=counter=bto=0;
 								request_charge_off(ch);//申请断电
 								request=FALSE;
-								line=30;
+								line=30;//充电结束
 								return;
 							}
 							request_charge_on(ch,bto,FALSE);//申请充电
@@ -221,6 +221,7 @@ void charge_fsm(U8 ch,void*arg)
 		case 30:
 					request=FALSE;
 		break;
+		default:break;
 	}
 	
 	  
@@ -245,10 +246,8 @@ void charge_fsm(U8 ch,void*arg)
 		{
 			if(ato==0)ato=STOP_CURRENT_TIMEOUT;//开始倒计时
 		}
-		if( pch->AverageCurrent>=STOP_CURRENT_MAX)
-		{
-			ato = 0;//电流大了，超时复位
-		}
+		if( pch->AverageCurrent>=STOP_CURRENT_MAX)ato = 0;//电流大了，超时复位
+		
 		if(ato==1 || ato==2)//最后一秒断超时
 		{
 			pch->state.full_charge=1;//已经充满

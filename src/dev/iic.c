@@ -504,7 +504,7 @@ static void iic_fsm(IIC_Type*piic,FSM*fsm)
 				if(cmd==RC_READ_ID)
 				{
 					if(ld_bq27541_read_id_start(sda,scl)==FALSE)goto IIC_FSM_Error;
-					waitmsx(50);//大费周章===>就是为了这句话，释放cpu
+					waitmsx(50);//大费周章===>就是为了这句话，释放cpu,释放cpu,释放cpu 重要的事情说三次
 					if(ld_bq27541_read_id_end(sda,scl,(U8*)piic->data)==FALSE)goto IIC_FSM_Error;
 					piic->len=13;
 					goto IIC_FSM_Sucess;

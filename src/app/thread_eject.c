@@ -50,7 +50,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(eject)
 		for(i=1;i<=CHANNEL_MAX;i++)
 		{
 			pch=channel_data_get(i);
-			if( (isvalid_daowe()==0) && (isvalid_baibi()==1) && is_readerr() && cleec <6 )
+			if( (isvalid_daowe()==0) && (isvalid_baibi()==1) && is_readerr() && cleec <EJECT_FAIL_TIMES )//(到位开关无效 && 摆臂开关有效 && 读不到数据)
 			{
 				delayus(300);//去抖
 				if( (isvalid_daowe()==0) && (isvalid_baibi()==1) && is_readerr() )
@@ -70,11 +70,17 @@ AUTOSTART_THREAD_WITH_TIMEOUT(eject)
             if(isvalid_baibi())
 						{
 							cleec++;
-							if(cleec==6)cle2hour=7200;
+							if(cleec==EJECT_FAIL_TIMES)cle2hour=EJECT_FAIL_WAIT;
 						}else cleec=0;							
 					}
 				}
 			}
+		}
+		
+		//10秒钟检测一次
+		{
+			static time_t last = 0; if(last==0)last=time(0)+EJECT_INTERVAL;//上一次时间
+			do{os_delay(eject,1000);}while( (time(0)-last)> 0x80000000 );//超时检测
 		}
 	}
 	PROCESS_END();

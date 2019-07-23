@@ -58,6 +58,7 @@ static void read_data_fsm(Channel*pch,U8 ch)
 {
 	FSM*fsm = &rdfsm[ch-1];
 	int err=0;
+	#define t err
 	U8 dataout[13];
 
 	fsm_time_set(time(0));
@@ -82,7 +83,7 @@ static void read_data_fsm(Channel*pch,U8 ch)
 		//读id
 		State(id)
 		{
-			read(RC_READ_ID,2,1000,             //读id,2次----超时1s
+			read(RC_READ_ID,2,1200,             //读id,2次----超时1s
 					{
 						memcpy(pch->id,dataout,10);   //成功
 						pch->readok++;pch->readerr=0;goto data;
@@ -96,7 +97,7 @@ static void read_data_fsm(Channel*pch,U8 ch)
 		State(data)
 		{
 		  /*------读id------2次----超时1s---成功保存数据------------------------------------------失败次数++-------- 都失败复位状态机*/
-			read(RC_READ_DATA ,2     ,1000  ,{save_data(pch,dataout);pch->readok++; goto lock678;},{pch->readerr++;},{fsm->line=0;return;});
+			read(RC_READ_DATA ,2     ,1200  ,{save_data(pch,dataout);pch->readok++; goto lock678;},{pch->readerr++;},{fsm->line=0;return;});
 		}
 
 		//加密 6,7,8代宝(非租借条件下)
@@ -107,12 +108,15 @@ static void read_data_fsm(Channel*pch,U8 ch)
 				if(pch->bao_output!=0x06)
 				{
 					/*------读id--1次--超时1s---成功保存数据-------------------失败次数++-------- 都失败复位状态机*/
-					read(RC_LOCK ,1     ,1000  ,{pch->bao_output=(BaoOutput)dataout[0];},{pch->readerr++;},{fsm->line=0;return;});
+					read(RC_LOCK ,1     ,1200  ,{pch->bao_output=(BaoOutput)dataout[0];},{pch->readerr++;},{fsm->line=0;return;});
 				}
 			}
 			
-			/*延时*/
-			waitmsx(1000);
+			/*延时一段时间,IR:2.2秒  iic:1秒*/
+			if(pch->iic_ir_mode==RTM_IR)t=800;
+			else if(pch->iic_ir_mode ==RTM_IIC)t=2000; 
+			
+			waitmsx(t); //
 			
 		  //复位状态机，从头开始
 			memset(fsm,0,sizeof(FSM));
