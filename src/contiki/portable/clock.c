@@ -8,6 +8,8 @@ static volatile clock_time_t current_clock = 0;
 static volatile unsigned long current_seconds = 0;
 static unsigned int second_countdown = CLOCK_SECOND;
 
+extern int channel_read_delay_ms;
+
 void   SysTick_Handler(void)
 {
   current_clock++;
@@ -20,6 +22,12 @@ void   SysTick_Handler(void)
     current_seconds++;
     second_countdown = CLOCK_SECOND;
   }
+	//循环读延时
+	if(channel_read_delay_ms>0)
+		channel_read_delay_ms -=1000/CLOCK_SECOND;
+	if(channel_read_delay_ms<0)
+		channel_read_delay_ms=0;
+	
 	
 	//系统灯
 	{

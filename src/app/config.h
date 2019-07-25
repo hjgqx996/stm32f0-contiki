@@ -8,6 +8,7 @@ typedef enum{
 	PROCESS_EVENT_PACKET           =0x40,   //事件:数据包接收
 	PROCESS_EVENT_COMM_LEASE,               //事件:租借数据包处理
 	PROCESS_EVENT_COMM_CTRL,                //事件:控制命令
+	PROCESS_EVENT_COMM_ENTRY,               //事件:进入升级
 }PROCESS_EVENT;
 
 
@@ -38,6 +39,9 @@ typedef enum{
 //<o>租借时，仓道灯闪烁频率ms
 #define LEASE_LED_FLASH_TIME      500
 
+//<o>归还充电宝时，读数据尝试次数
+#define RETURN_READ_TIMES         2
+
 //<o>仓道灯亮时，最小电量%
 #define CHANNEL_LED_LIGHT_UFSOC   50
 
@@ -45,22 +49,24 @@ typedef enum{
 #define IR_TO_IIC_SWITCH_ERROR_MAX   2
 
 //<o>iic------>红外 切换时，通讯失败次数
-#define IIC_TO_IR_SWITCH_ERROR_MAX   2
+#define IIC_TO_IR_SWITCH_ERROR_MAX   1
 
 //<o>iic切换方向时，通讯失败次数
-#define IIC_DIR_SWITCH_MAX        3
+#define IIC_DIR_SWITCH_MAX        1
 
 //<o>循环读充电宝时长(ms)
-#define BAO_READ_DATA_MAX_MS      2000
+#define BAO_READ_DATA_MAX_MS      2800
 
 //<o>告警温度(度)
 #define BAO_WARN_TEMPERATURE      60
 //<o>故障温度(度)
 #define BAO_ERROR_TEMPERATURE      65
-//<o>读失败尝试次数
-#define BAO_READ_ERROR_RETYR_TIMES         6
-//<o>读成功次数
+//<h>充电宝读判断
+//<o>失败次数
+#define BAO_READ_ERROR_RETYR_TIMES         4
+//<o>成功次数
 #define BAO_READ_OK_RETYR_TIMES            2
+//</h>
 
 //<h>锁仓事件
 //<o>检测时间间隔(ms)

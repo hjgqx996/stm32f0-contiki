@@ -2,10 +2,16 @@
 
 static void delay(uint32_t t)
 {
-	uint32_t i;
-	while(t--)
-		for (i = 0; i < 1; i++);
+//	uint32_t i;
+//	while(t--)
+//		for (i = 0; i < 1; i++);
+	__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP(); 
+	__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP(); 
+	__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP(); 
+	__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
 }
+//#define delay cpu_us_delay
+
 void ld_hc595_init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStruct;
@@ -26,8 +32,7 @@ void ld_hc595_init(void)
 void ld_hc595_reload(void)
 {
 	HC595_CS_L();
-	delay(1);
-	delay(1);
+	delay(2);
 	HC595_CS_H();
 }
 
@@ -40,9 +45,8 @@ void ld_hc595_send(uint32_t data)
 		HC595_DATA_H();
 		else
 		HC595_DATA_L();
-    HC595_CLK_L();              //上升沿发生移位
-    delay(1);
-    delay(1);			
+    HC595_CLK_L();              //上升沿发生移位		
+		delay(1);
     HC595_CLK_H();
   }
 	ld_hc595_reload();

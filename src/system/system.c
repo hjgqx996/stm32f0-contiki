@@ -9,16 +9,21 @@ System system;
 /*系统数据初始化*/
 void ld_system_init(void)
 {
-	//地址恢复 
-	system.addr485 = 0x01;
-	system.addr_ch[0] = 1;
-	system.addr_ch[1] = 3;
-	system.addr_ch[2] = 5;
-	system.addr_ch[3] = 7;
-	system.addr_ch[4] = 9;
-	system.iic_ir_mode = SIIM_IIC_IR;
-	channel_addr_set((U8*)system.addr_ch);
-	ld_system_flash_led(500);
+	//地址恢复 --从flash中读取
+//	system.addr485 = 0x01;
+//	system.addr_ch[0] = 1;
+//	system.addr_ch[1] = 3;
+//	system.addr_ch[2] = 5;
+//	system.addr_ch[3] = 7;
+//	system.addr_ch[4] = 9;
+	ld_flash_read(0, (U8*)&system.addr485, 6,RS485_ADDR);//读取485地址
+	system.iic_ir_mode = SIIM_IIC_IR;               //默认iic ir都支持
+	channel_addr_set((U8*)system.addr_ch);          //将地址设置到Channel变量看    
+
+  //充电使能:默认:冒泡排队，使能输出
+  system.mode = 0;
+	system.enable = 1;
+	memset(system.chs,0,CHANNEL_MAX);
 }
 
 
@@ -39,3 +44,5 @@ void ld_system_led_timer(int ms)
 		ld_gpio_set(1,!ld_gpio_get(1));
 	}
 }
+
+

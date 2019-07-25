@@ -118,19 +118,6 @@ static void charge_timeout(void)
 	if(hangtime==0)hangall=FALSE;
 }
 
-/*排队调度线程*/
-AUTOSTART_THREAD_WITH_TIMEOUT(queue)
-{
-	PROCESS_BEGIN();
-	while(1)
-	{
-		bubble_sort();          //排序
-		charge_timeout();			  //计时
-		charge_front();         //前面先充		
-		os_delay(queue,20);     
-	}
-	PROCESS_END();
-}
 
 /*队列初始化*/
 static void request_init(void)
@@ -158,6 +145,16 @@ static Queue_Type*request_channel_find(U8 channel)
 		}
 	}
 	return NULL;
+}
+
+/*直接输出*/
+static BOOL direct_charge(U8 ch,BOOL charged)
+{
+	Channel*pch = channel_data_get(ch);
+	if(pch==NULL)return FALSE;
+	if(charged==FALSE)reset_out5v();
+	else set_out5v();
+	return TRUE;
 }
 /*===================================================
                 全局函数
@@ -207,4 +204,47 @@ BOOL request_charge_hangup_all(U32 seconds)
 		hangtime=seconds; //挂起，并倒计时
 		return TRUE;
 	}
+}
+/*充电调度器是否挂起?*/
+BOOL ld_is_queue_hang(void)
+{
+	//挂起后，按强制充电流程
+	return ((system.enable==0)||((system.enable==1)&&(system.mode==1)));
+}
+/*===================================================
+                充电调试任务
+====================================================*/
+AUTOSTART_THREAD_WITH_TIMEOUT(queue)
+{
+	PROCESS_BEGIN();
+	while(1)
+	{
+		//可以充电
+		if(system.enable==1)
+		{
+			//强制充电方式
+		  if(system.mode==1)
+			{
+				int i = 0;
+				for(;i<CHANNEL_MAX;i++)
+				{
+					direct_charge(i+1,system.chs[i]);
+				}
+			}
+			
+			//自由充电方式
+			else{
+			bubble_sort();          //排序
+			charge_timeout();			  //计时
+			charge_front();         //前面先充		
+		 	}
+		}
+		
+		//不充电
+		else{
+		  request_charge_hangup_all(0);
+		}
+ 	  os_delay(queue,100);   
+	}
+	PROCESS_END();
 }

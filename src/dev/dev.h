@@ -69,12 +69,14 @@ BOOL ld_ir_cmd(U8 ch,U8 cmd);
                 iic数据接口
 ====================================================*/
 BOOL ld_bq27541_read_words(U8 sda,U8 scl,U8*cmd,U8 cmdlen,U16 *dataout);
-BOOL ld_bq27541_read_id_start(U8 sda,U8 scl);/*读id  :start----50ms----end*/
-BOOL ld_bq27541_read_id_end(U8 sda,U8 scl,U8*dataout);
-BOOL ld_bq27541_de_encrypt_charge_start(U8 sda,U8 scl,U8 cmd);/*加密 解密 充电宝 :start----50ms----end*/
-BOOL ld_bq27541_de_encrypt_charge_end(U8 sda,U8 scl);
+BOOL ld_bq27541_read_id(U8 sda,U8 scl,U8*dataout);
+BOOL ld_bq27541_de_encrypt_charge(U8 sda,U8 scl,U8 cmd);
 BOOL ld_bq27541_check_ack(U8 sda,U8 scl);
-BOOL ld_bq27541_output_flag(U8 sda,U8 scl,U8*data);/*bq27541充电宝输出标志*/
+BOOL ld_bq27541_output_flag(U8 sda,U8 scl,U8*data);
+
+
+
+
 //===============标准化接口==========================//
 void ld_iic_init(U8 ch,U8 sda,U8 scl);
 BOOL ld_iic_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen);//(ch:1-n,opposite:TRUE反向, cmd 命令, 长度)

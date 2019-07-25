@@ -73,12 +73,12 @@ AUTOSTART_THREAD_WITH_TIMEOUT(eject)
 						os_delay(eject,500);//等待500ms
 						dian_ci_fa(pch,LOW);//电磁阀空闲
 						pch->warn.eject = 1;//事件位置1
-						cle10min=600;       //事件位清0计时
+						cle10min=600;       //事件位清0,计时10分钟后eject清0
             os_delay(eject,50); //延时
-            if(isvalid_baibi())
+            if(isvalid_baibi()) //摆臂开关还有效表示没有弹仓成功
 						{
-							cleec++;
-							if(cleec==EJECT_FAIL_TIMES)cle2hour=EJECT_FAIL_WAIT;
+							cleec++;          //错误计数++
+							if(cleec==EJECT_FAIL_TIMES)cle2hour=EJECT_FAIL_WAIT;//等待2小时
 						}else cleec=0;							
 					}
 				}

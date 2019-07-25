@@ -182,8 +182,7 @@ void USART2_IRQHandler(void)
 		temp = USART_ReceiveData(pUart)& 0xff;
 	  if(packet_recv(temp,&hpacket)!=NULL)
 		{	
-			process_post(&thread_packet,PROCESS_EVENT_PACKET,(void*)&hpacket.p);//发送一个事件给packet任务
-			disable_485_rx();//关接收
+			process_post_synch(&thread_packet,PROCESS_EVENT_PACKET,(void*)&hpacket.p);//发送一个事件给packet任务
 		}
 		//ld_uart_isp(2,&temp,0);
 		USART_ClearITPendingBit(pUart, USART_IT_RXNE);						

@@ -1,51 +1,6 @@
 #include "includes.h"
 
 
-///*===================================================
-//               宏,类型，变量
-//====================================================*/
-static FSM rdfsm[CHANNEL_MAX];
-///*===================================================
-//                私有函数
-//====================================================*/
-/*--------------------------------------------------------------
-
-*	保存数据*
-*	[0] 版本号 [1] 电量 [2] 温度 [3] 故障码 [4-5] 循环次数 [6-7] 容量 [8-9] 电芯电压 [10-11] 电流 (低位在前)
-*---------------------------------------------------------------
-*/
-void save_data(Channel*ch,U8*data)
-{
-	if(ch==NULL||data==NULL)return;
-	ch->Ver					= data[0];
-	ch->Ufsoc				= data[1];
-	ch->Temperature			= data[2];
-	ch->CycleCount			= (((U16)data[5])<<8)|(data[4]);
-	ch->RemainingCapacity	= (((U16)data[7])<<8)|(data[6]);
-	ch->Voltage				= (((U16)data[9])<<8)|(data[8]);
-	ch->AverageCurrent		= (((U16)data[11])<<8)|(data[10]);
-}
-
-
-
-//约定 i:尝试次数 j:超时计数 
-#define read(cmd,times,timeout,sucess,fail,error) \
-	/*数据复位*/  fsm->i=0; \
-	/*尝试3次*/		while(fsm->i<times) \
-								{ \
-	/*计数++*/			fsm->i++;fsm->j=timeout/20; \
-									do{ \
-										  waitmsx(20); \
-	/*读数据*/					err=channel_read(pch,cmd,dataout); \
-	/*完成跳出*/				if(err>=2)break; \
-											fsm->j--; \
-	/*本次超时*/			}while(fsm->j!=0); \
-	/*成功*/				if(err==2) sucess \
-	/*失败*/				else fail \
-	/*几次都失败*/			if(fsm->i>=3)error \
-								}
-
-
 /*--------------------------------------------------------
 1.对所有通道检查，看充电宝是否有效
 2.有效的充电宝执行以下操作:
@@ -53,15 +8,19 @@ void save_data(Channel*ch,U8*data)
   (2) 读数据
   (3) 读输出标志
   (4) 6代宝以上,非租借条件下，应该 加密
+								
+								return: 0:正在运行 1:失败  2:成功
 ---------------------------------------------------------*/
-static void read_data_fsm(Channel*pch,U8 ch)
+static void read_data(Channel*pch,U8 ch)
 {
-	FSM*fsm = &rdfsm[ch-1];
+	extern BOOL is_system_in_return(U8 addr);
 	int err=0;
 	#define t err
 	U8 dataout[13];
-
+  
 	fsm_time_set(time(0));
+	if(pch==NULL)return;
+	if((is_system_in_return(pch->addr)==TRUE) )return;//当前是归还仓道，不读
 	
 	//根据失败次数，判断成功 or 失败
 	if(pch->readerr>=BAO_READ_ERROR_RETYR_TIMES) 
@@ -77,54 +36,44 @@ static void read_data_fsm(Channel*pch,U8 ch)
 	/*摆臂开关有效可以读数据*/
 	if(isvalid_baibi())
 	{
-		Start(){
-			if(isvalid_baibi()){memset(fsm,0,sizeof(FSM));goto id;}
-		}
-		//读id
-		State(id)
+		delayms(2);
+		if(isvalid_baibi())
 		{
-			read(RC_READ_ID,2,1200,             //读id,2次----超时1s
-					{
-						memcpy(pch->id,dataout,10);   //成功
-						pch->readok++;pch->readerr=0;goto data;
-					},
-					{pch->readerr++;},              //失败
-					{fsm->line=0;return;});         //错误
-			
-		}
+			//读id
+			if(channel_read(pch,RC_READ_ID,dataout,1000,FALSE)==FALSE)
+			{
+				//读不到数据
+				pch->readerr++;
+				return;
+			}else{
+				//读到数据
+				pch->readok++;
+			}
+		  
+			//读数据
+			if(channel_read(pch,RC_READ_DATA,dataout,1000,FALSE)==FALSE)
+			{
+				//读不到数据
+				pch->readerr++;
+				return;
+			}else{
+				//读到数据
+				pch->readok++;
+			}		
 
-		//读数据
-		State(data)
-		{
-		  /*------读id------2次----超时1s---成功保存数据------------------------------------------失败次数++-------- 都失败复位状态机*/
-			read(RC_READ_DATA ,2     ,1200  ,{save_data(pch,dataout);pch->readok++; goto lock678;},{pch->readerr++;},{fsm->line=0;return;});
-		}
-
-		//加密 6,7,8代宝(非租借条件下)
-		State(lock678)
-		{
+      //加密
 			if((is_ver_6() || is_ver_7()) && (is_system_lease()==FALSE) )
 			{
 				if(pch->bao_output!=0x06)
 				{
-					/*------读id--1次--超时1s---成功保存数据-------------------失败次数++-------- 都失败复位状态机*/
-					read(RC_LOCK ,1     ,1200  ,{pch->bao_output=(BaoOutput)dataout[0];},{pch->readerr++;},{fsm->line=0;return;});
+					dataout[0]=0;
+					channel_read(pch,RC_LOCK,dataout,800,FALSE);
+					pch->bao_output=dataout[0];
 				}
 			}
-			
-			/*延时一段时间,IR:2.2秒  iic:1秒*/
-			if(pch->iic_ir_mode==RTM_IR)t=800;
-			else if(pch->iic_ir_mode ==RTM_IIC)t=2000; 
-			
-			waitmsx(t); //
-			
-		  //复位状态机，从头开始
-			memset(fsm,0,sizeof(FSM));
-			return;
-		}
-		Default()
-	}
 
+		}
+	}
 	/*摆臂开关无效数据清0*/
 	else {
 		if(!isvalid_baibi())
@@ -136,12 +85,15 @@ static void read_data_fsm(Channel*pch,U8 ch)
 /*===================================================
 						仓道任务: 读数据
 ====================================================*/
+int channel_read_delay_ms = 0;
 AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 {
-	U8 i = 0;
+	static U8 i = 0;
+	static Channel*pch;
 	PROCESS_BEGIN();          
 	while(1)
 	{
+		channel_read_delay_ms = BAO_READ_DATA_MAX_MS;
 		for(i=1;i<=CHANNEL_MAX;i++)
 		{		
 			/*=====================状态位检测=========================*/
@@ -152,20 +104,35 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 			
 			/*=====================错误位检测=========================*/ 
 								channel_error_check(i);		
-				
-			/*=====================读取充电宝=========================*/
-				Channel*pch = channel_data_get(i);
+			
+			/*=====================系统灯=============================*/		
+				pch = channel_data_get(i);
 					if(pch==NULL)continue; 
-					read_data_fsm(pch,i);//读状态机
-				
-			/*=====================系统灯=============================*/	
+			
 				if(pch->error.baibi || pch->error.daowei )ld_system_flash_led(100); //开关错误，100ms     //心跳包500ms
-				if( (time(0)/1000)%5==0 )ld_system_flash_led(2000);                 //5秒后复位为 2秒闪烁 	
+				if( (time(0)/1000)%10==0 )ld_system_flash_led(2000);                 //10秒后复位为 2秒闪烁 	
+			
+			/*=====================读取充电宝=========================*/
+					if(pch==NULL)continue; 
+					read_data(pch,i);
+			    os_delay(channel,50);
 		}
-	  os_delay(channel,10);
-		ld_iwdg_reload();
-		
+		/*-----------循环等待时间---------------*/
+		if(channel_read_delay_ms>0)
+		{
+			os_delay(channel,channel_read_delay_ms);
+		}
+	  else 
+		{
+			os_delay(channel,100);
+		}
+		ld_iwdg_reload();	
 	}
 	PROCESS_END();
 }
+
+
+
+
+
 

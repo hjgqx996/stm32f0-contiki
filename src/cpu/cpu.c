@@ -164,6 +164,8 @@ int cpu_gpio_cfg(U8 xPort,U8 xPin,U8 xMode,U8 xOType,U8 sta,U8 xSpeed)
     if(xPort>6)return FALSE;
     GPIOx=	GPIO_TABLE[xPort];
 
+	  if(xPort==5&&xPin==0)RCC->CR &= ~((uint32_t)RCC_CR_HSEON);
+	
     xGpioInit.GPIO_Pin = (1<<xPin)&0xFFFF;
     xGpioInit.GPIO_Mode=(GPIOMode_TypeDef)xMode;
     xGpioInit.GPIO_OType = (GPIOOType_TypeDef)xOType;
@@ -201,6 +203,6 @@ int cpu_gpio_get(U8 xPort,U8 xPin)
     GPIO_TypeDef* GPIOx;
     if(xPort>6)return FALSE;
     GPIOx=	GPIO_TABLE[xPort];
-    return GPIO_ReadInputDataBit(GPIOx,(1<<xPin)&0xFFFF);
+	return (GPIO_ReadInputDataBit(GPIOx,(1<<xPin)&0xFFFF)==Bit_SET)?1:0;
 }
 

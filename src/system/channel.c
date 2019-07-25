@@ -28,7 +28,6 @@ BOOL channel_data_init(void)
 	{
 		chs[i].map = &channel_config_map[i]; //io
 		ld_ir_init(i+1,channel_config_map[i].io_ir,channel_config_map[i].io_re);
-		ld_iic_init(i+1,channel_config_map[i].io_sda,channel_config_map[i].io_scl);
 	}	
 	return TRUE;
 }
@@ -54,6 +53,13 @@ BOOL channel_data_clear(U8 ch)
 	Channel*pch = channel_data_get(ch);
 	if(pch==NULL)return FALSE;
 	memset((void*)&(pch->Ufsoc),0,sizeof(Channel)-((int)&(pch->Ufsoc) - (int)pch));//除地址外，其它清0
+	return TRUE;
+}
+BOOL channel_clear(U8 ch)
+{
+	Channel*pch = channel_data_get(ch);
+	if(pch==NULL)return FALSE;
+	memset((void*)&(pch->iic_dir),0,sizeof(Channel)-((int)&(pch->iic_dir) - (int)pch));//除地址外，其它清0
 	return TRUE;
 }
 
@@ -96,7 +102,20 @@ void channel_addr_set(U8*addrs)
 		vch->addr=addrs[i];//保存通道地址
 	}
 }
-	
+
+/*-------------保存数据----------------------------------*/
+void channel_save_data(Channel*ch,U8*data)
+{
+	if(ch==NULL||data==NULL)return;
+	ch->Ver					= data[0];
+	ch->Ufsoc				= data[1];
+	ch->Temperature			= data[2];
+	ch->CycleCount			= (((U16)data[5])<<8)|(data[4]);
+	ch->RemainingCapacity	= (((U16)data[7])<<8)|(data[6]);
+	ch->Voltage				= (((U16)data[9])<<8)|(data[8]);
+	ch->AverageCurrent		= (((U16)data[11])<<8)|(data[10]);
+}
+
 
 /*-----------------------------------------------------------
 仓道运行状态
@@ -115,7 +134,7 @@ void channel_state_check(U8 ch)
 	}else pch->state.read_ok=0;
 	
 	/*有宝,读取不正常*/
-	if( (isvalid_daowe()) && ( is_readok()==0 || (channel_id_is_not_null(pch->id)==FALSE)) )
+	if( (isvalid_daowe()) && ( (is_readerr()==1) || (channel_id_is_not_null(pch->id)==FALSE)) )
 	{
 		pch->state.read_error=1;
 		pch->state.read_ok=0;

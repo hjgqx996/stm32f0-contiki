@@ -2,20 +2,23 @@
 #include "packet.h"
 
 HPacket hpacket;
-
-
-/*解锁一次充电宝*/
-#define UnlockBao ReadBao
-
-/*cmd:命令  timeout:超时ms, thread:线程名,fail:失败时运行的代码  sucess:成功时运行的代码, size:返回数据缓存大小*/
-#define ReadBao(cmd,timeout,thread,fail,sucess,size)  {\
-	/* 重入变量:计时 */  static S16 to = timeout/10;static S8 err=0; static U8 dataout[size]; \
-  /* 发送命令      */	 do{err = channel_read(pch,cmd,dataout);to--;os_delay(thread,10); \
-	/* 超时退出*/        if(to<0){err=4;break;}}while(err<2); \
-	/* 成功*/            if(err==2)sucess \
-	/* 失败*/            else fail}
-
-
+/*===================================================
+                本地函数
+====================================================*/
+/*电磁阀动作时，读摆臂开关计数 */
+static int bai_bi_counter(Channel*pch,int timeout)
+{
+	int bc = 0;
+	if(pch==NULL)return 0;
+	while(timeout>0)
+	{
+		delayms(10);
+		if(isvalid_baibi())
+			bc++;
+		timeout-=10;
+	}
+	return bc;
+}
 
 /*===================================================
                 本地函数
@@ -30,14 +33,16 @@ static void send_ack(HPacket*hp, U8 cmd,U8 result)
 }
 
 //返回租借状态
-static void send_lease_state(HPacket*hp, U8 s,U8 ch_addr)
+static void send_lease_state(HPacket*hp, U8 s,U8 ch_addr,U8*ids)
 {
 	U8*data=hp->p.data;
 	Channel*ch = channel_data_get_by_addr(ch_addr);
+	if(ch==NULL){enable_485_rx();return;}
 	data[0]=0x01;		//子命令
 	data[1]=s;			//处理结果
 	data[2]=ch_addr;//充电宝位置
-	memcpy(data+3,ch->id,CHANNEL_ID_MAX);
+	memcpy(data+3,ids,CHANNEL_ID_MAX);
+	delayms(10);
 	packet_send(hp,0x02,3+CHANNEL_ID_MAX,data,system.addr485);
 }
 //返回归还状态
@@ -45,6 +50,7 @@ static void send_return_state(HPacket*hp,U8 s,U8 ch_addr)
 {
 	U8*data=hp->p.data;
 	Channel*ch = channel_data_get_by_addr(ch_addr);
+	if(ch==NULL){enable_485_rx();return;}
 	data[0]=0x01;   //子命令
 	data[1]=ch_addr;//充电宝位置
 	data[2]=s;      //处理结果
@@ -108,6 +114,18 @@ static void com_send_tick(HPacket*hp)
 {
 	packet*p = &hp->p;
   U8*data = p->data;
+	
+	/*仓道使能标志*/
+	int en_len = p->llen;
+	if(en_len<=2)en_len=0;
+	if(en_len>(2+CHANNEL_MAX))en_len=CHANNEL_MAX;
+	
+	/*保存充电使能方式*/
+	if(p->llen>0)system.enable = data[0];       //背板是否允许充电
+	if(p->llen>1)system.mode   = data[1];       //强制 or 自由
+	if(en_len)memcpy(system.chs,data+2,en_len); //强制标志 
+	
+	/*返回心跳包*/
 	data[0]=system.addr485;
 	data[1]=CHANNEL_MAX;//仓道数量
 	data[2]=HARDWARE_VERSION>>8;    //硬件版本
@@ -153,6 +171,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 	static HPacket*hp;
 	static Channel*pch;
 	static U8 buffer[20];
+	static int bcounter = 0;  //电磁阀动作时500,高电平计数
 	PROCESS_BEGIN();
 	while(1){
 	  PROCESS_WAIT_EVENT();//等待事件过来
@@ -162,35 +181,45 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 			pch = channel_data_get_by_addr(hp->p.data[0]);
 			memcpy(buffer,hp->p.data,20);
 			send_ack(hp,0x02,0x01);//发送应答
-			if(pch==NULL)break;
 			system.state = SYSTEM_STATE_LEASE;//系统状态:租借
-			lch = buffer[0];      //保存数据:租借位置
-			ltimeout = 10000*buffer[11];//保存数据:租借时间(ms)
-		
-			if(buffer_cmp(pch->id,buffer+1,CHANNEL_ID_MAX)==FALSE){send_lease_state(hp,Lease_differ,lch);goto LEASE_RESET_CONTINUE;}//充电宝编号不对
+			lch = buffer[0];                  //保存数据:租借位置
+			ltimeout = 1000*buffer[11];      //保存数据:租借时间(ms)
+
+			if( (pch==NULL) ||  (buffer_cmp(pch->id,buffer+1,CHANNEL_ID_MAX)==FALSE) ){
+				send_lease_state(hp,Lease_differ,lch,((pch==NULL)?(buffer+1):(pch->id)));
+				goto LEASE_RESET_CONTINUE;
+			}//充电宝编号不对
 			
 			if(pch->state.read_ok)//充电宝是否有效
 			{
 				if(is_ver_6() || is_ver_7())//6代宝解锁,600ms,失败返回应答包
-					UnlockBao(RC_UNLOCK,600,comm_lease,{},{send_lease_state(hp,Lease_decrypt_fall,lch);goto LEASE_RESET_CONTINUE;},2);
-					
-				channel_led_flash(channel_data_get_index(pch),ltimeout);//闪灯	
-				request_charge_hangup_all(1);//关闭输出,1s
-				dian_ci_fa(pch,HIGH);      //电磁阀动作
-				os_delay(comm_lease,500);  //延时500ms
-				dian_ci_fa(pch,LOW);       //关闭电磁阀
-				if(!isvalid_baibi())       //摆臂开关
 				{
-					send_lease_state(hp,Lease_success,lch); //成功===>应答包
-				  channel_data_clear_by_addr(lch);        //成功===>清数据
+					U8 lock[16];
+					if(channel_read(pch,RC_UNLOCK,lock,1000,TRUE)==FALSE )
+					{
+						send_lease_state(hp,Lease_decrypt_fall,lch,buffer+1);
+						enable_485_rx();
+						goto LEASE_RESET_CONTINUE;
+					}
+				}			
+				channel_led_flash(channel_data_get_index(pch),ltimeout/1000);//闪灯	
+				request_charge_hangup_all(1);//关闭输出,1s
+				dian_ci_fa(pch,HIGH);        //电磁阀动作
+				bcounter = bai_bi_counter(pch,500);//电磁阀打开的时候，读取摆臂开关电平
+				dian_ci_fa(pch,LOW);         //关闭电磁阀
+				if(bcounter<25)             //摆臂开关(高电平时间<250ms)
+				{
+					send_lease_state(hp,Lease_success,lch,buffer+1); //成功===>应答包
+				  channel_data_clear_by_addr(lch);                 //成功===>清数据
 				}
 				else
-					send_lease_state(hp,Lease_dianchifa_fall,lch);//电磁阀失败
+					send_lease_state(hp,Lease_dianchifa_fall,lch,buffer+1);//电磁阀失败
 			}
 			
 			LEASE_RESET_CONTINUE:
 			lch=ltimeout=0;
-			continue;
+
+     enable_485_rx();
 		}
 	}
 	PROCESS_END();
@@ -199,29 +228,30 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 /*归还命令*/
 static volatile U8 rch=0;                      							//仓道位置
 static volatile U32 rtimeout=0;                							//超时时间	
+BOOL is_system_in_return(U8 addr){return ((rch!=0)&& (rtimeout!=0) && (rch==addr));}
 static void com_return(HPacket*hp)
 {
 	packet *p = &hp->p;
-	Channel*ch = channel_data_get_by_addr(p->data[0]);
-	
+	Channel*ch = channel_data_get_by_addr(p->data[0]);//仓道地址
   //保存数据
 	system.state = SYSTEM_STATE_RETURN;//系统状态:归还//触发归还的异步处理
-	rch = p->data[0];      //保存数据:归还位置
-	rtimeout = p->data[11];//保存数据:归还超时
-	
-	channel_led_flash(rch,rtimeout);//闪灯
+	rch = p->data[0];                   //保存数据:归还位置
+	rtimeout = 1000*p->data[1]+time(0); //保存数据:归还超时(ms)
+	channel_led_flash(channel_data_get_index(ch),p->data[1]);//闪灯
 	send_ack(hp,0x03,0x01);         //发送应答
 }
 
 /*控制命令*/
 AUTOSTART_THREAD_WITH_TIMEOUT(comm_ctrl)
 {
+	static U8 dataout[16];
 	static HPacket*hp;
 	static Channel*pch;
 	static U8 cmd=0;
 	static U8 bao_id[10];
 	static U8 ctrl_time;
 	static U8 ch_addr = 0;
+	static int bcounter = 0;
 	PROCESS_BEGIN()
 	while(1)
 	{
@@ -230,36 +260,38 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_ctrl)
 		{
 			hp = (HPacket*)data;
 			ch_addr = hp->p.data[1];
-			pch = channel_data_get_by_addr(ch_addr);if(pch==NULL)continue;		
+				
 			cmd=hp->p.data[0];
 			memcpy(bao_id,&hp->p.data[2],10);//充电宝编号
 			ctrl_time=hp->p.data[12];        //控制时间
 			send_ack(hp,0x04,0x01);          //发送应答
-			
-			if(cmd==0x01)//设备重启
+	
+			if(cmd==0x00)//设备重启
 			{
 				send_ctrl_state(hp,hp->p.data[0],Cmd_success);
 				delayms(1000);
 				cpu_nvic_reset();
 				continue;
 			}
-				
-			if(cmd==0x02)//运维打开仓门，使能充电1小时
+			//cmd =01 02 对仓道操作，读取仓道数据
+			pch = channel_data_get_by_addr(ch_addr);if(pch==NULL)continue;	
+			if(cmd==0x01)//运维打开仓门，使能充电1小时
 			{
-				if((bao_id[6]&0x0F)>0x06)//6代宝以上，解锁1小时
+							
+				if((bao_id[6]&0x0F)>=0x06)//6代宝以上，解锁1小时
 				{
-					 UnlockBao(RC_UNLOCK_1HOUR,1000,comm_ctrl,{},{},2);
+					 channel_read(pch,RC_UNLOCK_1HOUR,dataout,1000,TRUE);
 				}
 			}
 			
-			if(cmd==0x02||cmd==0x03)//强制开仓	
+			if(cmd==0x01||cmd==0x02)//强制开仓	
 			{					
 				channel_led_flash(channel_data_get_index(pch),ctrl_time);//闪灯	
 				request_charge_hangup_all(1);//关闭输出,1s
 				dian_ci_fa(pch,HIGH);      //电磁阀动作
-				os_delay(comm_ctrl,500);   //延时500ms
+				bcounter = bai_bi_counter(pch,500);//电磁阀打开的时候，读取摆臂开关电平
 				dian_ci_fa(pch,LOW);       //关闭电磁阀
-				if(!isvalid_baibi())       //摆臂开关
+				if(bcounter<25)             //摆臂开关(高电平时间<250ms)
 				{
 					send_ctrl_state(hp,cmd,Cmd_success );        //成功===>返回应答
 					 channel_data_clear_by_addr(ch_addr);        //成功===>清数据
@@ -276,14 +308,25 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_ctrl)
 }
 	
 /*进入固件更新*/
-static void com_update_entry(HPacket*hp)
+AUTOSTART_THREAD_WITH_TIMEOUT(comm_entry)
 {
-  //保存标志 
-	system.firmware_updata_flag=0x88;
-	ld_flash_write(0,&system.firmware_updata_flag,1,FIRMWARE_updata);
-	send_update_state(hp,0x01);
-	cpu_ms_delay(500);
-	cpu_nvic_reset();//复位
+	static HPacket*hp;
+	PROCESS_BEGIN();
+	while(1)
+	{
+		PROCESS_WAIT_EVENT();
+		if(ev== PROCESS_EVENT_COMM_ENTRY && data !=NULL)
+		{
+			hp = (HPacket*)data;
+			//保存标志 
+			system.firmware_updata_flag=0x88;
+			ld_flash_write(0,&system.firmware_updata_flag,1,FIRMWARE_updata);
+			send_update_state(hp,0x01);
+			delayms(1000);
+			cpu_nvic_reset();//复位		
+		}
+	}
+	PROCESS_END();
 }
 
 /*更新模式查询*/
@@ -314,12 +357,12 @@ static void com_process(HPacket*hp)
 	if(p->addr==system.addr485)
 		switch(p->cmd)
 		{
-			case PC_HEART_BREAK	:   ld_system_flash_led(500);	com_send_tick(hp);		return;                         //系统灯500ms闪，发送心跳
-			case PC_LEASE				:		process_post(&thread_comm_lease,PROCESS_EVENT_COMM_LEASE,(void*)hp);return; //同步处理,事件发送给了线程thread_lease
-			case PC_RETURN			:		com_return(hp);				return;
+			case PC_HEART_BREAK	:   ld_system_flash_led(500);	com_send_tick(hp);		return;                     //系统灯500ms闪，发送心跳
+			case PC_LEASE				:		process_post(&thread_comm_lease,PROCESS_EVENT_COMM_LEASE,(void*)hp);return; //事件发送给了线程thread_lease
+			case PC_RETURN			:		com_return(hp);				return;                                               //记录一下，然后在 return 线程中完成归还动作
 			case PC_CTRL				:		process_post(&thread_comm_ctrl,PROCESS_EVENT_COMM_CTRL,(void*)hp);return;   //同步处理,事件发送给了线程thread_lease
-			case PC_UPDATE_ENTRY:		com_update_entry(hp);	break;
-			case PC_UPDATE_MODE :		com_update_mode_query(hp);break;
+			case PC_UPDATE_ENTRY:		process_post(&thread_comm_entry,PROCESS_EVENT_COMM_ENTRY,(void*)hp);return;   //同步处理,事件发送给了线程thread_entry                                               //保存升级标志，复位==>bootloader完成升级
+			case PC_UPDATE_MODE :		com_update_mode_query(hp);return;
 			
 			case PC_UPDATE_DATA://数据放在bootloader接收这里不接收
 			default:break;
@@ -335,8 +378,8 @@ static void com_process(HPacket*hp)
 			  channel_addr_set((U8*)system.addr_ch);                            //保存到仓道运行数据中
 				ld_flash_write(0,(U8*)&system.addr485, 1+CHANNEL_MAX, RS485_ADDR);//写入flash保存
 				send_add_state(hp,system.addr485,0x01);
-			break;
-			case 0x016: send_handshake_state(hp,0x01); break;//握手
+			return;
+			case 0x016: send_handshake_state(hp,0x01); return;//握手
 			default:break;
 		}
 	}
@@ -368,6 +411,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(packet)
 ====================================================*/
 AUTOSTART_THREAD_WITH_TIMEOUT(return)
 {
+	U8 dataout[16];
 	static Channel*pch;
 	PROCESS_BEGIN();
 	os_delay(return,500);
@@ -390,11 +434,14 @@ AUTOSTART_THREAD_WITH_TIMEOUT(return)
 					if(isvalid_baibi())
 					{
 						static int i=0;
-						for(;i<3;i++)
+						for(;i<RETURN_READ_TIMES;i++)
 						{
-							//尝试3次读取充电宝信息,每次超时3000ms
-							if(!channel_id_is_not_null(pch->id))
-								ReadBao(RC_READ_ID,3000,return,{},{memcpy(pch->id,dataout,10);break;},10);					
+							if( channel_read(pch,RC_READ_ID,dataout,700,TRUE) )//读一次id
+									if( channel_read(pch,RC_READ_DATA,dataout,700,TRUE) )
+									{
+										pch->state.read_ok=1;//成功读取，第一时间标志
+										break;
+									}
 						}	
 						if(!channel_id_is_not_null(pch->id))//无法识别
 							send_return_state(&hpacket,Return_unrecognized,rch);
@@ -403,10 +450,12 @@ AUTOSTART_THREAD_WITH_TIMEOUT(return)
 					
 						pch->flash=FALSE;//关闪烁
 						system.state=SYSTEM_STATE_INIT;//复位
+						rch=0;
+						rtimeout=0;
 					}
 				}
 			}
-		}
+		}else{rch=rtimeout=0;}
 		os_delay(return,80);
 		ld_iwdg_reload();
 	}

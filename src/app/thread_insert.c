@@ -46,6 +46,10 @@ static int  _failcounter[CHANNEL_MAX]={0};     //充电宝不存在计数:failcounter
 #define bto  _btimeout[ch-1]   // 3小时计时 1小时计时用,秒
 #define request _request[ch-1] //是否申请了充电: 7小时充电 补充时用
 #define failcounter     _failcounter[ch-1]
+
+
+static U8 current_read = 0;     //当前仓道
+static U8 buffer[16];
 //计时使用外部定时器,ms:中断时长
 void charge_fms_timer(int ms)
 {
@@ -80,7 +84,7 @@ void charge_fms_timer(int ms)
                       (有效)                                                                        __
                         +======>等待3秒===>识别===(yes)==>电量大于0===(yes)=======================>|  |
                                             +                 |                                    |  |
-                                            +                 |                                    |  |
+                     (返回)归还通道<--------+                 |                                    |  |
                                            (no)===>y充电5秒===|=>识别==(yes)===>电量大于0==(yes)==>|停|
                                                               +                      +             |止|
                                                              (no)===>充电10分钟<====(no)           |充|
@@ -94,14 +98,18 @@ void charge_fms_timer(int ms)
 -------------------------------------------------------------------------------------------------------*/
 void charge_fsm(U8 ch,void*arg)
 {
+	extern BOOL is_system_in_return(U8 addr);
 	Channel*pch=channel_data_get(ch);	      //仓道数据
 	if(pch==NULL)return; 
 
+	
+	if((is_system_in_return(pch->addr)==TRUE) )return;//当前是归还仓道，不读(另有归还线程在读)
+	
 	//检测有没有弹出
 	if( isvalid_baibi()==0 && line !=0 )
 	{
-		failcounter++;	
-		if(failcounter>10)
+		failcounter++;	  //弹出计数
+		if(failcounter>3)
 		{
 			failcounter = line=0;request=FALSE;
 			request_charge_off(ch);
@@ -110,15 +118,12 @@ void charge_fsm(U8 ch,void*arg)
 	}  
 	else { failcounter=0;}
 	
-
-	
-	
 	switch(line)
 	{	
 		//开始(等待中断触发/上电触发)
 		case 0:
 						last=end=ato=hang=0;
-					  if((int)arg==0x99){line=1;return;}   //中断触发,上电触发
+					  if((int)arg==0x99){channel_clear(ch); line=1;return;}   //中断触发,上电触发
 			break;
 						
 		//进入
@@ -126,10 +131,10 @@ void charge_fsm(U8 ch,void*arg)
 		
 		//识别/再识别
 		case 2:
-						wait_timeout(is_has_read(), 3000, 2);//3秒内是否识别(thread_channel识别),读对读错，都退出
 						/*---------------能识别---------------------------------*/
-						if(is_readok())
-						{						
+		        if( (channel_read(pch,RC_READ_ID,buffer,1000,TRUE)==TRUE) && (channel_read(pch,RC_READ_DATA,buffer,1000,TRUE)==TRUE) )
+						{			
+              pch->state.read_ok=1;							
 							if(pch->Ufsoc>0){line=20;return;}  //电量>0===>停止充电
 							else {
 								line=10;
@@ -146,7 +151,7 @@ void charge_fsm(U8 ch,void*arg)
 						}
 						
 						else if(last==4){                   //从充电5秒后跳来的
-							line=0;                           //充电5秒无法识别，复位
+							line=1;                           //充电5秒无法识别，复位
 						}
 						return;
 					 }
@@ -159,7 +164,7 @@ void charge_fsm(U8 ch,void*arg)
 							wait_timeout(0,5000, 6);//等待5秒
 							line=2;last=4;return;   //==》再识别一次
 						}
-						else{line=0;return;}      //无输出//复位,从头开始 
+						else{line=1;return;}      //无输出//复位,从头开始 
 
 			 
 						
@@ -251,7 +256,8 @@ void charge_fsm(U8 ch,void*arg)
 			//充电宝读不到,复位，从头开始
 			if( isvalid_baibi() && is_readerr() )
 			{
-				line=0;
+				request_charge_off(ch);
+				line=1;
 				return;
 			}
 	  }
@@ -272,9 +278,9 @@ void charge_fsm(U8 ch,void*arg)
 		}
 }
 
-/*===================================================
-                全局函数
-====================================================*/
+///*===================================================
+//                全局函数
+//====================================================*/
 AUTOSTART_THREAD_WITH_TIMEOUT(insert)
 {
 	static int i= 0;

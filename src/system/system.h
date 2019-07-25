@@ -23,12 +23,22 @@ typedef enum{
 /*系统数据*/
 typedef struct{
 	
+	/*------------地址域---------------------------------*/
 	volatile U8 addr485;                 					//485地址
 	volatile U8 addr_ch[CHANNEL_MAX];    					//通道地址
+	
+	/*------------通讯方式--------------------------------*/
 	volatile SYSTEM_IIC_IR_MODE iic_ir_mode;      //通讯方式
 	
+	/*------------租借--------------------------------*/
   volatile SYSTEM_STATE state;                  //系统租借状态
-
+	
+  /*------------充电控制-----------------------------*/
+	BOOL enable;            //充电使能 enable=1:可以充电  enable=0:不可充电
+	U8   mode;              //充电模式 mode=1:指定仓道    mode=0:默认冒泡排队方式(自由充电方式)
+	U8   chs[CHANNEL_MAX];  //仓道充电使能: mode==1时有效
+	
+	/*------------升级控制-----------------------------*/
 	volatile	 U32    firmware_size;
 	volatile	 U16    firmware_version;
 	volatile	 U16    software_version;

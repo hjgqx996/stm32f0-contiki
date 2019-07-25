@@ -74,6 +74,13 @@ typedef struct{
 	/*--------------配置接口--------------------------*/
 	ChannelConfigureMap*map;        //通道控制io配置
 	U8 addr;                        //通道地址flash[]<----System.addr_ch-------Channel.addr
+
+	/*--------------异常弹仓--------------------------*/
+
+	/*--------------仓道灯----------------------------*/
+	BOOL flash;                     //是否闪烁
+	volatile int  flash_ms;         //闪烁总时间(ms)
+	volatile int  flash_now;        //计时
 	
 	/*--------------iic方向切换------------------------*/
 	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
@@ -102,14 +109,7 @@ typedef struct{
 	/*--------------是否正常读------------------------*/
 	U8 readok;                      //读id,读数据，是否正常,计数>=2正常
 	S8 readerr;                     //读出错计数
-
-
-	/*--------------异常弹仓--------------------------*/
-
-	/*--------------仓道灯----------------------------*/
-	BOOL flash;                     //是否闪烁
-	volatile int  flash_ms;         //闪烁总时间(ms)
-	volatile int  flash_now;        //计时
+	
 }Channel;
 
 #pragma pack()
@@ -143,7 +143,7 @@ BOOL channel_data_init(void);               //初始化
 BOOL channel_data_clear_by_addr(U8 ch_addr);//清数据
 BOOL channel_data_clear(U8 ch);             //清数据
 void channel_addr_set(U8*addrs);            //设置仓道地址
-
+BOOL channel_clear(U8 ch);
 /*-----------------------------------------------------
 * channel 数据获取  索引
 -------------------------------------------------------*/
@@ -158,7 +158,7 @@ int channel_data_get_index(Channel*ch);
 BOOL request_charge_on(U8 ch,U32 seconds,BOOL hard);/*申请充电*/
 BOOL request_charge_off(U8 ch);/*中止充电*/
 BOOL request_charge_hangup_all(U32 scondes);/*挂起所有输出*/
-
+BOOL ld_is_queue_hang(void);/*充电调度器是否挂起?*/
 /*-----------------------------------------------------
 * channel 灯闪
 -------------------------------------------------------*/
@@ -175,28 +175,21 @@ void channel_error_check(U8 ch);
 /*------------------------------------------------------
 		判断
 -------------------------------------------------------*/
-#define isvalid_daowe()  ld_gpio_get(pch->map->io_detect) //到位开关有效
-#define isvalid_baibi()  ld_gpio_get(pch->map->io_sw)     //摆臂开关有效
-#define isin5v()         ld_gpio_get(pch->map->io_mp_detect)//是否充电输入
-#define isout5v()        ld_gpio_get(pch->map->io_mp)     //是否充电输出
+#define isvalid_daowe()  (ld_gpio_get(pch->map->io_detect)) //到位开关有效
+#define isvalid_baibi()  (ld_gpio_get(pch->map->io_sw))     //摆臂开关有效
+#define isin5v()         (ld_gpio_get(pch->map->io_mp_detect))//是否充电输入
+#define isout5v()        (ld_gpio_get(pch->map->io_mp))     //是否充电输出
 #define is_ver_6()       ((pch->id[6]&0x0F)==0x06)        //6代宝
 #define is_ver_7()       ((pch->id[6]&0x0F)==0x07)        //7代宝
 #define is_ver_lte_5()   ((pch->id[6]&0x0F)<=0x05)        //5代或以下
-#define is_readok()      (pch->state.read_ok)             //判断读取成功
-#define is_readerr()     (pch->state.read_error)          //判断是否读失败
-#define is_has_read()    (pch->state.read_ok || pch->state.read_error) //判断是否已经读
+#define is_readok()      (pch->state.read_ok==1)             //判断读取成功
+#define is_readerr()     (pch->state.read_error==1)          //判断是否读失败
+#define is_has_read()    ( (pch->state.read_ok==1) || (pch->state.read_error==1)) //判断是否已经读
 #define set_out5v()     ld_gpio_set(pch->map->io_mp,1) //输出5V
 #define reset_out5v()   ld_gpio_set(pch->map->io_mp,0) //不输出5V
-/*===================================================
-仓道读: 包含 iic,ir 以及切换策略
-返回:  
-0:本命令未开始
-1:本命令在运行 
-2:本命令成功  
-3:本命令无法读取
-4:超时记错一次
-====================================================*/
-U8 channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout);
+
+BOOL channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL once);
+void channel_save_data(Channel*ch,U8*data);
 #endif
 
 

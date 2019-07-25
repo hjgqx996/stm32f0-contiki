@@ -39,6 +39,7 @@ HPacket *packet_recv(U8 data,HPacket*m)
 					if(cs8(d,m->s.len-1)==data)
 					{
 						//接收到一个数据包
+						memset(&(m->s),0,sizeof(PacketState));
 						return m;
 					}else goto DECODE_ERROR;
 				}
@@ -56,6 +57,7 @@ HPacket *packet_recv(U8 data,HPacket*m)
 ====================================================*/
 int packet_send(HPacket*hp, U8 cmd,U16 len,U8*data,U8 addr)
 {
+	U8 cs = 0;
 	packet *p = &hp->p;
 	if(hp==NULL)return FALSE;
 	//memset(hp,0,sizeof(HPacket));
@@ -65,12 +67,15 @@ int packet_send(HPacket*hp, U8 cmd,U16 len,U8*data,U8 addr)
 	p->cmd=cmd;
 	p->hlen=len>>8;
 	p->llen=len&0xFF;
-	if(len>0&&p->data!=data)
-		memcpy(p->data,data,len);
-	if(len>(PACKET_DATA_MAX-7))return FALSE;
-	p->data[len] = cs8((U8*)p,len+6);
+	
+	if(len>0&& ((int)data) != ((int)hp->p.data) )
+		memcpy(hp->p.data,data,len);
+	cs= cs8((U8*)p,6+len);	
+	hp->p.data[len] = cs;
 	enable_485_tx();//使能发送
-	ld_uart_send(COM_485,(U8*)p,len+7);
+	delayms(1);
+	ld_uart_send(COM_485,(U8*)&hp->p,7+len);
+	delayms(10);
 	return len;
 }
 
