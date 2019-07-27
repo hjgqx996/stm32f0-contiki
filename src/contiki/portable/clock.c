@@ -21,6 +21,12 @@ void   SysTick_Handler(void)
   if (--second_countdown == 0) {
     current_seconds++;
     second_countdown = CLOCK_SECOND;
+		if(current_seconds%2==0)
+		{
+			//2秒一次
+			extern void channel_check_timer_2s();
+			channel_check_timer_2s();
+		}
   }
 	//循环读延时
 	if(channel_read_delay_ms>0)

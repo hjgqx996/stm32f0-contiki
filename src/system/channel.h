@@ -52,10 +52,10 @@ typedef struct{
 	U8 \
 	lease:1,         //租借故障
 	motor:1,         //电磁阀/电机故障
-	baibi:1,            //摆臂开关故障
+	baibi:1,         //摆臂开关故障
 	ir:1,            //红外识别故障
-	daowei:1,           //到位开关故障
-	temp:1,           //来电宝故障  temp<0 || temp>65
+	daowei:1,        //到位开关故障
+	temp:1,          //来电宝故障  temp<0 || temp>65
 	thimble:1,       //顶针识别故障
 	reversed:1;      //保留
 }ChannelError;
@@ -85,10 +85,13 @@ typedef struct{
 	/*--------------iic方向切换------------------------*/
 	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
 	U8  iic_dir_counter;             //出错计数
+	int dingzhen_counter;            //顶针识别故障 计数
+	int ir_error_counter;            //红外识别故障 计数
+	
 	/*--------------iic,ir切换------------------------*/
 	U8 iic_ir_mode;                 //iic方向 0:正常方向  1:方向反转
 	U8 iic_ir_mode_counter;         //出错计数
-	
+
 	/*--------------运行状态数据----------------------*/
 	ChannelState state;             //运行状态
 	ChannelWarn  warn;              //运行告警
@@ -168,9 +171,7 @@ void channels_les_flash_timer(int timer_ms);
 /*------------------------------------------------------
 仓道状态，告警，错误 
 -------------------------------------------------------*/
-void channel_state_check(U8 ch);
-void channel_warn_check(U8 ch);
-void channel_error_check(U8 ch);
+void channel_check_timer_2s(void);
 
 /*------------------------------------------------------
 		判断
@@ -188,7 +189,7 @@ void channel_error_check(U8 ch);
 #define set_out5v()     ld_gpio_set(pch->map->io_mp,1) //输出5V
 #define reset_out5v()   ld_gpio_set(pch->map->io_mp,0) //不输出5V
 
-BOOL channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL once);
+int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL once);
 void channel_save_data(Channel*ch,U8*data);
 #endif
 

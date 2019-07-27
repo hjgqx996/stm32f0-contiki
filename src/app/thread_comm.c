@@ -42,6 +42,26 @@ static void send_lease_state(HPacket*hp, U8 s,U8 ch_addr,U8*ids)
 	data[1]=s;			//处理结果
 	data[2]=ch_addr;//充电宝位置
 	memcpy(data+3,ids,CHANNEL_ID_MAX);
+	
+	//判断租借成功与失败==>标志位
+	if(s != Lease_success)
+	{
+		Channel*pch = channel_data_get_by_addr(ch_addr);
+		if(pch!=NULL)
+		{
+			pch->error.lease=1;//租借失败位，置1
+		}
+	}
+	else
+  {
+		Channel*pch = channel_data_get_by_addr(ch_addr);
+		if(pch!=NULL)
+		{
+			pch->error.lease=0;//租借失败位，清0
+		}	
+	}
+	
+	//发送数据包
 	delayms(10);
 	packet_send(hp,0x02,3+CHANNEL_ID_MAX,data,system.addr485);
 }
@@ -172,6 +192,8 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 	static Channel*pch;
 	static U8 buffer[20];
 	static int bcounter = 0;  //电磁阀动作时500,高电平计数
+	static int i = 0;
+	
 	PROCESS_BEGIN();
 	while(1){
 	  PROCESS_WAIT_EVENT();//等待事件过来
@@ -185,18 +207,27 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 			lch = buffer[0];                  //保存数据:租借位置
 			ltimeout = 1000*buffer[11];      //保存数据:租借时间(ms)
 
-			if( (pch==NULL) ||  (buffer_cmp(pch->id,buffer+1,CHANNEL_ID_MAX)==FALSE) ){
+			//充电宝编号不对，充电宝编号为0==>differ
+			if( (pch==NULL) ||  (buffer_cmp(pch->id,buffer+1,CHANNEL_ID_MAX)==FALSE) || (channel_id_is_not_null(pch->id)==FALSE) ){
 				send_lease_state(hp,Lease_differ,lch,((pch==NULL)?(buffer+1):(pch->id)));
 				goto LEASE_RESET_CONTINUE;
 			}//充电宝编号不对
 			
-			if(pch->state.read_ok)//充电宝是否有效
+			//if(pch->state.read_ok)//充电宝是否有效
 			{
 				if(is_ver_6() || is_ver_7())//6代宝解锁,600ms,失败返回应答包
 				{
-					U8 lock[16];
-					if(channel_read(pch,RC_UNLOCK,lock,1000,TRUE)==FALSE )
+					int result=0;
+					U8 lock[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};	
+					//尝试解锁几次，当红外忙时，最长等待时间2.5秒
+					for(i=0;i<UNLOCK_RETRY_TIMES;i++)
 					{
+						result = channel_read(pch,RC_UNLOCK,lock,1000,TRUE);
+						if(result==TRUE)break;
+						if(result==-1){ delayms(200); bcounter+=200;}//红外忙，等待
+						if(bcounter>2500){result=FALSE;break;}
+					}
+					if( (result!=TRUE) || (lock[0] != 0x05) ){//解锁失败
 						send_lease_state(hp,Lease_decrypt_fall,lch,buffer+1);
 						enable_485_rx();
 						goto LEASE_RESET_CONTINUE;
@@ -209,11 +240,15 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 				dian_ci_fa(pch,LOW);         //关闭电磁阀
 				if(bcounter<25)             //摆臂开关(高电平时间<250ms)
 				{
+					pch->error.motor = 0;//电磁阀故障清0
 					send_lease_state(hp,Lease_success,lch,buffer+1); //成功===>应答包
 				  channel_data_clear_by_addr(lch);                 //成功===>清数据
 				}
 				else
+				{
 					send_lease_state(hp,Lease_dianchifa_fall,lch,buffer+1);//电磁阀失败
+					pch->error.motor = 1;//电磁阀故障
+				}
 			}
 			
 			LEASE_RESET_CONTINUE:
@@ -293,11 +328,15 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_ctrl)
 				dian_ci_fa(pch,LOW);       //关闭电磁阀
 				if(bcounter<25)             //摆臂开关(高电平时间<250ms)
 				{
+					pch->error.motor = 0;                        //电磁阀故障清0
 					send_ctrl_state(hp,cmd,Cmd_success );        //成功===>返回应答
 					 channel_data_clear_by_addr(ch_addr);        //成功===>清数据
 				}
 				else
+				{
+					pch->error.motor = 1;            //电磁阀故障
 					send_ctrl_state(hp,cmd,Cmd_fall);//电磁阀失败
+				}
 			}
 		}
     memset(hp,0,sizeof(HPacket));		
@@ -357,7 +396,7 @@ static void com_process(HPacket*hp)
 	if(p->addr==system.addr485)
 		switch(p->cmd)
 		{
-			case PC_HEART_BREAK	:   ld_system_flash_led(500);	com_send_tick(hp);		return;                     //系统灯500ms闪，发送心跳
+			case PC_HEART_BREAK	:   ld_system_flash_led(500,5);	com_send_tick(hp);		return;                   //系统灯500ms闪，闪5秒,发送心跳
 			case PC_LEASE				:		process_post(&thread_comm_lease,PROCESS_EVENT_COMM_LEASE,(void*)hp);return; //事件发送给了线程thread_lease
 			case PC_RETURN			:		com_return(hp);				return;                                               //记录一下，然后在 return 线程中完成归还动作
 			case PC_CTRL				:		process_post(&thread_comm_ctrl,PROCESS_EVENT_COMM_CTRL,(void*)hp);return;   //同步处理,事件发送给了线程thread_lease
@@ -413,6 +452,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(return)
 {
 	U8 dataout[16];
 	static Channel*pch;
+	
 	PROCESS_BEGIN();
 	os_delay(return,500);
 	
@@ -433,17 +473,19 @@ AUTOSTART_THREAD_WITH_TIMEOUT(return)
 				  os_delay(return,20);//20ms去抖
 					if(isvalid_baibi())
 					{
-						static int i=0;
-						for(;i<RETURN_READ_TIMES;i++)
+						static int result = 0;
+						static int i=0,ecounter=0;
+						
+						//尝试解锁几次，当红外忙时，最长等待时间2.5秒
+						for(i=0;i<RETURN_READ_TIMES;i++)
 						{
-							if( channel_read(pch,RC_READ_ID,dataout,700,TRUE) )//读一次id
-									if( channel_read(pch,RC_READ_DATA,dataout,700,TRUE) )
-									{
-										pch->state.read_ok=1;//成功读取，第一时间标志
-										break;
-									}
-						}	
-						if(!channel_id_is_not_null(pch->id))//无法识别
+							result = channel_read(pch,RC_READ_ID,dataout,500,TRUE);
+							if(result==TRUE){pch->state.read_ok=1;break;}//成功读取，第一时间标志
+							if(result==-1){ delayms(200); ecounter+=200;}
+							if(ecounter>2500){result=FALSE;break;}
+						}
+
+						if(!channel_id_is_not_null(pch->id) || (result!=TRUE) )//无法识别
 							send_return_state(&hpacket,Return_unrecognized,rch);
 						else
 							send_return_state(&hpacket,Return_success,rch);
@@ -456,7 +498,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(return)
 				}
 			}
 		}else{rch=rtimeout=0;}
-		os_delay(return,80);
+		os_delay(return,100);
 		ld_iwdg_reload();
 	}
 	PROCESS_END();

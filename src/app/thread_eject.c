@@ -77,17 +77,23 @@ AUTOSTART_THREAD_WITH_TIMEOUT(eject)
             os_delay(eject,50); //延时
             if(isvalid_baibi()) //摆臂开关还有效表示没有弹仓成功
 						{
+							pch->error.motor = 1;//电磁阀故障
 							cleec++;          //错误计数++
 							if(cleec==EJECT_FAIL_TIMES)cle2hour=EJECT_FAIL_WAIT;//等待2小时
-						}else cleec=0;							
+						}
+						else 
+						{
+							cleec=0;	
+							pch->error.motor = 0;//电磁阀故障清0
+						}							
 					}
 				}
 			}
 		}
 		
-		//10秒钟检测一次
+		//10秒钟检测一次 EJECT_INTERVAL==10000
 		{
-			static time_t last = 0;last=time(0)+EJECT_INTERVAL;//上一次时间
+			static time_t last = 0;last=time(0)+EJECT_INTERVAL;          //上一次时间
 			do{os_delay(eject,1000);}while( (time(0)-last)> 0x80000000 );//超时检测
 		}
 	}

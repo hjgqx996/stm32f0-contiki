@@ -36,6 +36,9 @@ typedef enum{
 //<o>仓道编号长度
 #define CHANNEL_ID_MAX             10
 
+//<o>解锁时，失败尝试次数         
+#define UNLOCK_RETRY_TIMES        2
+
 //<o>租借时，仓道灯闪烁频率ms
 #define LEASE_LED_FLASH_TIME      500
 
@@ -55,7 +58,7 @@ typedef enum{
 #define IIC_DIR_SWITCH_MAX        1
 
 //<o>循环读充电宝时长(ms)
-#define BAO_READ_DATA_MAX_MS      2800
+#define BAO_READ_DATA_MAX_MS      1500
 
 //<o>告警温度(度)
 #define BAO_WARN_TEMPERATURE      60
@@ -63,9 +66,15 @@ typedef enum{
 #define BAO_ERROR_TEMPERATURE      65
 //<h>充电宝读判断
 //<o>失败次数
-#define BAO_READ_ERROR_RETYR_TIMES         4
+#define BAO_READ_ERROR_RETYR_TIMES         3
 //<o>成功次数
-#define BAO_READ_OK_RETYR_TIMES            2
+#define BAO_READ_OK_RETYR_TIMES            1
+
+//<o>顶针识别故障计数
+#define BAO_DINGZHEN_ERROR_TIMES           2
+
+//<o>红外识别故障计娄
+#define BAO_IR_ERROR_TIMES                 2
 //</h>
 
 //<h>锁仓事件
@@ -78,7 +87,6 @@ typedef enum{
 //</h>
 
 //<h>充电流程参数
-
 //<h> 补充
 //<o>停止补充电量%
 #define BUCHONG_STOP_UFSOC_MAX            99

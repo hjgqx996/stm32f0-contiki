@@ -8,7 +8,13 @@ void charge_fsm(U8 ch,void*arg);
 ====================================================*/
 #define timeout(x)  (x<=0)
 #define wait_timeout(condition,to,linenow)  end=to;line=linenow+1;case linenow+1: \
-														                if((end>0) && (!(condition)) )return;
+    												                if((end>0) && (!(condition)) )return;
+																						
+//宏:申请一次充电充电时间为seconds秒,充电可以被挂起
+#define request_charge_and_wait_timeout(seconds,hard,nextline)  \
+			/*申请充电*/                  request_charge_on(ch,seconds,hard); \
+			/*设置超时时间*/              end = time(0)+1000*seconds; \
+			/*标志一下当前为申请充电状态*/request=TRUE;line=nextline;return
 																						
 /*上电检测，如果发现在有充电宝，按充电流程走*/
 void recover_when_powerup(void)
@@ -27,6 +33,12 @@ void recover_when_powerup(void)
 /*-----------------------------
    状态机变量
 -------------------------------*/
+static BOOL is_insert=FALSE;
+BOOL is_inserted(void)//是否有充电宝插入
+{
+	return is_insert;
+}
+
 static U8   _line[CHANNEL_MAX]={0};//当前状态
 static U8   _last[CHANNEL_MAX]={0};//上一次状态          :counter
 
@@ -44,11 +56,9 @@ static int  _failcounter[CHANNEL_MAX]={0};     //充电宝不存在计数:failcounter
 #define hang    _hangup[ch-1]  //挂起:TRUE ==>停止计时
 #define counter _last[ch-1]    // 1小时充电一次，充3次 的次数计数
 #define bto  _btimeout[ch-1]   // 3小时计时 1小时计时用,秒
-#define request _request[ch-1] //是否申请了充电: 7小时充电 补充时用
+#define request _request[ch-1] //是否申请了充电
 #define failcounter     _failcounter[ch-1]
 
-
-static U8 current_read = 0;     //当前仓道
 static U8 buffer[16];
 //计时使用外部定时器,ms:中断时长
 void charge_fms_timer(int ms)
@@ -98,6 +108,7 @@ void charge_fms_timer(int ms)
 -------------------------------------------------------------------------------------------------------*/
 void charge_fsm(U8 ch,void*arg)
 {
+	int result = 0;
 	extern BOOL is_system_in_return(U8 addr);
 	Channel*pch=channel_data_get(ch);	      //仓道数据
 	if(pch==NULL)return; 
@@ -109,7 +120,7 @@ void charge_fsm(U8 ch,void*arg)
 	if( isvalid_baibi()==0 && line !=0 )
 	{
 		failcounter++;	  //弹出计数
-		if(failcounter>3)
+		if(failcounter>100)
 		{
 			failcounter = line=0;request=FALSE;
 			request_charge_off(ch);
@@ -123,70 +134,57 @@ void charge_fsm(U8 ch,void*arg)
 		//开始(等待中断触发/上电触发)
 		case 0:
 						last=end=ato=hang=0;
-					  if((int)arg==0x99){channel_clear(ch); line=1;return;}   //中断触发,上电触发
-			break;
+					  if((int)arg==0x99){ is_insert=TRUE; channel_clear(ch); line=1;}return;   //中断触发,上电触发
 						
 		//进入
-		case 1:	if(isvalid_baibi()){line++; last=1;}return;//摆臂开关检测到,下一步
+		case 1:	
+						if(isvalid_baibi()){
+								line++; last=1;  //识别一次//摆臂开关检测到,下一步
+							is_insert=FALSE; 
+						}
+						else 
+							return;//等待摆臂开关
 		
 		//识别/再识别
 		case 2:
 						/*---------------能识别---------------------------------*/
-		        if( (channel_read(pch,RC_READ_ID,buffer,1000,TRUE)==TRUE) && (channel_read(pch,RC_READ_DATA,buffer,1000,TRUE)==TRUE) )
+						                result = channel_read(pch,RC_READ_ID,buffer,500,TRUE);    if(result==-1)return; //红外拉高，忙，不读
+		        if(result==TRUE)result = channel_read(pch,RC_READ_DATA,buffer,600,TRUE);  if(result==-1)return; //红外拉高，忙，不读
+		        if(result==TRUE)
 						{			
               pch->state.read_ok=1;							
 							if(pch->Ufsoc>0){line=20;return;}  //电量>0===>停止充电
-							else {
-								line=10;
-								request_charge_on(ch,600,TRUE);  //==>充电10分钟
-								return;
+							else {                             //电为0 ===>申请充电10分钟,跳到line=10
+								request_charge_and_wait_timeout(600,TRUE,10);
 							}
-							
 						/*---------------不能识别---------------------------------*/
-					 }else{	
-						
-						if(last==1){                        //从1跳来的===>充电5秒
-							line=4;
-							request_charge_on(ch,5,TRUE);			//==>充电5秒			
-						}
-						
-						else if(last==4){                   //从充电5秒后跳来的
-							line=1;                           //充电5秒无法识别，复位
-						}
-						return;
+					 }else{			
+						if(last==1){                        //从1跳来的===>充电5秒(跳到line=4)
+								request_charge_and_wait_timeout(5,TRUE,4);
+						}				
+						else if(last==4){ line=1;}          //充电5秒无法识别，复位                  
 					 }
-
+					 return;
+					 
 		//充电5秒
 		case 4:
-						wait_timeout(isout5v(), 7*3600*1000, 4);//7小时内是否输出(queue排队输出)	
-						if(isout5v())//有输出
+						if(timeout(end))
 						{
-							wait_timeout(0,5000, 6);//等待5秒
-							line=2;last=4;return;   //==》再识别一次
-						}
-						else{line=1;return;}      //无输出//复位,从头开始 
-
-			 
+							line=2;last=4;      //==》再识别一次
+						}return;
 						
 		//充电10分钟
 		case 10:
-						wait_timeout(isout5v(), 7*3600*1000, 10);   //7小时内是否输出(queue排队输出)					
-						if(isout5v())//有输出
+			      if(timeout(end) || (pch->Ufsoc>0))
 						{
-							wait_timeout((pch->Ufsoc>0),600*1000, 12);//10分钟电量>0
-							line=20;                                  //超时 or 电量>0 ===>停止充电
-							return;
-						}
-						//无输出
-						else{line=20;return;}     //无输出==>停止充电
+							request=FALSE;request_charge_off(ch); line=20;//超时 or 电量>0 ===>停止充电
+						}return;
 						
-
 		//停止充电==>充电7小时
 		case 20:
-						request_charge_on(ch,7*3600,FALSE);          //充电7小时,end为超时时间
-						line=24;ato=counter=bto=0;end =7*3600*1000;return;
+			      ato=counter=bto=0;
+		        request_charge_and_wait_timeout(7*3600,FALSE,24);//充电7小时,跳到line=24
 
-						
 		//充电7小时
 	  case 24:
 						if(timeout(end) || pch->state.full_charge)//充电满 or 超时
@@ -239,28 +237,25 @@ void charge_fsm(U8 ch,void*arg)
 					
 		//充电结束
 		case 30:
+			    request_charge_off(ch);
 					request=FALSE;
 		break;
 		default:break;
 	}
-	
-	  
-		if(line>=24)
+	 
+		//申请输出，无输出时，挂起计时
+		if( ((isout5v()==0) && (request==TRUE)) )
+			hang=TRUE;
+		else 
+			hang=FALSE;
+		
+		//充电宝读不到,复位，从头开始
+		if( isvalid_baibi() && is_readerr() )
 		{
-			//申请输出，无输出时，挂起计时
-			if( ((isout5v()==0) && (request==TRUE)) )
-				hang=TRUE;
-			else 
-				hang=FALSE;
-			
-			//充电宝读不到,复位，从头开始
-			if( isvalid_baibi() && is_readerr() )
-			{
-				request_charge_off(ch);
-				line=1;
-				return;
-			}
-	  }
+			request_charge_off(ch);
+			line=1;
+			return;
+		}
 		
 		//判断充电电流<100mA持续2min
 		if( (pch->AverageCurrent<STOP_CURRENT_MAX) && (line>=24) && (pch->state.full_charge!=1) && (pch->state.charging))
@@ -295,7 +290,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(insert)
 		{
 			charge_fsm(i,NULL);
 		}
-		os_delay(insert,50);
+		os_delay(insert,10);
 		ld_iwdg_reload();
 	}
 	PROCESS_END();

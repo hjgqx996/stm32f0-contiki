@@ -1,6 +1,4 @@
 #include "includes.h"
-
-
 /*--------------------------------------------------------
 1.对所有通道检查，看充电宝是否有效
 2.有效的充电宝执行以下操作:
@@ -13,9 +11,9 @@
 ---------------------------------------------------------*/
 static void read_data(Channel*pch,U8 ch)
 {
+	
 	extern BOOL is_system_in_return(U8 addr);
-	int err=0;
-	#define t err
+	int result=0;
 	U8 dataout[13];
   
 	fsm_time_set(time(0));
@@ -28,11 +26,7 @@ static void read_data(Channel*pch,U8 ch)
 		channel_data_clear(ch);
 		pch->readok=0; pch->readerr=0;pch->state.read_error=1;pch->state.read_ok=0;
 	}
-	if(pch->readok>=BAO_READ_OK_RETYR_TIMES)     
-	{
-		pch->readerr=0;pch->readok=0;pch->state.read_error=0;pch->state.read_ok=1;
-	}
-	
+
 	/*摆臂开关有效可以读数据*/
 	if(isvalid_baibi())
 	{
@@ -40,7 +34,8 @@ static void read_data(Channel*pch,U8 ch)
 		if(isvalid_baibi())
 		{
 			//读id
-			if(channel_read(pch,RC_READ_ID,dataout,1000,FALSE)==FALSE)
+			result = channel_read(pch,RC_READ_ID,dataout,500,FALSE);if(result==-1)return;//红外忙，返回
+			if(result==FALSE)
 			{
 				//读不到数据
 				pch->readerr++;
@@ -51,14 +46,21 @@ static void read_data(Channel*pch,U8 ch)
 			}
 		  
 			//读数据
-			if(channel_read(pch,RC_READ_DATA,dataout,1000,FALSE)==FALSE)
+			result = channel_read(pch,RC_READ_DATA,dataout,600,FALSE);if(result==-1)return;//红外忙，返回
+			if(result==FALSE)
 			{
 				//读不到数据
 				pch->readerr++;
 				return;
 			}else{
 				//读到数据
-				pch->readok++;
+				
+				if(channel_id_is_not_null(pch->id) && (pch->readok>=1) ) //判断是否读到id
+				{
+					pch->state.read_ok=1;                                  //成功读到数据
+					pch->state.read_error = pch->readerr=0;                //错误计数清0
+				}
+				pch->readok=0;
 			}		
 
       //加密
@@ -67,7 +69,7 @@ static void read_data(Channel*pch,U8 ch)
 				if(pch->bao_output!=0x06)
 				{
 					dataout[0]=0;
-					channel_read(pch,RC_LOCK,dataout,800,FALSE);
+					channel_read(pch,RC_LOCK,dataout,600,FALSE);
 					pch->bao_output=dataout[0];
 				}
 			}
@@ -77,7 +79,10 @@ static void read_data(Channel*pch,U8 ch)
 	/*摆臂开关无效数据清0*/
 	else {
 		if(!isvalid_baibi())
-			channel_data_clear(ch);
+			if(!isvalid_baibi())
+			{
+				channel_data_clear(ch);
+			}
 	}
 }
 
@@ -85,7 +90,7 @@ static void read_data(Channel*pch,U8 ch)
 /*===================================================
 						仓道任务: 读数据
 ====================================================*/
-int channel_read_delay_ms = 0;
+int channel_read_delay_ms = BAO_READ_DATA_MAX_MS;
 AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 {
 	static U8 i = 0;
@@ -93,39 +98,37 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 	PROCESS_BEGIN();          
 	while(1)
 	{
-		channel_read_delay_ms = BAO_READ_DATA_MAX_MS;
+		
 		for(i=1;i<=CHANNEL_MAX;i++)
-		{		
-			/*=====================状态位检测=========================*/
-								channel_state_check(i);
-			
-			/*=====================告警位检测=========================*/
-								channel_warn_check(i);
-			
-			/*=====================错误位检测=========================*/ 
-								channel_error_check(i);		
-			
-			/*=====================系统灯=============================*/		
-				pch = channel_data_get(i);
-					if(pch==NULL)continue; 
-			
-				if(pch->error.baibi || pch->error.daowei )ld_system_flash_led(100); //开关错误，100ms     //心跳包500ms
-				if( (time(0)/1000)%10==0 )ld_system_flash_led(2000);                 //10秒后复位为 2秒闪烁 	
-			
+		{	
+			channel_read_delay_ms = BAO_READ_DATA_MAX_MS;	
+			pch = channel_data_get(i);
+
 			/*=====================读取充电宝=========================*/
-					if(pch==NULL)continue; 
-					read_data(pch,i);
-			    os_delay(channel,50);
+				read_data(pch,i);
+				{
+					BOOL is_inserted(void);//是否有充电宝插入,有充电宝进入，延时长一段时间，等待其它线程处理
+					if(is_inserted())
+					{
+						os_delay(channel,1000);
+					}
+					else 
+					{
+						os_delay(channel,100);
+					}
+				}
+			/*-----------循环等待时间---------------------------------*/
+			if(channel_read_delay_ms>0)
+			{
+				os_delay(channel,channel_read_delay_ms);
+			}
+			else 
+			{
+				os_delay(channel,100);
+			}				
+				
 		}
-		/*-----------循环等待时间---------------*/
-		if(channel_read_delay_ms>0)
-		{
-			os_delay(channel,channel_read_delay_ms);
-		}
-	  else 
-		{
-			os_delay(channel,100);
-		}
+
 		ld_iwdg_reload();	
 	}
 	PROCESS_END();

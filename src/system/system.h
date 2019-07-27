@@ -46,8 +46,9 @@ typedef struct{
 	           U8     firmware_updata_flag;       //固件更新标志位  0x88为更新状态
 	
 	/*------------系统灯 led 0 闪烁控制----------------*/
-	int led_flash_mode;     //1: 100ms  2:500ms  3:2000ms
-	int led_flash_time;    //ms
+	int led_flash_mode;       //1: 100ms  2:500ms  3:2000ms
+	int led_flash_time;       //ms
+	int led_flash_total_time; //闪灯总时长
 	
 }System;
 
@@ -57,7 +58,7 @@ extern System system;
 
 
 void ld_system_init(void);          /*系统数据初始化*/
-void ld_system_flash_led(int ms);  /*设置系统灯闪烁频率*/
+void ld_system_flash_led(int ms,int seconds);  /*设置系统灯闪烁频率*/
 void ld_system_led_timer(int ms);  /*系统灯定时器处理*/
 
 

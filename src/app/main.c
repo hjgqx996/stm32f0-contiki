@@ -13,8 +13,7 @@ int main(void)
 	clock_init();       //系统调度时钟
 	process_init();     //线程初始化
 	process_start(&etimer_process,NULL); //启动定时器
-	//自动运行线程
-	autostart_start((struct process * const*)&autostart$$Base,((int)((int)&autostart$$Limit-(int)&autostart$$Base))/4);
+	autostart_start((struct process * const*)&autostart$$Base,((int)((int)&autostart$$Limit-(int)&autostart$$Base))/4);//自动运行线程
 	while(1){
 		while(process_run()> 0);//线程循环  
 		idle_count++;  

@@ -101,10 +101,11 @@ cmd:读命令
 dataout:成功后返回的数据 
 ms_timeout:超时ms
 once:读一次(iic ir),前提是system.iic_ir_mode允许
-return :TRUE or FALSE
+return :TRUE or FALSE   -1:红外re高等待
 ====================================================*/
-BOOL channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL once)
+int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL once)
 {
+	U8 iic_cmd = 0;//红外与iic的加密 解密 指令是不一样的
 	U16 buffer[8];
 	U8 ch = channel_data_get_index(pch);    //索引从 1 开始
 	READ_TYPE_MODE mode = (READ_TYPE_MODE)pch->iic_ir_mode; //iic ir模式   
@@ -134,7 +135,10 @@ BOOL channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL o
 				if(ld_bq27541_check_ack(sda,scl)==FALSE)
 					if(ld_bq27541_check_ack(sda,scl)==FALSE){
 						if(once==FALSE)
+						{
 							iic_ir_select_poll(pch,TRUE,FALSE);//失败一次
+							pch->dingzhen_counter++;           //顶针识别计数++
+						}
 						else 
 							 if(system.iic_ir_mode!=SIIM_ONLY_IIC)
 								 goto READ_IR;//读一次ir
@@ -169,14 +173,18 @@ BOOL channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL o
 													}	
 													
 			break;
-			case RC_UNLOCK:
-		  case RC_UNLOCK_1HOUR:
-			case RC_LOCK:      result = ld_bq27541_de_encrypt_charge(sda,scl,cmd);
-												 if(result==TRUE)
-													 result =ld_bq27541_output_flag(sda,scl,dataout);
-												 break;
+			case RC_UNLOCK:if(iic_cmd==0)iic_cmd=BAO_ALLOW;               //iic指令 解      05
+		  case RC_UNLOCK_1HOUR:if(iic_cmd==0)iic_cmd=BAO_ALLOW_ONE_HOUR;//iic指令 解1小时 07
+			case RC_LOCK:if(iic_cmd==0)iic_cmd=BAO_NOTALLOW;              //iic指令 不输出  06
+			 result = ld_bq27541_de_encrypt_charge(sda,scl,iic_cmd);
+			 if(result==TRUE)
+				 result =ld_bq27541_output_flag(sda,scl,dataout);
+			 break;
 			default:return FALSE;		 									
 		}
+		
+		if(result==TRUE){pch->dingzhen_counter=0;}                //顶针识别清0
+		
 		if(once==FALSE)
 			iic_ir_select_poll(pch,(result==TRUE?FALSE:TRUE),FALSE);//记录一次，是否要切换
 		else 
@@ -188,12 +196,15 @@ BOOL channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL o
 	}
 	else if(mode==RTM_IR)
 	{
+		
+		if(ld_gpio_get(pch->map->io_re))return -1;
+		
 		READ_IR:
 		pch->iic_ir_mode=RTM_IR;
 		switch(cmd)
 		{
-			case RC_READ_ID  :wanlen =  7;break;
-			case RC_READ_DATA:wanlen = 13;break;
+			case RC_READ_ID  :wanlen =  7;break;  //实测406ms
+			case RC_READ_DATA:wanlen = 13;break;  //实测504ms
 			default:wanlen = 2;
 		}
 		//启动命令
@@ -216,7 +227,22 @@ BOOL channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL o
 			if(cmd==RC_READ_DATA)channel_save_data(pch,(U8*)(buffer));
 			iic_ir_select_poll(pch,FALSE,FALSE);
 			memcpy(dataout,(U8*)buffer,13);
+			pch->ir_error_counter=0;
+			delayms(10);//成功后延时10ms
 			return TRUE;
+		}
+		//失败后延时80ms
+		else{
+			delayms(120);
+		}
+		
+		//红外识别故障++
+		pch->ir_error_counter++;
+		{
+			U8 pr[5]={ch};
+			memcpy(pr+1,&pch->ir_error_counter,4);		
+			enable_485_tx();;
+		  ld_uart_send(COM_485,pr,5);
 		}
 		iic_ir_select_poll(pch,TRUE,FALSE);
 		return FALSE;
@@ -224,6 +250,5 @@ BOOL channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL o
 	
 	return result;
 }
-
 
 

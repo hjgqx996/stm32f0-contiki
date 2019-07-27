@@ -28,21 +28,31 @@ void ld_system_init(void)
 
 
 /*系统闪灯:mode: 100ms  500ms 2000ms*/
-void ld_system_flash_led(int mode)
+void ld_system_flash_led(int mode,int seconds)
 {
   system.led_flash_mode = mode;
+	system.led_flash_total_time = seconds*1000;
 }
 
 
 /*系统灯定时器处理*/
 void ld_system_led_timer(int ms)
 {
-	system.led_flash_time+=ms;		
+	system.led_flash_time+=ms;	
+  system.led_flash_total_time-=ms;	
 	if(system.led_flash_time>system.led_flash_mode)
 	{
 		system.led_flash_time=0;
 		ld_gpio_set(1,!ld_gpio_get(1));
 	}
+	//闪烁时间到变为 2000 秒闪烁
+	if(system.led_flash_total_time<=0)
+	{
+		system.led_flash_mode = 2000;
+		system.led_flash_total_time=3600000;
+	}
+	
+	//
 }
 
 

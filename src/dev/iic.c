@@ -31,14 +31,14 @@
 #define i2c_read_byte()     I2C_Read_Byte(sda,scl)
 #define i2c_check_ack()     if(i2c_wait_ack()==FALSE) {i2c_stop();return FALSE;}
 
-#define i2c_delayus(x)      delayus(2*x)
+#define i2c_delayus(x)      delayus(5*x)
 
 //判断时钟线是否为高
 //不高则等待一定时间，大概950us左右
 //2017-7-21
 void wait_scl_high(U8 scl)
 {
-	U16 c=100; //100us超时
+	U16 c=1000; //100us超时
 	while(c>0)
   {
 		 i2c_delayus(1);
@@ -56,8 +56,8 @@ static void I2C_Start(U8 sda,U8 scl)
 	SDA_H();
 	SCL_H();
  	i2c_delayus(5);	
-//	wait_scl_high(scl);	
-// 	i2c_delayus(5);
+	wait_scl_high(scl);	
+ 	i2c_delayus(5);
 	SDA_L();
 	i2c_delayus(5);
 	SCL_L();
@@ -67,7 +67,7 @@ static void I2C_Start(U8 sda,U8 scl)
 static void I2C_Restart(U8 sda,U8 scl)
 {
   sda_out();
-	SCL_L();
+	SDA_L();
 	i2c_delayus(5);
 	SDA_H();
 	i2c_delayus(5);
@@ -122,7 +122,7 @@ static BOOL I2C_WaitAck(U8 sda,U8 scl)	 //返回为:=TRUE有ACK,=FALSE无ACK
 	wait_scl_high(scl);
 	data=SDA_READ();
 	SCL_L();
-	i2c_delayus(5);
+	i2c_delayus(1);
   return (data==1)?FALSE:TRUE;//sda==0,有应答
 }
 
@@ -140,7 +140,7 @@ static void I2C_Send_Byte(U8 sda,U8 scl,U8 ucData) //数据从高位到低位//
 			SCL_H();
 			i2c_delayus(2);
 			SCL_L();
-			i2c_delayus(2);
+			i2c_delayus(1);
 		}else{
 			SDA_L();
 			i2c_delayus(2);
@@ -151,8 +151,8 @@ static void I2C_Send_Byte(U8 sda,U8 scl,U8 ucData) //数据从高位到低位//
 		}
 		dat=dat>>1;
 	}
-	SDA_H();
-	i2c_delayus(1);
+//	SDA_H();
+//	i2c_delayus(1);
 }
 
 static  U8 I2C_Read_Byte(U8 sda,U8 scl)  //数据从高位到低位//
@@ -164,17 +164,17 @@ static  U8 I2C_Read_Byte(U8 sda,U8 scl)  //数据从高位到低位//
 	{
 		ucData<<=1;      
 		SCL_L();
-		i2c_delayus(5);
+		i2c_delayus(2);
 		SCL_H();
 		wait_scl_high(scl);
-		i2c_delayus(5);	
+		i2c_delayus(2);	
 		if(SDA_READ())
 		{
 			ucData|=0x01;
 		}
 	}
 	SCL_L();
-	i2c_delayus(4);
+	i2c_delayus(2);
 	return ucData;
 }
 
@@ -407,9 +407,44 @@ BOOL ld_bq27541_check_ack(U8 sda,U8 scl)
 /*bq27541充电宝输出标志*/
 BOOL ld_bq27541_output_flag(U8 sda,U8 scl,U8*data)
 {
-	U16 tmp;
-	if(bq27541_read_word(sda,scl,0x62,&tmp)==FALSE)return FALSE;
-	if(bq27541_read_byte(sda,scl,0x71,(U8*)&tmp)==FALSE)return FALSE;
-	*data=(U8)tmp;
+	U8 tmp[2]={0,0};
+  i2c_start();
+	i2c_send_byte(BQ27541_ADD_WR);
+	i2c_check_ack();
+	i2c_send_byte(0x62);
+	i2c_check_ack();
+	i2c_stop();
+	delayus(5);
+	
+	i2c_start();
+	i2c_send_byte(BQ27541_ADD_RD); 
+	i2c_check_ack();
+	
+	tmp[0]= i2c_read_byte();
+	i2c_ack();
+	tmp[1] = i2c_read_byte();
+	i2c_stop();
+	
+	delayus(5);
+	
+	i2c_start();
+	i2c_send_byte(BQ27541_ADD_WR);
+	i2c_check_ack();
+	i2c_send_byte(0x71);
+	i2c_check_ack();
+	i2c_stop();
+	
+	delayus(5);
+	
+	i2c_start();
+	i2c_send_byte(BQ27541_ADD_RD); 
+	i2c_check_ack();
+	
+	tmp[0]= i2c_read_byte();
+	i2c_noack();
+	i2c_stop();
+	
+	*data = tmp[0];
+	
 	return TRUE;
 }

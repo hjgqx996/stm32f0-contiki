@@ -110,25 +110,19 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 		waitms(50);
 		fsm_time=0;
 		/*---------- 读取导码 --------------------- */
-		//等待re拉高,超时时间60ms   //实测10300-10600-10800
-		{
-			static int co = 0;
-			if(re()==1)
-				co++;
-		}
 		wait_re_until_not(LOW,60000)  
 		if_re_higher(60000)
 			goto Header_Error;
 		
 	  //9ms高电平,7ms-11ms为正常,超时11ms//实测9300-9500
-		wait_re_until_not(HIGH,11000)  
-		if_re_not_between(7000,11000)
+		wait_re_until_not(HIGH,14000)  
+		if_re_not_between(7000,14000)
 			goto Header_Error;
 
 
 		//4.5ms低电平,2.5ms-5ms为正常时间,超时5ms//实测4600
-		wait_re_until_not(LOW,5000)  
-		if_re_not_between(2500,5000)
+		wait_re_until_not(LOW,7000)  
+		if_re_not_between(2000,7000)
 			goto Header_Error;
 
 		/*---------- 读取数据 --------------------- */
@@ -139,13 +133,13 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 			for(fsm->j=0;fsm->j<8;fsm->j++)
 			{
 				//高电平200-600,超时600//实测300-400-500us
-				wait_re_until_not(HIGH,700)  
-				if_re_not_between(200,700)
+				wait_re_until_not(HIGH,800)  
+				if_re_not_between(200,800)
 					goto Data_Error;
 
 				//低电平200-1700，超时2ms
-				wait_re_until_not(LOW,2000) 
-				if_re_not_between(200,2000)
+				wait_re_until_not(LOW,2400) 
+				if_re_not_between(200,2400)
 					goto Data_Error;
 				
 			  pir->tmp>>=1;
@@ -155,20 +149,20 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 					goto Data_Error;
 			
 				//1200us-1700us:高电平  //实测1500-1600
-				if_re_between(1100,2000)
+				if_re_between(1100,2400)
 					pir->tmp|=0x80;//保存一位数据		
 			}
 			
 			//读取停止码 H=200us-600us  //实测300-400-500
-			wait_re_until_not(HIGH,700)  
-			if_re_not_between(200,700)
+			wait_re_until_not(HIGH,800)  
+			if_re_not_between(200,800)
 				goto Data_Error;
 			
 			//读取停止码 L=700us-1400us //实测 1000-1100-1200
 			if(fsm->i!=(pir->wanlen-1))//最一个字节不读取
 			{
-				wait_re_until_not(LOW,1400)  		
-        if_re_not_between(700,1400)
+				wait_re_until_not(LOW,1800)  		
+        if_re_not_between(800,1800)
 					goto Data_Error;				
 			}
 			//保存一个字节

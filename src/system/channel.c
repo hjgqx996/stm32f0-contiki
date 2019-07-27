@@ -15,6 +15,110 @@ BOOL channel_id_is_not_null(U8*id){return (buffer_cmp((U8*)null_id,id,CHANNEL_ID
 /*所有的仓道数据缓存*/
 static Channel chs[CHANNEL_MAX]={0};
 
+
+
+/*===================================================
+                本地函数
+====================================================*/
+/*-----------------------------------------------------------
+仓道运行状态
+仓道告警
+仓道错误
+------------------------------------------------------------*/
+static void channel_state_check(U8 ch)
+{
+  Channel*pch = channel_data_get(ch);if(pch==NULL)return;
+	
+	/*有宝,读取正常*/
+	if(isvalid_daowe() && isvalid_baibi() && is_readok() && channel_id_is_not_null(pch->id))
+	{
+		pch->state.read_ok=1;
+		pch->state.read_error=0;
+	}else pch->state.read_ok=0;
+	
+	/*有宝,读取不正常*/
+	if( (isvalid_daowe()) && ( (is_readerr()==1) || (channel_id_is_not_null(pch->id)==FALSE)) )
+	{
+		pch->state.read_error=1;
+		pch->state.read_ok=0;
+	}else pch->state.read_error=0;
+	/*正在充电*/
+	pch->state.charging = isin5v();
+	/*-----充电完成--:在充电流程里做--*/
+	
+	/*-----iic or ir------------------*/
+	if(isvalid_baibi())
+		pch->state.read_from_ir = pch->iic_ir_mode;
+	else 
+		pch->state.read_from_ir = 0;
+}
+
+static void channel_warn_check(U8 ch)
+{
+	U8 d = 0;
+    #define out5v()  ld_gpio_get(pch->map->io_sw)
+	Channel*pch = channel_data_get(ch);if(pch==NULL)return; 
+	
+	/*温度告警:<0 or >60*/
+	if( (pch->Temperature>BAO_WARN_TEMPERATURE) || (pch->Temperature<0) )pch->warn.temperature=1;
+	else pch->warn.temperature=0;
+	
+	/*弹仓:在事件中做*/
+	
+	/*5V充电告警：5v输入输出电平不同*/
+	d = 0;
+	if(isin5v() != isout5v())
+	{
+		delayus(50);
+		if(isin5v() != isout5v())
+		{
+			delayus(50);		
+			if(isin5v() != isout5v())
+			{
+			 d = pch->warn.mp=1;
+			}
+		}
+	}
+  pch->warn.mp = d;			
+}
+
+static void channel_error_check(U8 ch)
+{
+	Channel*pch = channel_data_get(ch);if(pch==NULL)return; 
+	
+	//到位开关
+	if( (isvalid_daowe()==0) && (pch->state.read_ok==1) )pch->error.daowei=1;
+	else pch->error.daowei=0;
+	
+	//摆臂开关故障
+	if(  			( (isvalid_baibi()==0)&&(isvalid_daowe()==1))                            //摆臂无，到位有
+			|| 		( (isvalid_baibi()==1)&&(isvalid_daowe()==0)&&(pch->state.read_ok==0) )  //摆臂有，到位无，读不到宝
+	  )
+	{
+		pch->error.baibi=1;
+	}else pch->error.baibi=0;
+	
+	//温度 <0 or >65:来电宝故障0x20
+	if( (pch->Temperature<0) || (pch->Temperature>BAO_ERROR_TEMPERATURE) )pch->error.temp=1;
+	else pch->error.temp=0;
+	
+	//顶针识别故障,识别计数>=2,并且摆臂开关非故障下
+	if( (pch->dingzhen_counter>=BAO_DINGZHEN_ERROR_TIMES) && (pch->error.baibi==0) )pch->error.thimble=1; 
+	else pch->error.thimble = 0;
+	
+	//红外识别故障
+	if( (pch->ir_error_counter>=BAO_IR_ERROR_TIMES)  && (pch->error.baibi==0))pch->error.ir=1;
+	else pch->ir_error_counter=0;
+	
+	//电磁阀故障===>状态在电磁阀动作时 作判断，不在此判断
+	
+	//借宝故障  ===>在租借命令回复包中 作判断，不在此判断
+	//借宝指令返回 不成功，被认为是 借宝故障
+	
+	/*---------------开关故障闪灯-----------------------------------*/
+	if(pch->error.baibi || pch->error.daowei) 
+		ld_system_flash_led(100,2); //开关错误，100ms,闪2秒 //心跳包500ms
+}
 /*===================================================
                 全局函数
 ====================================================*/
@@ -32,6 +136,20 @@ BOOL channel_data_init(void)
 	return TRUE;
 }
 
+
+/*--------------- 清除第ch(1-n)个仓道的数据----------- */
+BOOL channel_data_clear(U8 ch)
+{
+	Channel*pch = channel_data_get(ch);
+	if(pch==NULL)return FALSE;
+	memset((void*)&(pch->Ufsoc),0,sizeof(Channel)-((int)&(pch->Ufsoc) - (int)pch));//除地址外，其它清0
+	memset((void*)&(pch->state),0,1);                  //状态位清
+	pch->warn.temperature=0;                           //温度报警清
+	pch->error.ir=pch->error.temp=pch->error.thimble=0;//错误状态清
+	pch->readerr = pch->readok = 0;
+	return TRUE;
+}
+
 /*---------------- 清除地址为ch_addr的数据---------- */
 BOOL channel_data_clear_by_addr(U8 ch_addr)
 {
@@ -40,21 +158,12 @@ BOOL channel_data_clear_by_addr(U8 ch_addr)
 	{
 		if(chs[i].addr==ch_addr)
 		{
-			memset((void*)&(chs[i].Ufsoc),0,sizeof(Channel)-((int)&(chs[i].Ufsoc) - (int)&chs[i]));//除地址外，其它清0
-			return TRUE;
+			return channel_data_clear(i+1);
 		}
 	}
 	return FALSE;
 }
 
-/*--------------- 清除第ch(1-n)个仓道的数据----------- */
-BOOL channel_data_clear(U8 ch)
-{
-	Channel*pch = channel_data_get(ch);
-	if(pch==NULL)return FALSE;
-	memset((void*)&(pch->Ufsoc),0,sizeof(Channel)-((int)&(pch->Ufsoc) - (int)pch));//除地址外，其它清0
-	return TRUE;
-}
 BOOL channel_clear(U8 ch)
 {
 	Channel*pch = channel_data_get(ch);
@@ -104,6 +213,7 @@ void channel_addr_set(U8*addrs)
 }
 
 /*-------------保存数据----------------------------------*/
+//[0] 版本号 [1] 电量 [2] 温度 [3] 故障码 [4-5] 循环次数 [6-7] 容量 [8-9] 电芯电压 [10-11] 电流 (低位在前)
 void channel_save_data(Channel*ch,U8*data)
 {
 	if(ch==NULL||data==NULL)return;
@@ -115,75 +225,18 @@ void channel_save_data(Channel*ch,U8*data)
 	ch->Voltage				= (((U16)data[9])<<8)|(data[8]);
 	ch->AverageCurrent		= (((U16)data[11])<<8)|(data[10]);
 }
-
-
-/*-----------------------------------------------------------
-仓道运行状态
-仓道告警
-仓道错误
-------------------------------------------------------------*/
-void channel_state_check(U8 ch)
+/*-------------仓道状态2秒检一次----------------------------------*/
+void channel_check_timer_2s(void)
 {
-  Channel*pch = channel_data_get(ch);if(pch==NULL)return;
-	
-	/*有宝,读取正常*/
-	if(isvalid_daowe() && isvalid_baibi() && is_readok() && channel_id_is_not_null(pch->id))
+	int i=1;
+	for(;i<=CHANNEL_MAX;i++)
 	{
-		pch->state.read_ok=1;
-		pch->state.read_error=0;
-	}else pch->state.read_ok=0;
-	
-	/*有宝,读取不正常*/
-	if( (isvalid_daowe()) && ( (is_readerr()==1) || (channel_id_is_not_null(pch->id)==FALSE)) )
-	{
-		pch->state.read_error=1;
-		pch->state.read_ok=0;
-	}else pch->state.read_error=0;
-	/*正在充电*/
-	pch->state.charging = isin5v();
-	/*-----充电完成--:在充电流程里做--*/
-	
-	/*-----iic or ir------------------*/
-	pch->state.read_from_ir = pch->iic_ir_mode;
+		channel_state_check(i);
+		channel_warn_check(i);
+		channel_error_check(i);	
+	}		
 }
 
-void channel_warn_check(U8 ch)
-{
-    #define out5v()  ld_gpio_get(pch->map->io_sw)
-	Channel*pch = channel_data_get(ch);if(pch==NULL)return; 
-	
-	/*温度*/
-	if(pch->Temperature>BAO_WARN_TEMPERATURE)pch->warn.temperature=1;
-	else pch->warn.temperature=0;
-	
-	/*弹仓:在事件中做*/
-	
-	/*充电告警*/
-	if(isin5v() != isout5v())pch->warn.mp=1;
-	else pch->warn.mp=0;
-}
-
-void channel_error_check(U8 ch)
-{
-	Channel*pch = channel_data_get(ch);if(pch==NULL)return; 
-	
-	//到位开关
-	if( (isvalid_daowe()==0) && (pch->state.read_ok==1) )pch->error.daowei=1;
-	else pch->error.daowei=0;
-	
-	//摆臂开关故障
-	if(  			( (isvalid_baibi()==0)&&(isvalid_daowe()==1)) 
-			|| 		( (isvalid_baibi()==1)&&(isvalid_daowe()==0)&&(pch->state.read_ok==0) )
-	  )
-	{
-		pch->error.baibi=1;
-	}else pch->error.baibi=0;
-	
-	//温度<0
-	if( (pch->Temperature<0) || (pch->Temperature>BAO_ERROR_TEMPERATURE) )pch->error.temp=1;
-	else pch->error.temp=0;
-	
-}
 /*----------------------------------
    仓道灯
 ch:仓道号   seconds:闪烁时间  timer_ms:定义器时间
