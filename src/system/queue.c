@@ -46,8 +46,8 @@ static void bubble_sort(void)
 			pcha = channel_data_get(list[i].ch);
 			pchb = channel_data_get(list[j].ch);
 			if(pcha==NULL || pchb==NULL)continue;
-			va= (list[i].used)?( (list[i].hard)?((first)?(1):(220)):(pcha->Ufsoc*2)):(0);  //应急充电在前,有且只有一个,之后的排末尾		
-			vb= (list[j].used)?( (list[j].hard)?((first)?(1):(220)):(pchb->Ufsoc*2)):(0);  //之后，电量最大的依次排列
+			va= (list[i].used)?( (list[i].hard)?((first)?(1):(220)):(pcha->Ufsoc*2)):(0);  //应急充电在前,有且只有一个,之后的排末尾		(权重)
+			vb= (list[j].used)?( (list[j].hard)?((first)?(1):(220)):(pchb->Ufsoc*2)):(0);  //之后，电量最大的依次排列                 (权重)
 			if(va<vb)
 			{
 				Queue_Type t = list[i];//交换
@@ -248,3 +248,4 @@ AUTOSTART_THREAD_WITH_TIMEOUT(queue)
 	}
 	PROCESS_END();
 }
+

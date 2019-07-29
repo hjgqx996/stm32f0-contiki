@@ -10,4 +10,5 @@
 #include "system.h"
 #include "channel.h"
 #include "flash.h"
+#include "queue.h"
 #endif

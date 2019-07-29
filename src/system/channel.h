@@ -155,14 +155,6 @@ Channel*channel_data_get(U8 channel);
 Channel*channel_data_get_by_addr(U8 addr);
 int channel_data_get_index(Channel*ch);
 
-
-/*-----------------------------------------------------
-* channel 充电断电挂起
--------------------------------------------------------*/
-BOOL request_charge_on(U8 ch,U32 seconds,BOOL hard);/*申请充电*/
-BOOL request_charge_off(U8 ch);/*中止充电*/
-BOOL request_charge_hangup_all(U32 scondes);/*挂起所有输出*/
-BOOL ld_is_queue_hang(void);/*充电调度器是否挂起?*/
 /*-----------------------------------------------------
 * channel 灯闪
 -------------------------------------------------------*/

@@ -445,7 +445,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(packet)
 }
 
 /*===================================================
-                归还异步操作
+                异步归还任务
 ====================================================*/
 AUTOSTART_THREAD_WITH_TIMEOUT(return)
 {

@@ -16,7 +16,6 @@ static void read_data(Channel*pch,U8 ch)
 	int result=0;
 	U8 dataout[13];
   
-	fsm_time_set(time(0));
 	if(pch==NULL)return;
 	if((is_system_in_return(pch->addr)==TRUE)  || (pch->first_insert==TRUE) )return;//当前是归还仓道，不读   当前是第一次插入仓道不读
 	
@@ -81,7 +80,7 @@ static void read_data(Channel*pch,U8 ch)
 		if(!isvalid_baibi())
 			if(!isvalid_baibi())
 			{
-				charge_fsm(ch,(void*)0x88);//充电状态机复位
+				fsm_charge(ch,0x88);//充电状态机复位
 				channel_data_clear(ch);
 			}
 	}

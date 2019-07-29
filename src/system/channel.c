@@ -9,7 +9,7 @@
                 宏，类型
 ====================================================*/
 /*仓道充电宝编号是否为NULL*/
-const U8 null_id[10] = {0,0,0,0,0,0,0,0,0,0};
+static const U8 null_id[10] = {0,0,0,0,0,0,0,0,0,0};
 BOOL channel_id_is_not_null(U8*id){return (buffer_cmp((U8*)null_id,id,CHANNEL_ID_MAX)==TRUE)?FALSE:TRUE;}
 
 /*所有的仓道数据缓存*/
@@ -170,7 +170,7 @@ BOOL channel_data_clear_by_addr(U8 ch_addr)
 	}
 	return FALSE;
 }
-
+/*---------------- 清除地址为ch的所有的数据---------- */
 BOOL channel_clear(U8 ch)
 {
 	Channel*pch = channel_data_get(ch);

@@ -238,12 +238,12 @@ void USART2_IRQHandler(void)
 */
 void EXTI4_15_IRQHandler(void)
 { 
-	extern void charge_fsm(U8 ch,void*arg);
+	extern void fsm_charge(U8 ch,int arg);
   if(EXTI_GetITStatus(EXTI_Line6) != RESET)//通道3到位开关检测
   { 
 		if(GPIO_ReadInputDataBit(GPIOF, GPIO_Pin_6)==1)
 		{
-				charge_fsm(3,(void*)0x99);
+				fsm_charge(3,0x99);
 		}	
     /* Clear the EXTI line 6 pending bit */
     EXTI_ClearITPendingBit(EXTI_Line6);
@@ -253,7 +253,7 @@ void EXTI4_15_IRQHandler(void)
   {
 		if(GPIO_ReadInputDataBit(GPIOF, GPIO_Pin_7)==1)
 		{
-      charge_fsm(4,(void*)0x99);
+      fsm_charge(4,0x99);
 		}	
     /* Clear the EXTI line 6 pending bit */
     EXTI_ClearITPendingBit(EXTI_Line7);
@@ -263,7 +263,7 @@ void EXTI4_15_IRQHandler(void)
   {
 		if(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8)==1)
 		{
-			charge_fsm(2,(void*)0x99);
+			fsm_charge(2,0x99);
 		}	
     /* Clear the EXTI line 6 pending bit */
     EXTI_ClearITPendingBit(EXTI_Line8);
@@ -273,7 +273,7 @@ void EXTI4_15_IRQHandler(void)
   {
 		if(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_12)==1)
 		{
-			charge_fsm(5,(void*)0x99);
+			fsm_charge(5,0x99);
 		}	
     /* Clear the EXTI line 6 pending bit */
     EXTI_ClearITPendingBit(EXTI_Line12);
@@ -283,7 +283,7 @@ void EXTI4_15_IRQHandler(void)
   {
 		if(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_15)==1)
 		{
-			charge_fsm(1,(void*)0x99);
+			fsm_charge(1,0x99);
 		}	
     /* Clear the EXTI line 6 pending bit */
     EXTI_ClearITPendingBit(EXTI_Line15);

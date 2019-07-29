@@ -43,7 +43,6 @@ void ld_iwdg_reload(void)
 void MSetSysClock(unsigned char SK)
 {
   __IO uint32_t StartUpCounter = 0, HSEStatus = 0;
-   RCC_ClocksTypeDef RCC_Clocks; 
   /* Set HSION bit */
   RCC->CR |= (uint32_t)0x00000001;
 

@@ -90,6 +90,9 @@ typedef struct{
 //定义一个Default状态
 #define Default() default:Exp:{}}
 	
+//复位状态机
+#define reset_fsm()    fsm->save=fsm->line=fsm->end=0;goto Exp
+	
 //状态机内延时(非阻塞): 它使用两个 case 来实现(也就是使用两个匿名的状态来实现delay功能)
 //now new 用来避免 __LINE__冲突
 #define Waitx(us,now,new)		 \
