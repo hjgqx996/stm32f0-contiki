@@ -178,7 +178,7 @@ BOOL request_charge_off(U8 ch)
 {
 	if(!inited)request_init();
 	Queue_Type *qt = request_channel_find(ch);
-	qt->charge=qt->hard=qt->used=0;
+	qt->charge=qt->hard=qt->used=0;//复位有效标志
 	qt->charge_time=0;
 	{
 		Channel*pch = channel_data_get(qt->ch);

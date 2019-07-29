@@ -20,11 +20,9 @@ static Channel chs[CHANNEL_MAX]={0};
 /*===================================================
                 本地函数
 ====================================================*/
-/*-----------------------------------------------------------
+/*-------------------------------------
 仓道运行状态
-仓道告警
-仓道错误
-------------------------------------------------------------*/
+-------------------------------------*/
 static void channel_state_check(U8 ch)
 {
   Channel*pch = channel_data_get(ch);if(pch==NULL)return;
@@ -37,7 +35,7 @@ static void channel_state_check(U8 ch)
 	}else pch->state.read_ok=0;
 	
 	/*有宝,读取不正常*/
-	if( (isvalid_daowe()) && ( (is_readerr()==1) || (channel_id_is_not_null(pch->id)==FALSE)) )
+	if( (isvalid_daowe()) && ( (is_readerr()) /*|| (channel_id_is_not_null(pch->id)==FALSE)*/ ) )
 	{
 		pch->state.read_error=1;
 		pch->state.read_ok=0;
@@ -52,7 +50,9 @@ static void channel_state_check(U8 ch)
 	else 
 		pch->state.read_from_ir = 0;
 }
-
+/*-------------------------------------
+仓道告警
+-------------------------------------*/
 static void channel_warn_check(U8 ch)
 {
 	U8 d = 0;
@@ -81,7 +81,9 @@ static void channel_warn_check(U8 ch)
 	}
   pch->warn.mp = d;			
 }
-
+/*-------------------------------------
+仓道错误
+-------------------------------------*/
 static void channel_error_check(U8 ch)
 {
 	Channel*pch = channel_data_get(ch);if(pch==NULL)return; 
@@ -108,7 +110,11 @@ static void channel_error_check(U8 ch)
 	
 	//红外识别故障
 	if( (pch->ir_error_counter>=BAO_IR_ERROR_TIMES)  && (pch->error.baibi==0))pch->error.ir=1;
-	else pch->ir_error_counter=0;
+	else 
+	{
+		pch->ir_error_counter=0;
+		pch->error.ir=0;
+	}
 	
 	//电磁阀故障===>状态在电磁阀动作时 作判断，不在此判断
 	
@@ -117,7 +123,7 @@ static void channel_error_check(U8 ch)
 	
 	/*---------------开关故障闪灯-----------------------------------*/
 	if(pch->error.baibi || pch->error.daowei) 
-		ld_system_flash_led(100,2); //开关错误，100ms,闪2秒 //心跳包500ms
+		ld_system_flash_led(100,2); //开关错误，100ms,闪2秒
 }
 /*===================================================
                 全局函数
@@ -146,6 +152,7 @@ BOOL channel_data_clear(U8 ch)
 	memset((void*)&(pch->state),0,1);                  //状态位清
 	pch->warn.temperature=0;                           //温度报警清
 	pch->error.ir=pch->error.temp=pch->error.thimble=0;//错误状态清
+	pch->dingzhen_counter = pch->ir_error_counter = 0; //顶针，红外错误计数清
 	pch->readerr = pch->readok = 0;
 	return TRUE;
 }
@@ -225,8 +232,8 @@ void channel_save_data(Channel*ch,U8*data)
 	ch->Voltage				= (((U16)data[9])<<8)|(data[8]);
 	ch->AverageCurrent		= (((U16)data[11])<<8)|(data[10]);
 }
-/*-------------仓道状态2秒检一次----------------------------------*/
-void channel_check_timer_2s(void)
+/*-------------仓道状态1秒检一次----------------------------------*/
+void channel_check_timer_1s(void)
 {
 	int i=1;
 	for(;i<=CHANNEL_MAX;i++)

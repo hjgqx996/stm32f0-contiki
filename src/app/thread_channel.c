@@ -18,7 +18,7 @@ static void read_data(Channel*pch,U8 ch)
   
 	fsm_time_set(time(0));
 	if(pch==NULL)return;
-	if((is_system_in_return(pch->addr)==TRUE) )return;//当前是归还仓道，不读
+	if((is_system_in_return(pch->addr)==TRUE)  || (pch->first_insert==TRUE) )return;//当前是归还仓道，不读   当前是第一次插入仓道不读
 	
 	//根据失败次数，判断成功 or 失败
 	if(pch->readerr>=BAO_READ_ERROR_RETYR_TIMES) 
@@ -81,6 +81,7 @@ static void read_data(Channel*pch,U8 ch)
 		if(!isvalid_baibi())
 			if(!isvalid_baibi())
 			{
+				charge_fsm(ch,(void*)0x88);//充电状态机复位
 				channel_data_clear(ch);
 			}
 	}
@@ -106,17 +107,6 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 
 			/*=====================读取充电宝=========================*/
 				read_data(pch,i);
-				{
-					BOOL is_inserted(void);//是否有充电宝插入,有充电宝进入，延时长一段时间，等待其它线程处理
-					if(is_inserted())
-					{
-						os_delay(channel,1000);
-					}
-					else 
-					{
-						os_delay(channel,100);
-					}
-				}
 			/*-----------循环等待时间---------------------------------*/
 			if(channel_read_delay_ms>0)
 			{

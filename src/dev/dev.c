@@ -87,7 +87,13 @@ void MSetSysClock(unsigned char SK)
 	{	
 		SystemCoreClock    = 8000000;
 		RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLMULL2);//8
-	}else if(SK==48)
+	}
+	if(SK==16)
+	{
+	 SystemCoreClock    = 16000000;
+	 RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLMULL4);//16
+	}
+	else if(SK==48)
 	{
 	 SystemCoreClock    = 48000000;
 	 RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLMULL12);//48

@@ -16,7 +16,7 @@ int main(void)
 	autostart_start((struct process * const*)&autostart$$Base,((int)((int)&autostart$$Limit-(int)&autostart$$Base))/4);//自动运行线程
 	while(1){
 		while(process_run()> 0);//线程循环  
-		idle_count++;  
+		idle_count++;  	
 	}
 //	return 0;
 }

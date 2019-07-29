@@ -173,9 +173,9 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 													}	
 													
 			break;
-			case RC_UNLOCK:if(iic_cmd==0)iic_cmd=BAO_ALLOW;               //iic指令 解      05
+			case RC_UNLOCK:if(iic_cmd==0)      iic_cmd=BAO_ALLOW;               //iic指令 解      05
 		  case RC_UNLOCK_1HOUR:if(iic_cmd==0)iic_cmd=BAO_ALLOW_ONE_HOUR;//iic指令 解1小时 07
-			case RC_LOCK:if(iic_cmd==0)iic_cmd=BAO_NOTALLOW;              //iic指令 不输出  06
+			case RC_LOCK:if(iic_cmd==0)        iic_cmd=BAO_NOTALLOW;              //iic指令 不输出  06
 			 result = ld_bq27541_de_encrypt_charge(sda,scl,iic_cmd);
 			 if(result==TRUE)
 				 result =ld_bq27541_output_flag(sda,scl,dataout);

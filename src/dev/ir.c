@@ -100,7 +100,7 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 		{
 			ir(HIGH);
 			waitms(2);
-			ir(LOW); 
+			ir(LOW);
 			waitms(2);
 		}
 		
@@ -239,6 +239,7 @@ void ld_ir_timer_100us(void)
 //开始读取红外数据   (ch:1-n,opposite:TRUE反向(未使用), cmd 命令, 长度)
 BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 {
+	irs.start=FALSE;
 	if(ch>IR_CHANNEL_MAX)return FALSE;
 	ir_lock();
 //	if(irs.inited==FALSE){ir_unlock();return FALSE;}//未初始化
@@ -253,10 +254,11 @@ BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 		irs.io_re = ir_ios[ch-1].re;
 		irs.cmd = cmd;
 		irs.wanlen=wanlen;
-		irs.start=TRUE;
 		memset(irs.data,0,IR_DATA_MAX);
 		memset(&irs.fsm,0,sizeof(FSM));//复位状态机
+	  irs.start=TRUE;
 		ir_unlock();
+	  
 		return TRUE;
 //	}
 //	ir_unlock();

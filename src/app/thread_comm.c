@@ -229,7 +229,6 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 					}
 					if( (result!=TRUE) || (lock[0] != 0x05) ){//解锁失败
 						send_lease_state(hp,Lease_decrypt_fall,lch,buffer+1);
-						enable_485_rx();
 						goto LEASE_RESET_CONTINUE;
 					}
 				}			
@@ -240,6 +239,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 				dian_ci_fa(pch,LOW);         //关闭电磁阀
 				if(bcounter<25)             //摆臂开关(高电平时间<250ms)
 				{
+					request_charge_off(channel_data_get_index(pch));       //如果在充电，马上关电
 					pch->error.motor = 0;//电磁阀故障清0
 					send_lease_state(hp,Lease_success,lch,buffer+1); //成功===>应答包
 				  channel_data_clear_by_addr(lch);                 //成功===>清数据
@@ -253,8 +253,6 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 			
 			LEASE_RESET_CONTINUE:
 			lch=ltimeout=0;
-
-     enable_485_rx();
 		}
 	}
 	PROCESS_END();
@@ -328,9 +326,10 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_ctrl)
 				dian_ci_fa(pch,LOW);       //关闭电磁阀
 				if(bcounter<25)             //摆臂开关(高电平时间<250ms)
 				{
-					pch->error.motor = 0;                        //电磁阀故障清0
-					send_ctrl_state(hp,cmd,Cmd_success );        //成功===>返回应答
-					 channel_data_clear_by_addr(ch_addr);        //成功===>清数据
+					request_charge_off(channel_data_get_index(pch)); //如果在充电，马上关电
+					pch->error.motor = 0;                            //电磁阀故障清0
+					send_ctrl_state(hp,cmd,Cmd_success );            //成功===>返回应答
+					 channel_data_clear_by_addr(ch_addr);            //成功===>清数据
 				}
 				else
 				{

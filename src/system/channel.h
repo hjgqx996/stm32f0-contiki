@@ -112,6 +112,7 @@ typedef struct{
 	/*--------------是否正常读------------------------*/
 	U8 readok;                      //读id,读数据，是否正常,计数>=2正常
 	S8 readerr;                     //读出错计数
+	BOOL first_insert;              //第一次插入(==TRUE,时大循环不读，thread_insert线程读)
 	
 }Channel;
 

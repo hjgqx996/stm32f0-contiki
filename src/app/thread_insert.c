@@ -33,12 +33,6 @@ void recover_when_powerup(void)
 /*-----------------------------
    状态机变量
 -------------------------------*/
-static BOOL is_insert=FALSE;
-BOOL is_inserted(void)//是否有充电宝插入
-{
-	return is_insert;
-}
-
 static U8   _line[CHANNEL_MAX]={0};//当前状态
 static U8   _last[CHANNEL_MAX]={0};//上一次状态          :counter
 
@@ -113,34 +107,21 @@ void charge_fsm(U8 ch,void*arg)
 	Channel*pch=channel_data_get(ch);	      //仓道数据
 	if(pch==NULL)return; 
 
-	
 	if((is_system_in_return(pch->addr)==TRUE) )return;//当前是归还仓道，不读(另有归还线程在读)
-	
-	//检测有没有弹出
-	if( isvalid_baibi()==0 && line !=0 )
-	{
-		failcounter++;	  //弹出计数
-		if(failcounter>100)
-		{
-			failcounter = line=0;request=FALSE;
-			request_charge_off(ch);
-			return;//仓道已经弹出,复位 
-		}
-	}  
-	else { failcounter=0;}
-	
+	if((int)arg==0x88){line=0;return;}                //复位
+
+	/*-----------------------充电状态机-------------------------------------------*/
 	switch(line)
 	{	
-		//开始(等待中断触发/上电触发)
+		//开始(等待中断触发/上电触发==>arg==0x99)
 		case 0:
 						last=end=ato=hang=0;
-					  if((int)arg==0x99){ is_insert=TRUE; channel_clear(ch); line=1;}return;   //中断触发,上电触发
+					  if((int)arg==0x99){ pch->first_insert=TRUE; channel_clear(ch); line=1;}return;   //中断触发,上电触发(0x99)
 						
 		//进入
 		case 1:	
 						if(isvalid_baibi()){
 								line++; last=1;  //识别一次//摆臂开关检测到,下一步
-							is_insert=FALSE; 
 						}
 						else 
 							return;//等待摆臂开关
@@ -148,17 +129,20 @@ void charge_fsm(U8 ch,void*arg)
 		//识别/再识别
 		case 2:
 						/*---------------能识别---------------------------------*/
-						                result = channel_read(pch,RC_READ_ID,buffer,500,TRUE);    if(result==-1)return; //红外拉高，忙，不读
-		        if(result==TRUE)result = channel_read(pch,RC_READ_DATA,buffer,600,TRUE);  if(result==-1)return; //红外拉高，忙，不读
+						                  result = channel_read(pch,RC_READ_ID,buffer,500,TRUE);    if(result==-1)return; //红外拉高，忙，不读,识别一次
+		        if(result==FALSE) result = channel_read(pch,RC_READ_ID,buffer,500,TRUE);    if(result==-1)return; //红外拉高，忙，不读,再识别一次
+		        if(result==TRUE) result = channel_read(pch,RC_READ_DATA,buffer,600,TRUE);   if(result==-1)return; //红外拉高，忙，不读
 		        if(result==TRUE)
 						{			
+							pch->first_insert=FALSE;
               pch->state.read_ok=1;							
 							if(pch->Ufsoc>0){line=20;return;}  //电量>0===>停止充电
 							else {                             //电为0 ===>申请充电10分钟,跳到line=10
 								request_charge_and_wait_timeout(600,TRUE,10);
 							}
 						/*---------------不能识别---------------------------------*/
-					 }else{			
+					 }else{	
+            pch->first_insert=FALSE;						 
 						if(last==1){                        //从1跳来的===>充电5秒(跳到line=4)
 								request_charge_and_wait_timeout(5,TRUE,4);
 						}				
@@ -258,11 +242,13 @@ void charge_fsm(U8 ch,void*arg)
 		}
 		
 		//判断充电电流<100mA持续2min
-		if( (pch->AverageCurrent<STOP_CURRENT_MAX) && (line>=24) && (pch->state.full_charge!=1) && (pch->state.charging))
+		if( (pch->AverageCurrent<STOP_CURRENT_MAX) && (line>=24) && (pch->state.charging))
 		{
-			if(ato==0)ato=STOP_CURRENT_TIMEOUT;//开始倒计时
+			if(ato==0)
+				ato=STOP_CURRENT_TIMEOUT;//开始倒计时
 		}
-		if( pch->AverageCurrent>=STOP_CURRENT_MAX)ato = 0;//电流大了，超时复位
+		if( pch->AverageCurrent>=STOP_CURRENT_MAX)
+			ato = 0;//电流大了，超时复位
 		
 		if(ato==1 || ato==2)//最后一秒断超时
 		{
@@ -290,7 +276,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(insert)
 		{
 			charge_fsm(i,NULL);
 		}
-		os_delay(insert,10);
+		os_delay(insert,40);
 		ld_iwdg_reload();
 	}
 	PROCESS_END();

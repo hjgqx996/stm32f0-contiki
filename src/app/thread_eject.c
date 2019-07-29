@@ -35,6 +35,7 @@ void channel_lock_timer(int ms)
 					if(pch)pch->warn.eject=0;//事件标志清0					
 				}
 			}
+			//2小时计时
 			if(cle2hour>0){
 				cle2hour-=10;
 				if(cle2hour<=0)
@@ -78,7 +79,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(eject)
             if(isvalid_baibi()) //摆臂开关还有效表示没有弹仓成功
 						{
 							pch->error.motor = 1;//电磁阀故障
-							cleec++;          //错误计数++
+							cleec++;             //错误计数++
 							if(cleec==EJECT_FAIL_TIMES)cle2hour=EJECT_FAIL_WAIT;//等待2小时
 						}
 						else 
