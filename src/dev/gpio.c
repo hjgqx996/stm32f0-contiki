@@ -42,7 +42,7 @@ void ld_gpio_set(U32 index,U8 value)
 		}else{
 			hc595data|= (1<<gpio_map[index].xPin);
 		}
-		ld_hc595_send(hc595data);
+		//ld_hc595_send(hc595data);
 	}
 	else
    cpu_gpio_map_set(gpio_map,index,value);
@@ -67,3 +67,15 @@ U8 ld_gpio_get(U32 index)
    return cpu_gpio_map_get(gpio_map,index);
 }
 
+/*只对595有效*/
+U8 ld_gpio_refresh(void)
+{
+	static U16 d = 0;
+	if(d!=hc595data)
+	{
+		ld_hc595_send(hc595data);
+		d=hc595data;
+		return TRUE;
+	}
+	return FALSE;
+}

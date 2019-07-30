@@ -84,7 +84,7 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 {
 	U8 io_re = pir->io_re;
 	U8 io_ir = pir->io_ir;
-	
+	ld_gpio_refresh();
 	//////////////////////////////////
 	Start()
 	{
@@ -179,7 +179,7 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 		pir->fsm.end=0;
 	}
 	Default()
-		
+	ld_gpio_refresh();	
 	return ;
 		
 	Header_Error:

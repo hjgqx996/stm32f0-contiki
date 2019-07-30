@@ -7,8 +7,8 @@ static void delay(uint32_t t)
 //		for (i = 0; i < 1; i++);
 		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
 		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+//		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+//		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
 }
 //#define delay cpu_us_delay
 

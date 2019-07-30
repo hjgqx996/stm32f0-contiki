@@ -20,6 +20,7 @@ time_t time(time_t*t);
 extern void ld_gpio_init(void);
 extern void ld_gpio_set(U32 index,U8 value);
 extern U8 ld_gpio_get(U32 index);
+extern U8 ld_gpio_refresh(void);
 
 extern void ld_hc595_init(void);
 extern void ld_hc595_reload(void);

@@ -108,15 +108,14 @@ void fsm_charge(U8 ch,int arg)
 
 	if((is_system_in_return(pch->addr)==TRUE) )return;   //当前是归还仓道，不读(另有归还线程在读)
 	if(arg==0x88){line=0;return;}                        //复位,arg=0x88
-
+  if(arg==0x99){ pch->first_insert=TRUE; channel_clear(ch); line=1;}//中断触发,上电触发(0x99),清数据,跳到line=1
 	/*-----------------------充电状态机-------------------------------------------*/
 	switch(line)
 	{	
 		//开始(等待中断触发/上电触发==>arg==0x99)
 		case 0:
 						last=to=s120=hang=0;
-					  if(arg==0x99){ pch->first_insert=TRUE; channel_clear(ch); line=1;}return;   //中断触发,上电触发(0x99),清数据,跳到line=1
-						
+						return;
 		//进入
 		case 1:	
 						if(isvalid_baibi()){

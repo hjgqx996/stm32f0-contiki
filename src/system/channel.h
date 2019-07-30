@@ -75,8 +75,9 @@ typedef struct{
 	ChannelConfigureMap*map;        //通道控制io配置
 	U8 addr;                        //通道地址flash[]<----System.addr_ch-------Channel.addr
 
-	/*--------------异常弹仓--------------------------*/
-
+	/*--------------插入充电--------------------------*/
+  BOOL first_insert;              //第一次插入(==TRUE,时大循环不读，thread_insert线程读)
+	
 	/*--------------仓道灯----------------------------*/
 	BOOL flash;                     //是否闪烁
 	volatile int  flash_ms;         //闪烁总时间(ms)
@@ -112,7 +113,6 @@ typedef struct{
 	/*--------------是否正常读------------------------*/
 	U8 readok;                      //读id,读数据，是否正常,计数>=2正常
 	S8 readerr;                     //读出错计数
-	BOOL first_insert;              //第一次插入(==TRUE,时大循环不读，thread_insert线程读)
 	
 }Channel;
 
