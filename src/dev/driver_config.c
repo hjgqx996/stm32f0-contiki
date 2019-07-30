@@ -67,7 +67,7 @@ t_gpio_map gpio_map[]=
 	OUT(C,2) IN(B,10) IN(B,15)  OUT(HC,2)  IN(C,14)  OUT(HC,0)  OUT(HC,1)  IN(C,0)         ODH(B,8)  ODH(B,9)  //仓道1
 	OUT(C,3) IN(B,1)  IN(A,8)   OUT(HC,6)  IN(C,15)  OUT(HC,4)  OUT(HC,5)  IN(C,1)         ODH(B,6)  ODH(B,7)  //仓道2
 	OUT(B,14)IN(A,0)  IN(F,6)   OUT(HC,7)  IN(F,0)   OUT(HC,8)  OUT(HC,9)  IN(C,5)         ODH(B,4)  ODH(B,5)  //仓道3
-	OUT(B,11)IN(C,13) IN(F,7)   OUT(HC,10) IN(B,12)  OUT(HC,12) OUT(HC,13) IN(C,4)         ODH(B,2)  ODH(B,3)  //仓道4
+	OUT(B,11)IN(C,13) IN(F,7)   OUT(HC,10) IN(B,12)  OUT(HC,12) OUT(HC,13) IN(C,4)         ODH(D,2)  ODH(B,3)  //仓道4
 	OUT(C,6) IN(C,9)  IN(A,12)  OUT(HC,11) IN(C,7)   OUT(HC,14) OUT(HC,15) IN(B,13)        ODH(C,11) ODH(C,12)  //仓道5
 	
    0,

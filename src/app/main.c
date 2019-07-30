@@ -17,6 +17,15 @@ int main(void)
 	while(1){
 		while(process_run()> 0);//Ïß³ÌÑ­»·  
 		idle_count++;  	
+		
+//	ld_gpio_set(1,1);
+//	delayus(100);
+//	ld_gpio_set(1,0);
+//	delayus(100);
+//	ld_gpio_set(1,1);
+//	delayus(100);
+//	ld_gpio_set(1,0);
+//	delayus(100);
 	}
 //	return 0;
 }

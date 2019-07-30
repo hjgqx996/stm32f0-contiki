@@ -1,16 +1,16 @@
 #include "74HC595.h"
 
-static void delay(uint32_t t)
-{
-//	uint32_t i;
-//	while(t--)
-//		for (i = 0; i < 1; i++);
-		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+//static void delay(uint32_t t)
+//{
+////	uint32_t i;
+////	while(t--)
+////		for (i = 0; i < 1; i++);
 //		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-//		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-}
-//#define delay cpu_us_delay
+////		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+////		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+////		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+//}
+#define delay cpu_us_delay
 
 void ld_hc595_init(void)
 {

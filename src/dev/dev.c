@@ -121,7 +121,7 @@ void MSetSysClock(unsigned char SK)
 ====================================================*/
 void ld_dev_init(void)
 {
-	MSetSysClock(48);
+	MSetSysClock(16);
 	//bootloader下重定向向量表
 	#if USING_BOOT_LOADER >1
 	IAP_Set();
@@ -134,7 +134,9 @@ void ld_dev_init(void)
 	ld_uart_init();
 	
 	//看门狗
-	
+	#if ENABLE_IWDG>0
+	ld_iwdg_init();
+	#endif
 	//外部中断
 	ld_exti_init();
 
