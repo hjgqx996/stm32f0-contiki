@@ -10,6 +10,7 @@
 ////		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
 ////		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
 //}
+extern void cpu_us_delay(int us);
 #define delay cpu_us_delay
 
 void ld_hc595_init(void)

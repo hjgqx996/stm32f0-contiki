@@ -342,7 +342,8 @@ BOOL ld_bq27541_read_id(U8 sda,U8 scl,U8*dataout)
 */
 BOOL ld_bq27541_de_encrypt_charge(U8 sda,U8 scl,U8 cmd)
 {
-	U8 data[2];
+	U8 data[2]={0,0};
+	data[0]=data[0];
  	i2c_start();
   i2c_send_byte(BQ27541_ADD_WR); 
 	i2c_check_ack()

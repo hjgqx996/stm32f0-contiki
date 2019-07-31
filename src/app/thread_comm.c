@@ -19,6 +19,25 @@ static int bai_bi_counter(Channel*pch,int timeout)
 	}
 	return bc;
 }
+/*一次电磁阀动作 + 灯闪 + 检测成功 
+* pch           :仓道数据
+* flash_time    :仓道灯闪烁时长
+* timeout       :电磁阀动作时长
+* hightime_min  :摆臂开关有效的最大时间
+* return        :TRUE or FALSE
+*/
+static BOOL diancifa(Channel*pch,int flashtime,int timeout,int hightime_max)
+{
+	int bcounter=0;
+	channel_led_flash(channel_data_get_index(pch),flashtime);//闪灯	
+	request_charge_hangup_all(1);//关闭输出,1s
+	delayms(10);                 //由于595在定时器中被刷新，有一个延时，必须等待，否则重启
+	dian_ci_fa(pch,HIGH);        //电磁阀动作
+	bcounter = bai_bi_counter(pch,timeout);//电磁阀打开的时候，读取摆臂开关电平
+	dian_ci_fa(pch,LOW);         //关闭电磁阀
+	if(bcounter < (hightime_max*10))return TRUE;
+	else return FALSE;
+}
 
 /*===================================================
                 本地函数
@@ -141,7 +160,7 @@ static void com_send_tick(HPacket*hp)
 	if(en_len>(2+CHANNEL_MAX))en_len=CHANNEL_MAX;
 	
 	/*保存充电使能方式*/
-	if(p->llen>0)system.enable = data[0];       //背板是否允许充电
+	if(p->llen>0)system.enable = (BOOL)data[0];       //背板是否允许充电
 	if(p->llen>1)system.mode   = data[1];       //强制 or 自由
 	if(en_len)memcpy(system.chs,data+2,en_len); //强制标志 
 	if(p->llen > (2+CHANNEL_MAX))system.iic_ir_mode = (SYSTEM_IIC_IR_MODE)data[2+CHANNEL_MAX];//红外,iic模式选择 :1只iic  2:只ir  3:红外iic
@@ -187,7 +206,7 @@ static void com_send_tick(HPacket*hp)
 static volatile U8 lch=0;                      							 //仓道位置
 static volatile U32 ltimeout=0;                							 //超时时间	
 BOOL is_system_lease(void) {return (BOOL)( (lch!=0) && (ltimeout!=0));} //是否租借
-AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
+AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 {
 	static HPacket*hp;
 	static Channel*pch;
@@ -232,15 +251,11 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 						send_lease_state(hp,Lease_decrypt_fall,lch,buffer+1);
 						goto LEASE_RESET_CONTINUE;
 					}
-				}			
-				channel_led_flash(channel_data_get_index(pch),ltimeout/1000);//闪灯	
-				request_charge_hangup_all(1);//关闭输出,1s
-				dian_ci_fa(pch,HIGH);        //电磁阀动作
-				bcounter = bai_bi_counter(pch,500);//电磁阀打开的时候，读取摆臂开关电平
-				dian_ci_fa(pch,LOW);         //关闭电磁阀
-				if(bcounter<25)             //摆臂开关(高电平时间<250ms)
+				}	
+
+				if(diancifa(pch,ltimeout/1000,500,250))//电磁阀动作时间500ms,灯闪时间 ltimout/1000秒,摆臂开关(高电平时间<250ms)
 				{
-					request_charge_off(channel_data_get_index(pch));       //如果在充电，马上关电
+					request_charge_off(channel_data_get_index(pch)); delayms(10);//如果在充电，马上关电
 					pch->error.motor = 0;//电磁阀故障清0
 					send_lease_state(hp,Lease_success,lch,buffer+1); //成功===>应答包
 				  channel_data_clear_by_addr(lch);                 //成功===>清数据
@@ -262,7 +277,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_lease)
 /*归还命令*/
 static volatile U8 rch=0;                      							//仓道位置
 static volatile U32 rtimeout=0;                							//超时时间	
-BOOL is_system_in_return(U8 addr){return ((rch!=0)&& (rtimeout!=0) && (rch==addr));}
+BOOL is_system_in_return(U8 addr){return (BOOL)((rch!=0)&& (rtimeout!=0) && (rch==addr));}
 static void com_return(HPacket*hp)
 {
 	packet *p = &hp->p;
@@ -276,7 +291,7 @@ static void com_return(HPacket*hp)
 }
 
 /*控制命令*/
-AUTOSTART_THREAD_WITH_TIMEOUT(comm_ctrl)
+AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_ctrl)
 {
 	static U8 dataout[16];
 	static HPacket*hp;
@@ -285,7 +300,6 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_ctrl)
 	static U8 bao_id[10];
 	static U8 ctrl_time;
 	static U8 ch_addr = 0;
-	static int bcounter = 0;
 	PROCESS_BEGIN()
 	while(1)
 	{
@@ -319,13 +333,9 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_ctrl)
 			}
 			
 			if(cmd==0x01||cmd==0x02)//强制开仓	
-			{					
-				channel_led_flash(channel_data_get_index(pch),ctrl_time);//闪灯	
-				request_charge_hangup_all(1);//关闭输出,1s
-				dian_ci_fa(pch,HIGH);      //电磁阀动作
-				bcounter = bai_bi_counter(pch,500);//电磁阀打开的时候，读取摆臂开关电平
-				dian_ci_fa(pch,LOW);       //关闭电磁阀
-				if(bcounter<25)             //摆臂开关(高电平时间<250ms)
+			{			
+
+				if(diancifa(pch,ctrl_time,500,250))//电磁阀动作时间500ms,灯闪时间ctrl_time秒,摆臂开关(高电平时间<250ms)
 				{
 					request_charge_off(channel_data_get_index(pch)); //如果在充电，马上关电
 					pch->error.motor = 0;                            //电磁阀故障清0
@@ -347,7 +357,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(comm_ctrl)
 }
 	
 /*进入固件更新*/
-AUTOSTART_THREAD_WITH_TIMEOUT(comm_entry)
+AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_entry)
 {
 	static HPacket*hp;
 	PROCESS_BEGIN();

@@ -69,7 +69,7 @@ static void read_data(Channel*pch,U8 ch)
 				{
 					dataout[0]=0;
 					channel_read(pch,RC_LOCK,dataout,600,FALSE);
-					pch->bao_output=dataout[0];
+					pch->bao_output= (BaoOutput)dataout[0];
 				}
 			}
 
@@ -80,6 +80,7 @@ static void read_data(Channel*pch,U8 ch)
 		if(!isvalid_baibi())
 			if(!isvalid_baibi())
 			{
+				extern void fsm_charge(U8 ch,int arg);
 				fsm_charge(ch,0x88);//³äµç×´Ì¬»ú¸´Î»
 				channel_data_clear(ch);
 			}

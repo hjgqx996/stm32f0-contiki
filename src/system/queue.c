@@ -209,7 +209,7 @@ BOOL request_charge_hangup_all(U32 seconds)
 BOOL ld_is_queue_hang(void)
 {
 	//挂起后，按强制充电流程
-	return ((system.enable==0)||((system.enable==1)&&(system.mode==1)));
+	return (BOOL)((system.enable==0)||((system.enable==1)&&(system.mode==1)));
 }
 /*===================================================
                 充电调试任务
@@ -228,7 +228,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(queue)
 				int i = 0;
 				for(;i<CHANNEL_MAX;i++)
 				{
-					direct_charge(i+1,system.chs[i]);
+					direct_charge(i+1,(BOOL)system.chs[i]);
 				}
 			}
 			

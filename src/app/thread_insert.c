@@ -114,7 +114,7 @@ void fsm_charge(U8 ch,int arg)
 	{	
 		//开始(等待中断触发/上电触发==>arg==0x99)
 		case 0:
-						last=to=s120=hang=0;
+						last=to=s120=0;hang=FALSE;
 						return;
 		//进入
 		case 1:	

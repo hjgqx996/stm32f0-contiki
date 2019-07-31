@@ -11,3 +11,4 @@ BOOL request_charge_hangup_all(U32 scondes);/*挂起所有输出*/
 BOOL ld_is_queue_hang(void);/*充电调度器是否挂起?*/
 
 #endif
+

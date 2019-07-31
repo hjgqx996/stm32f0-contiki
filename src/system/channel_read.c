@@ -210,7 +210,7 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 			default:wanlen = 2;
 		}
 		
-	  ld_ir_read_start(ch,0,cmd,wanlen);     //启动命令
+	  ld_ir_read_start(ch,FALSE,cmd,wanlen);     //启动命令
 		
 		while((result=ld_ir_read_isok(ch,(U8*)(buffer),wanlen))==1)//等待结束,超时时间ms_timeout ms
 		{
