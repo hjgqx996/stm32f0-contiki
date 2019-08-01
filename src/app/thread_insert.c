@@ -12,28 +12,31 @@ extern BOOL is_system_in_return(U8 addr);
 #define request_charge_and_wait_timeout(seconds,hard,nextline)  \
 			/*申请充电*/                  request_charge_on(ch,seconds,hard); \
 			/*设置超时时间*/              to = time(0)+1000*seconds; \
-			/*标志一下当前为申请充电状态*/request=TRUE;line=nextline;return
+			/*标志一下当前为申请充电状态*/request=TRUE;goto nextline
 
 /*===================================================
 						  私有变量
 ====================================================*/
-static U8   _line[CHANNEL_MAX]={0};       //当前状态
+static U16   _line[CHANNEL_MAX]={0};       //当前状态
 static U8   _last[CHANNEL_MAX]={0};       //上一次状态          
 static int  _to[CHANNEL_MAX]={0};         //timeout超时           
 static int  _s120[CHANNEL_MAX]={0};       //秒 120秒电流计时 
 static BOOL _hang[CHANNEL_MAX]={FALSE};   //计时挂起     
 static BOOL _request[CHANNEL_MAX]={FALSE};//申请充电     
-static int  _btimeout[CHANNEL_MAX]={0};   //补充计时      
+static int  _1hour[CHANNEL_MAX]={0};      //1小时补充计时
+static U8   _1hourcount[CHANNEL_MAX]={0}; //1小时计数
+static int  _3hour[CHANNEL_MAX]={0};      //3小时补充计时
 static U8   buffer[16];                   //读充电宝时数据缓存
 
-#define line     _line[ch-1]    //状态机当前行号
-#define to       _to[ch-1]      //ms超时
-#define last     _last[ch-1]    //上一次状态
-#define s120     _s120[ch-1]    //120秒计时
-#define hang    _hang[ch-1]     //挂起:TRUE ==>停止计时
-#define counter _last[ch-1]     // 1小时充电一次，充3次 的次数计数
-#define bto     _btimeout[ch-1] // 3小时计时 1小时计时用,秒
-#define request _request[ch-1]  //是否申请了充电
+#define line     _line[ch-1]      //状态机当前行号
+#define to       _to[ch-1]        //ms超时
+#define last     _last[ch-1]      //上一次状态
+#define s120     _s120[ch-1]      //120秒计时
+#define hang    _hang[ch-1]       //挂起:TRUE ==>停止计时
+#define counter _1hourcount[ch-1] // 1小时充电一次，充3次 的次数计数
+#define hour1   _1hour[ch-1]      // 1小时充电计时
+#define hour3   _3hour[ch-1]      // 3小时充电计时
+#define request _request[ch-1]    //是否申请了充电
 
 /*===================================================
 			上电检测，如果发现在有充电宝，按充电流程走
@@ -76,8 +79,9 @@ void charge_fms_timer(int ms)
 		if(to>0)to-=ms;  //倒计时
 		if(is_second)
 		{
-			if(s120)s120--;//120秒计时
-			if(bto)bto--;  //补充计时
+			if(s120 >0)s120--;  //120秒计时
+			if(hour1>0)hour1--;//1小时计时
+			if(hour3>0)hour3--;//3小时计时
 		}
 	}
 }
@@ -101,6 +105,9 @@ void charge_fms_timer(int ms)
         +               +
          -------(电流<100,120秒)----(yes)--> 补充-->(85-99,1小时补充1次，补充3次)-->(<85% 3小时一次无限补充)-->(>=99,任务完成)
 -------------------------------------------------------------------------------------------------------*/
+#define start()           switch(line){case 0:
+#define state(name)       break;name:line=__LINE__;return;case __LINE__:
+#define defaultx()        break;default:{line=0;}break;}
 void fsm_charge(U8 ch,int arg)
 {
 	int result = 0;
@@ -108,155 +115,196 @@ void fsm_charge(U8 ch,int arg)
 
 	if((is_system_in_return(pch->addr)==TRUE) )return;   //当前是归还仓道，不读(另有归还线程在读)
 	if(arg==0x88){line=0;return;}                        //复位,arg=0x88
-  if(arg==0x99){ pch->first_insert=TRUE; channel_clear(ch); line=1;}//中断触发,上电触发(0x99),清数据,跳到line=1
+  if(arg==0x99){pch->first_insert=TRUE; channel_clear(ch); goto entry;}//中断触发,上电触发(0x99),清数据,跳到line=1
+	if(arg==0x87){if(line==0) goto stop_charge;else return;} //充电宝插入,无法识别, 但 后来 可以识别了==>直接跳到(停止充电)stop_charge;
 	/*-----------------------充电状态机-------------------------------------------*/
-	switch(line)
-	{	
-		//开始(等待中断触发/上电触发==>arg==0x99)
-		case 0:
-						last=to=s120=0;hang=FALSE;
-						return;
-		//进入
-		case 1:	
-						if(isvalid_baibi()){
-								line++; last=1;  //识别一次//摆臂开关检测到,下一步
-						}
-						else 
-							return;//等待摆臂开关
-		
-		//识别/再识别
-		case 2:
-						/*---------------能识别---------------------------------*/
-						                  result = channel_read(pch,RC_READ_ID,buffer,500,TRUE);    if(result==-1)return; //红外拉高，忙，不读,识别一次
-		        if(result==FALSE) result = channel_read(pch,RC_READ_ID,buffer,500,TRUE);    if(result==-1)return; //红外拉高，忙，不读,再识别一次
-		        if(result==TRUE) result = channel_read(pch,RC_READ_DATA,buffer,600,TRUE);   if(result==-1)return; //红外拉高，忙，不读
-		        if(result==TRUE)
-						{			
-							pch->first_insert=FALSE;
-              pch->state.read_ok=1;							
-							if(pch->Ufsoc>0){line=20;return;}  //电量>0===>停止充电
-							else 
-							{                                  
-								request_charge_and_wait_timeout(600,TRUE,10);//电为0 ===>申请充电10分钟,跳到line=10
-							}
-						/*---------------不能识别---------------------------------*/
-					 }else{	
-							pch->first_insert=FALSE;						 
-							if(last==1)
-							{                        
-									request_charge_and_wait_timeout(5,TRUE,4); //从1跳来的===>充电5秒(跳到line=4)
-							}				
-							else if(last==4){ line=1;}       //充电5秒无法识别，复位                  
-					 }
-					 return;
-					 
-		//充电5秒
-		case 4:
-						if(timeout(to))
-						{
-							line=2;last=4;      //==》再识别一次
-						}return;
-						
-		//充电10分钟
-		case 10:
-			      if(timeout(to) || (pch->Ufsoc>0))
-						{
-							request=FALSE;request_charge_off(ch); line=20;//超时 or 电量>0 ===>停止充电
-						}return;
-						
-		//停止充电==>充电7小时
-		case 20:
-			      s120=counter=bto=0;
-		        request_charge_and_wait_timeout(7*3600,FALSE,24);//充电7小时,跳到line=24
-
-		//充电7小时
-	  case 24:
-						if(timeout(to) || pch->state.full_charge)//充电满 or 超时
-						{
-							request_charge_off(ch);       //断输出
-							to=s120=counter=bto=0;line=26;//充电完成(补充阶段) 	
-						}
-		break;
-						
-		//充电完成(补充阶段)
-		case 26:
-					if( (pch->Ufsoc<BUCHONG_STOP_UFSOC_MAX) && (pch->Ufsoc>BUCHONG_1HOUR_STOP_UFSOC_MAX))//85%-99%,充电3次，时间1小时
-					{
-						if(timeout(bto))//补充
-						{
-							bto=3600;counter++;//超时时间1小时
-							if(counter>BUCHONG_1HOUR_TIMES)//3次后,充电结束
-							{
-								to=s120=counter=bto=0;
-								request_charge_off(ch);//申请断电
-								request=FALSE;
-								line=30;//充电结束
-								return;
-							}
-							request_charge_on(ch,bto,FALSE);//申请充电
-							request=TRUE;
-						}
-					}
-					
-					else if(pch->Ufsoc<=BUCHONG_1HOUR_STOP_UFSOC_MAX)//<=85%,无限补充/3hour
-					{
-						counter=0;
-						if(timeout(bto))
-						{
-							bto=3*3600;
-							request_charge_on(ch,bto,FALSE);
-							request=TRUE;
-						}
-					}
-					
-					else if(pch->Ufsoc>=BUCHONG_STOP_UFSOC_MAX)
-					{
-						to=s120=counter=bto=0;
-						request_charge_off(ch);
-						line=30;request=FALSE;
-						return;//充电完成
-						
-					}
-		break;
-					
-		//充电结束
-		case 30:
-			    request_charge_off(ch);
-					request=FALSE;
-		break;
-		default:break;
+	//开始(等待中断触发/上电触发==>arg==0x99)
+	start()
+	{
+		to=s120=hour1=hour3=counter=0; hang=FALSE;
+		return;
 	}
-	 
-		//申请输出，无输出时，挂起计时
-		if( ((isout5v()==0) && (request==TRUE)) )
-			hang=TRUE;
+	
+	/*================================状态:进入(有充电宝进入/上电)==================================================*/
+	state(entry)
+	{
+		if(isvalid_baibi()){last =1;goto identify;}//用last=1标记一下，我是一开始进来的
 		else 
-			hang=FALSE;
-		
-		//充电宝读不到,复位，从头开始
-		if( isvalid_baibi() && is_readerr() )
+			return;//等待摆臂开关
+	}
+	
+	/*================================状态:识别/5秒后再识别=========================================================*/
+	state(identify)
+	{
+				/*---------------能识别---------------------------------*/
+													result = channel_read(pch,RC_READ_ID,buffer,500,TRUE);    if(result==-1)return; //红外拉高，忙，不读,识别一次
+				if(result==FALSE) result = channel_read(pch,RC_READ_ID,buffer,500,TRUE);    if(result==-1)return; //红外拉高，忙，不读,再识别一次
+				if(result==TRUE) result = channel_read(pch,RC_READ_DATA,buffer,600,TRUE);   if(result==-1)return; //红外拉高，忙，不读
+				if(result==TRUE)
+				{			
+					pch->first_insert=FALSE;
+					pch->state.read_ok=1;							
+					if(pch->Ufsoc>0){goto stop_charge;}  //电量>0===>停止充电
+					else 
+					{                                  
+						request_charge_and_wait_timeout(600,TRUE,charge_10_min);//电为0 ===>申请充电10分钟
+					}
+				/*---------------不能识别---------------------------------*/
+			 }else{	
+					pch->first_insert=FALSE;						 
+					if(last==1)
+					{                        
+							request_charge_and_wait_timeout(5,TRUE,charge_5_second);//===>充电5秒
+					}				
+					else{ line=0;}//充电5秒无法识别==>复位                
+			 }
+			 return;		
+	}
+	
+	/*================================状态:等待充电5秒==============================================================*/
+	state(charge_5_second)
+	{
+		if(timeout(to)){last=4;goto identify;}//用last=4标记一下，我是5秒充电过来的
+		return;
+	}
+	
+	/*================================状态:等待充电10分钟============================================================*/
+	state(charge_10_min)
+	{
+		if(timeout(to) || (pch->Ufsoc>0))//超时 or 电量>0 ===>停止充电
 		{
+			request=FALSE;
 			request_charge_off(ch);
-			line=1;
-			return;
+			goto stop_charge;
+		}return;
+	}
+	
+	/*================================状态:充电任务完成==============================================================*/
+	state(charge_complete)
+	{	
+		hour1=hour3=counter=s120=0;
+		request_charge_off(ch);
+		request=FALSE;
+		if(pch->Ufsoc<=BUCHONG_STOP_UFSOC_MAX)goto recharge;//当电量再一次降低时==>重新补充
+	}
+	
+	/*================================状态:停止充电==================================================================*/
+	state(stop_charge)
+	{
+		s120=counter=hour1=hour3=0;
+		request_charge_and_wait_timeout(7*3600,FALSE,charge_7_hours);//==>充电7小时
+	}
+	
+	
+	/*================================状态:7小时充电过程=============================================================*/
+	state(charge_7_hours)
+	{
+		if(timeout(to) || pch->state.full_charge)//充电满 or 超时
+		{
+			request_charge_off(ch);       //断输出
+			to=s120=counter=hour1=hour3=0;//充电完成(补充阶段)
+			goto recharge;
+		}		
+	}
+	
+	/*================================状态:补充(检测是否补充)========================================================*/
+	state(recharge)
+	{
+		request_charge_off(ch);       //断输出
+		request=FALSE;                
+		if( (pch->Ufsoc<=BUCHONG_STOP_UFSOC_MAX) && (pch->Ufsoc>BUCHONG_1HOUR_STOP_UFSOC_MAX) )//85%-99%,充电3次，时间1小时
+		{
+			hour1=3600;
+			goto recharge_3_times;
 		}
 		
-		//判断充电电流<100mA持续2min
-		if( (pch->AverageCurrent<STOP_CURRENT_MAX) && (line>=24) && (pch->state.charging))
+		if(pch->Ufsoc<=BUCHONG_1HOUR_STOP_UFSOC_MAX)//<=85%,无限补充/3hour
 		{
-			if(s120==0)
-				s120=STOP_CURRENT_TIMEOUT;            //开始倒计时
+			hour3=3600*3;
+			goto recharge_all_time;
 		}
-		if( pch->AverageCurrent>=STOP_CURRENT_MAX)//电流大了，超时复位
-			s120 = 0;
 		
-		if(s120==1 || s120==2)                   //最后一秒判断超时
+		if(pch->Ufsoc>BUCHONG_STOP_UFSOC_MAX)//==100%,充电完成
+			goto charge_complete;
+	}
+	
+	/*================================状态:每隔1小时 3次 补充=========================================================*/
+	//85%-99% 补充3次,当充电完成后，计数清0
+	state(recharge_3_times)
+	{
+		if(counter<3)
+	  {//只充3次
+			if(timeout(hour1))//超时补充
+			{
+				counter++;
+				hour1=3600;
+				s120=0;
+				request=TRUE;
+				request_charge_on(ch,3600,FALSE);//申请充电
+			}		
+		}//3次补充，都没有超过99%,只能等了
+		else{
+			hour1=s120;
+			request=FALSE;
+			request_charge_off(ch);
+		}//申请断电
+
+		//电量不在85%-99%,重新检测是否补充
+		if(!((pch->Ufsoc<=BUCHONG_STOP_UFSOC_MAX) && (pch->Ufsoc>BUCHONG_1HOUR_STOP_UFSOC_MAX)))
 		{
-			pch->state.full_charge=1;              //已经充满
-			request_charge_off(ch);                //申请断电
-			request=FALSE; 
-			s120=0;
+			hour1=s120=counter=0;//又可以重新3次补充了
+			goto recharge;
 		}
+	}
+	/*================================状态:每隔3小时无限补充=========================================================*/
+	state(recharge_all_time)
+	{
+		if(timeout(hour3))
+		{
+			hour3=3600*3;
+			request=TRUE;s120=0;
+			request_charge_on(ch,3600,FALSE);//申请充电
+		}
+		//电量>=85%,退出无限补充
+	  if(pch->Ufsoc>=BUCHONG_1HOUR_STOP_UFSOC_MAX)
+		{
+		  hour3=s120=0;
+			goto recharge;
+		}
+	}
+	
+	defaultx()
+	
+	
+	/*================================申请输出，无输出时，挂起计时=====================================================*/
+	if( ((isout5v()==0) && (request==TRUE)) )
+		hang=TRUE;
+	else 
+		hang=FALSE;
+	
+	//充电宝读不到,复位，从头开始
+	if( isvalid_baibi() && is_readerr() )
+	{
+		request_charge_off(ch);
+		goto entry;
+	}
+	
+  /*================================判断充电电流<100mA持续2min,断电===================================================*/		
+	if( (pch->AverageCurrent<STOP_CURRENT_MAX) && (line>=200) && (pch->state.charging) && (request==TRUE))//出现电流<100mA
+	{
+		if(s120==0)
+			s120=STOP_CURRENT_TIMEOUT;            //开始倒计时
+	}
+	if( pch->AverageCurrent>=STOP_CURRENT_MAX)//出现电流>=100mA,计时复位
+		s120 = 0;
+	
+	if(s120==1 || s120==2)                   //最后一秒判断超时
+	{
+		pch->state.full_charge=1;              //已经充满
+		request_charge_off(ch);                //申请断电
+		request=FALSE; 
+		s120=0;
+	}
 }
 
 ///*===================================================

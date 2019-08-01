@@ -1,17 +1,9 @@
 #include "74HC595.h"
 
-//static void delay(uint32_t t)
-//{
-////	uint32_t i;
-////	while(t--)
-////		for (i = 0; i < 1; i++);
-//		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-////		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-////		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-////		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-//}
-extern void cpu_us_delay(int us);
-#define delay cpu_us_delay
+static void delay()
+{}
+//extern void cpu_us_delay(int us);
+//#define delay cpu_us_delay
 
 void ld_hc595_init(void)
 {
@@ -33,22 +25,22 @@ void ld_hc595_init(void)
 void ld_hc595_reload(void)
 {
 	HC595_CS_L();
-	delay(2);
+	delay();
 	HC595_CS_H();
 }
 
 void ld_hc595_send(uint32_t data)
 {
   uint8_t j;
+	uint8_t d = (data&0x8000)?1:0 ;
   for (j = 0; j < 16; j++)
 	{
-    if((data<<j) & (0x8000))
-		HC595_DATA_H();
-		else
-		HC595_DATA_L();
+		d=(d==1)?(HC595_DATA_H()):( HC595_DATA_L());//输出电平,延时一段时间
     HC595_CLK_L();              //上升沿发生移位		
-		delay(1);
-    HC595_CLK_H();
+		data<<=1;                   //延时
+		d = (data&0x8000)?1:0;      //延时
+		delay();
+    HC595_CLK_H();              //拉高，可以改变电平
   }
 	ld_hc595_reload();
 }

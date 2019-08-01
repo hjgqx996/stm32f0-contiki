@@ -18,7 +18,8 @@
 // </h>
 void cpu_us_delay(int us)
 {
-    while(us-->0) {
+    while(us-->0)//8M 100-135us  
+		{
 			//48M --100us
 //		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP(); 
 //		__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP(); 
@@ -34,9 +35,8 @@ void cpu_us_delay(int us)
 
 void cpu_ms_delay(int ms)
 {
-	ms*=10;
 	while(ms >0){
-		cpu_us_delay(100);
+		cpu_us_delay(1000);
 		ms--;
 	}	
 }

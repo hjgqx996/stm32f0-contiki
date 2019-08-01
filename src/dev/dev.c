@@ -123,7 +123,7 @@ void ld_dev_init(void)
 {
 	MSetSysClock(16);
 	//bootloader下重定向向量表
-	#if USING_BOOT_LOADER >1
+	#if USING_BOOT_LOADER >0
 	IAP_Set();
 	#endif
 	

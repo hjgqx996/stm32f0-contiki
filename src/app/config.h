@@ -63,7 +63,7 @@ typedef enum{
 #define IIC_DIR_SWITCH_MAX        1
 
 //<o>循环读充电宝时长(ms)
-#define BAO_READ_DATA_MAX_MS      1500
+#define BAO_READ_DATA_MAX_MS      2500
 
 //<o>告警温度(度)
 #define BAO_WARN_TEMPERATURE      60
@@ -117,7 +117,7 @@ typedef enum{
 
 //</h>
 //<e> 是否使用bootloader
-#define USING_BOOT_LOADER                  0
+#define USING_BOOT_LOADER                  1
 //<o> bootloader大小<0x0-0xFFFF:4>
 #define BOOT_LOADER_SIZE                   0x3000
 //</e>

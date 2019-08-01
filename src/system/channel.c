@@ -152,7 +152,7 @@ BOOL channel_data_clear(U8 ch)
 	memset((void*)&(pch->state),0,1);                  //状态位清
 	pch->warn.temperature=0;                           //温度报警清
 	pch->error.ir=pch->error.temp=pch->error.thimble=0;//错误状态清
-	pch->dingzhen_counter = pch->ir_error_counter = 0; //顶针，红外错误计数清
+	//pch->dingzhen_counter = pch->ir_error_counter = 0; //顶针，红外错误计数清
 	pch->readerr = pch->readok = 0;
 	return TRUE;
 }

@@ -489,7 +489,9 @@ AUTOSTART_THREAD_WITH_TIMEOUT(return)
 						//尝试解锁几次，当红外忙时，最长等待时间2.5秒
 						for(i=0;i<RETURN_READ_TIMES;i++)
 						{
-							result = channel_read(pch,RC_READ_ID,dataout,500,TRUE);
+																result = channel_read(pch,RC_READ_ID,dataout,500,TRUE);
+							if(result==FALSE) result = channel_read(pch,RC_READ_ID,dataout,500,TRUE);    
+							if(result==TRUE)  result = channel_read(pch,RC_READ_DATA,dataout,600,TRUE);
 							if(result==TRUE){pch->state.read_ok=1;break;}//成功读取，第一时间标志
 							if(result==-1){ delayms(200); ecounter+=200;}
 							if(ecounter>2500){result=FALSE;break;}

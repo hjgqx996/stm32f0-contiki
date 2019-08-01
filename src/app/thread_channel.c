@@ -53,7 +53,10 @@ static void read_data(Channel*pch,U8 ch)
 				return;
 			}else{
 				//读到数据
-				
+				{
+					void fsm_charge(U8 ch,int arg);
+					fsm_charge(ch,0x87);                                   //通知充电状态机，我读到数据了
+				}
 				if(channel_id_is_not_null(pch->id) && (pch->readok>=1) ) //判断是否读到id
 				{
 					pch->state.read_ok=1;                                  //成功读到数据
@@ -83,6 +86,7 @@ static void read_data(Channel*pch,U8 ch)
 				extern void fsm_charge(U8 ch,int arg);
 				fsm_charge(ch,0x88);//充电状态机复位
 				channel_data_clear(ch);
+				pch->dingzhen_counter = pch->ir_error_counter = 0; //顶针，红外错误计数清
 			}
 	}
 }

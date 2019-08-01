@@ -26,36 +26,47 @@ void   SysTick_Handler(void)
 			channel_check_timer_1s();//1秒一次
 		}
   }
-	//循环读延时
-	if(channel_read_delay_ms>0)
-		channel_read_delay_ms -=1000/CLOCK_SECOND;
-	if(channel_read_delay_ms<0)
-		channel_read_delay_ms=0;
 	
-	
-	//系统灯
+	#define TICK_CYCLE 50
+	if(current_clock%TICK_CYCLE==0)//20ms一次
 	{
-		extern void ld_system_led_timer(int ms);
-	  ld_system_led_timer(10);
+		//循环读延时
+		if(channel_read_delay_ms>0)
+			channel_read_delay_ms -=1000*TICK_CYCLE/CLOCK_SECOND;
+		if(channel_read_delay_ms<0)
+			channel_read_delay_ms=0;
+		
+		
+		//系统灯
+		{
+			extern void ld_system_led_timer(int ms);
+			ld_system_led_timer(TICK_CYCLE);
+		}
+		
+		//仓道灯闪
+		{
+			extern void channels_les_flash_timer(int timer_ms);
+			channels_les_flash_timer(1000*TICK_CYCLE/CLOCK_SECOND);
+		}
+		
+		//充电状态机计时
+		{
+			extern void charge_fms_timer(int ms);
+			charge_fms_timer(1000*TICK_CYCLE/CLOCK_SECOND);
+		}
+		
+		//弹仓事件
+		{
+			extern void channel_lock_timer(int ms);
+			channel_lock_timer(1000*TICK_CYCLE/CLOCK_SECOND);
+		}	
 	}
 	
-	//仓道灯闪
-	{
-		extern void channels_les_flash_timer(int timer_ms);
-		channels_les_flash_timer(1000/CLOCK_SECOND);
-	}
-	
-	//充电状态机计时
-	{
-		extern void charge_fms_timer(int ms);
-		charge_fms_timer(1000/CLOCK_SECOND);
-	}
-	
-	//弹仓事件
-	{
-		extern void channel_lock_timer(int ms);
-		channel_lock_timer(1000/CLOCK_SECOND);
-	}
+//	//刷新595
+//	{
+//		extern void ld_gpio_refresh();
+//		ld_gpio_refresh();
+//	}
 }
 
 /*初始化系统定时器*/

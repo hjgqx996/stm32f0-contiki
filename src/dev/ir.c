@@ -88,8 +88,7 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 	//////////////////////////////////
 	Start()
 	{
-    if( (pir->start==FALSE) || (pir->inited==FALSE) )return;
-		
+		if( (pir->start==FALSE) || (pir->inited==FALSE) )return;	
 		/*---------- ¸ßµÍ100ms --------------------- */
 		ir(HIGH);
 		waitms(100);
@@ -109,6 +108,11 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 		waitms(3);
 		ir(LOW); 
 		waitms(50);
+		goto READ_TYPE_CMD;
+	}
+	
+	State(READ_TYPE_CMD)
+	{
 		fsm_time=0;
 		/*---------- ¶ÁÈ¡µ¼Âë --------------------- */
 		wait_re_until_not(LOW,60000)  
@@ -179,7 +183,7 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 		pir->fsm.end=0;
 	}
 	Default()
-	ld_gpio_refresh();	
+	ld_gpio_refresh();
 	return ;
 		
 	Header_Error:

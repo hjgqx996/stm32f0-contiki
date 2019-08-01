@@ -31,7 +31,7 @@
 #define i2c_read_byte()     I2C_Read_Byte(sda,scl)
 #define i2c_check_ack()     if(i2c_wait_ack()==FALSE) {i2c_stop();return FALSE;}
 
-#define i2c_delayus(x)      delayus(2*x)
+#define i2c_delayus(x)      delayus(x)
 
 //判断时钟线是否为高
 //不高则等待一定时间，大概950us左右
