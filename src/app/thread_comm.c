@@ -312,11 +312,11 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_ctrl)
 			cmd=hp->p.data[0];
 			memcpy(bao_id,&hp->p.data[2],10);//充电宝编号
 			ctrl_time=hp->p.data[12];        //控制时间
+			if(hp->p.llen<13)continue;
 			send_ack(hp,0x04,0x01);          //发送应答
-	
 			if(cmd==0x00)//设备重启
 			{
-				send_ctrl_state(hp,hp->p.data[0],Cmd_success);
+				send_ctrl_state(hp,cmd,Cmd_success);
 				delayms(1000);
 				cpu_nvic_reset();
 				continue;

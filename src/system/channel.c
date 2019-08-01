@@ -105,11 +105,13 @@ static void channel_error_check(U8 ch)
 	else pch->error.temp=0;
 	
 	//顶针识别故障,识别计数>=2,并且摆臂开关非故障下
-	if( (pch->dingzhen_counter>=BAO_DINGZHEN_ERROR_TIMES) && (pch->error.baibi==0) )pch->error.thimble=1; 
+	if( (pch->dingzhen_counter>=BAO_DINGZHEN_ERROR_TIMES) && (pch->error.baibi==0) )
+		pch->error.thimble=1; 
 	else pch->error.thimble = 0;
 	
 	//红外识别故障
-	if( (pch->ir_error_counter>=BAO_IR_ERROR_TIMES)  && (pch->error.baibi==0))pch->error.ir=1;
+	if( (pch->ir_error_counter>=BAO_IR_ERROR_TIMES)  && (pch->error.baibi==0))
+		pch->error.ir=1;
 	else 
 	{
 		pch->ir_error_counter=0;
