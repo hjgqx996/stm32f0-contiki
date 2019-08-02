@@ -27,9 +27,9 @@ typedef enum{
 #define enable_485_rx()   disable_485_tx()
 #define disable_485_rx()  enable_485_tx()
 
-//<o>硬件编号<0x0-0xFFFF:4>
-#define HARDWARE_VERSION          0x0202
-//<o>软件编号<0x0-0xFFFF:4>
+//<o>硬件编号<0-0xFFFF:1>
+#define HARDWARE_VERSION          0x0201
+//<o>软件编号<0-0xFFFF:1>
 #define SOFTWARE_VERSION          0x0001
 
 //<o>仓道个数
