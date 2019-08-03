@@ -1,6 +1,13 @@
 
 #include "includes.h"
 
+
+/*是否强制充电*/
+#define is_force_charge_on(ch)    ((system.mode==1) && (system.chs[ch-1]==0x01))   //强制充电
+#define is_force_charge_off(ch)   ((system.mode==1) && (system.chs[ch-1]==0x00))   //强制断电
+
+
+
 /*互斥(contiki非抢占,所以不会多线程同时访问)*/
 #define queue_lock()
 #define queue_unlock()
@@ -183,7 +190,8 @@ BOOL request_charge_off(U8 ch)
 	{
 		Channel*pch = channel_data_get(qt->ch);
 		if(pch==NULL)return FALSE;
-		reset_out5v();//马上断电
+		if(!is_force_charge_on(ch))//不强制充电，就断电
+			reset_out5v();//马上断电
 	}
   return TRUE;
 }
@@ -198,7 +206,8 @@ BOOL request_charge_hangup_all(U32 seconds)
 		{
 			Channel*pch = channel_data_get(ch);
 			if(pch==NULL)continue;
-			reset_out5v();//禁止所有输出
+			if(!is_force_charge_on(ch))//不强制充电,就断电
+			 reset_out5v();//禁止所有输出
 		}
 		hangall=TRUE;
 		hangtime=seconds; //挂起，并倒计时
