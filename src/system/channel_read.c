@@ -214,7 +214,7 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 		
 		while((result=ld_ir_read_isok(ch,(U8*)(buffer),wanlen))==1)//等待结束,超时时间ms_timeout ms
 		{
-			delayms(10);
+			delayms(13);
 			ms_timeout-=10;
 			if(ms_timeout<0){
 				result = 4;

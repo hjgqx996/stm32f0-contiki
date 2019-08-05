@@ -33,7 +33,7 @@ static void read_data(Channel*pch,U8 ch)
 		if(isvalid_baibi())
 		{
 			//读id
-			result = channel_read(pch,RC_READ_ID,dataout,500,FALSE);if(result==-1)return;//红外忙，返回
+			result = channel_read(pch,RC_READ_ID,dataout,550,FALSE);if(result==-1)return;//红外忙，返回
 			if(result==FALSE)
 			{
 				//读不到数据
@@ -45,7 +45,7 @@ static void read_data(Channel*pch,U8 ch)
 			}
 		  
 			//读数据
-			result = channel_read(pch,RC_READ_DATA,dataout,600,FALSE);if(result==-1)return;//红外忙，返回
+			result = channel_read(pch,RC_READ_DATA,dataout,650,FALSE);if(result==-1)return;//红外忙，返回
 			if(result==FALSE)
 			{
 				//读不到数据
@@ -71,7 +71,7 @@ static void read_data(Channel*pch,U8 ch)
 				if(pch->bao_output!=0x06)
 				{
 					dataout[0]=0;
-					channel_read(pch,RC_LOCK,dataout,600,FALSE);
+					channel_read(pch,RC_LOCK,dataout,650,FALSE);
 					pch->bao_output= (BaoOutput)dataout[0];
 				}
 			}
