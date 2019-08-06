@@ -154,7 +154,7 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 					goto Data_Error;
 			
 				//1200us-1700us:高电平  //实测1500-1600
-				if_re_between(1100,2400)
+				if_re_between(1000,2400)
 					pir->tmp|=0x80;//保存一位数据		
 			}
 			
