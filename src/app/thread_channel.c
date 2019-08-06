@@ -120,9 +120,8 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 			{
 				os_delay(channel,100);
 			}				
-				
+			ld_iwdg_reload();		
 		}
-
 		ld_iwdg_reload();	
 	}
 	PROCESS_END();

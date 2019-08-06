@@ -95,7 +95,10 @@ AUTOSTART_THREAD_WITH_TIMEOUT(eject)
 		//10秒钟检测一次 EJECT_INTERVAL==10000
 		{
 			static time_t last = 0;last=time(0)+EJECT_INTERVAL;          //上一次时间
-			do{os_delay(eject,1000);}while( (time(0)-last)> 0x80000000 );//超时检测
+			do{
+			    os_delay(eject,1000);
+				  ld_iwdg_reload();	
+			}while( (time(0)-last)> 0x80000000 );//超时检测
 		}
 	}
 	PROCESS_END();
