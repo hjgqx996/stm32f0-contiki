@@ -51,11 +51,11 @@
 #define PORT_E 4
 #define PORT_F 5
 #define PORT_HC  0xFF  
-#define OUT(pp,pin)  {PORT_##pp,pin,GPIO_Mode_OUT,GPIO_OType_PP,GPIO_Speed_Level_3,0},
-#define OUTH(pp,pin) {PORT_##pp,pin,GPIO_Mode_OUT,GPIO_OType_PP,GPIO_Speed_Level_3,1},
-#define ODH(pp,pin)  {PORT_##pp,pin,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_Speed_Level_3,1},
-#define IN(pp,pin)   {PORT_##pp,pin,GPIO_Mode_IN,GPIO_OType_OD,GPIO_Speed_Level_3,0},
-#define AF(pp,pin)   {PORT_##pp,pin,GPIO_Mode_AF,GPIO_OType_PP,GPIO_Speed_Level_3,0},
+#define OUT(pp,pin)  {PORT_##pp,pin,GPIO_Mode_OUT,GPIO_OType_PP,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3,0},
+#define OUTH(pp,pin) {PORT_##pp,pin,GPIO_Mode_OUT,GPIO_OType_PP,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3,1},
+#define ODH(pp,pin)  {PORT_##pp,pin,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3,1},
+#define IN(pp,pin)   {PORT_##pp,pin,GPIO_Mode_IN,GPIO_OType_OD,GPIO_PuPd_NOPULL,GPIO_Speed_Level_3,0},
+#define AF(pp,pin)   {PORT_##pp,pin,GPIO_Mode_AF,GPIO_OType_PP,GPIO_PuPd_UP,GPIO_Speed_Level_3,0},
 
 //<o> gpio
 t_gpio_map gpio_map[]=

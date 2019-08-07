@@ -37,7 +37,7 @@ void ld_exti_init(void)
 	{
 		t_exti_map *map = &exti_map[i];
 		//初始化io
-	  cpu_gpio_cfg(map->port,map->pin,GPIO_Mode_IN,GPIO_OType_OD,0,GPIO_Speed_2MHz);
+	  cpu_gpio_cfg(map->port,map->pin,GPIO_Mode_IN,GPIO_OType_OD,GPIO_PuPd_NOPULL,0,GPIO_Speed_2MHz);
 
 		
 		//使能外部中断
