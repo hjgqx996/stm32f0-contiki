@@ -9,13 +9,13 @@
 extern t_exti_map exti_map[];
 extern const unsigned char exti_number;
 
-static int irq_ch(int line)
-{
-	if(line<=1)return EXTI0_1_IRQn;
-	if(line<=3)return EXTI2_3_IRQn;
-	if(line<=15)return EXTI4_15_IRQn;
-	return 0;
-}
+//static int irq_ch(int line)
+//{
+//	if(line<=1)return EXTI0_1_IRQn;
+//	if(line<=3)return EXTI2_3_IRQn;
+//	if(line<=15)return EXTI4_15_IRQn;
+//	return 0;
+//}
 
 //³õÊ¼»¯
 void ld_exti_init(void)

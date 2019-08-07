@@ -648,9 +648,9 @@
               <FilePath>..\生成\build.bat</FilePath>
             </File>
             <File>
-              <FileName>v5.bin</FileName>
+              <FileName>LD-MZ-DRIVER-5-A-V6.bin</FileName>
               <FileType>5</FileType>
-              <FilePath>..\生成\v5.bin</FilePath>
+              <FilePath>..\生成\LD-MZ-DRIVER-5-A-V6.bin</FilePath>
             </File>
           </Files>
         </Group>

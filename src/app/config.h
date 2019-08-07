@@ -28,8 +28,10 @@ typedef enum{
 #define disable_485_rx()  enable_485_tx()
 
 //<o>硬件编号<0-0xFFFF:1>
-#define HARDWARE_VERSION          0x0201
+//<i>带红外的硬件版本 0203
+#define HARDWARE_VERSION          0x0203
 //<o>软件编号<0-0xFFFF:1>
+//<i>软件编号从0001开始叠加
 #define SOFTWARE_VERSION          0x0001
 
 //<o>仓道个数
