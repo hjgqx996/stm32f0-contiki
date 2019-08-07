@@ -15,7 +15,7 @@ typedef enum{
 //-------- <<< Use Configuration Wizard in Context Menu >>> -----------------
 
 //<e>是否使用看门狗
-#define ENABLE_IWDG               1
+#define ENABLE_IWDG               0
 //</e>
 
 //<o>485串口号  <1=>uart1 <2=>uart2

@@ -22,14 +22,23 @@ void ld_exti_init(void)
 {
   EXTI_InitTypeDef   EXTI_InitStructure;
 	NVIC_InitTypeDef   NVIC_InitStructure;
-	int i= 0;
+	int i= 0;	  
+	
+	//开时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+	
+	//中断向量表
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI4_15_IRQn;//irq_ch(map->line);
+	NVIC_InitStructure.NVIC_IRQChannelPriority = 0x00;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
 	for(;i<exti_number;i++)
 	{
 		t_exti_map *map = &exti_map[i];
 		//初始化io
 	  cpu_gpio_cfg(map->port,map->pin,GPIO_Mode_IN,GPIO_OType_OD,0,GPIO_Speed_2MHz);
-	  //开时钟
-		RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+
 		
 		//使能外部中断
 		SYSCFG_EXTILineConfig(map->port, map->pin);
@@ -38,12 +47,6 @@ void ld_exti_init(void)
 		EXTI_InitStructure.EXTI_Trigger = (EXTITrigger_TypeDef)map->trigger;  
 		EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 		EXTI_Init(&EXTI_InitStructure);
-	
-		//中断向量表
-		NVIC_InitStructure.NVIC_IRQChannel = irq_ch(map->line);
-		NVIC_InitStructure.NVIC_IRQChannelPriority = 0x0F;
-		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-		NVIC_Init(&NVIC_InitStructure);
 	}
 }
 
