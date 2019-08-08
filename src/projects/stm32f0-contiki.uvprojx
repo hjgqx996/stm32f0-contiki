@@ -652,6 +652,11 @@
               <FileType>5</FileType>
               <FilePath>..\生成\LD-MZ-DRIVER-5-A-V6.bin</FilePath>
             </File>
+            <File>
+              <FileName>LD-MZ-DRIVER-5-A-V6.hex</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\生成\LD-MZ-DRIVER-5-A-V6.hex</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
