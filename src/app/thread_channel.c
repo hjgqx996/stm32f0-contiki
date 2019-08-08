@@ -8,8 +8,11 @@
   (4) 6代宝以上,非租借条件下，应该 加密
 								
 								return: 0:正在运行 1:失败  2:成功
+								step:1 读id
+								step:2 读数据
+								step:3 加密
 ---------------------------------------------------------*/
-static void read_data(Channel*pch,U8 ch)
+static void read_data(Channel*pch,U8 ch,U8 step)
 {
 	
 	extern BOOL is_system_in_return(U8 addr);
@@ -29,22 +32,27 @@ static void read_data(Channel*pch,U8 ch)
 	/*摆臂开关有效可以读数据*/
 	if(isvalid_baibi())
 	{
-		delayms(2);
+		delayms(1);
 		if(isvalid_baibi())
 		{
 			//读id
-			result = channel_read(pch,RC_READ_ID,dataout,550,FALSE);if(result==-1)return;//红外忙，返回
-			if(result==FALSE)
+			if(step==1)
 			{
-				//读不到数据
-				pch->readerr++;
-				return;
-			}else{
-				//读到数据
-				pch->readok++;
-			}
+				result = channel_read(pch,RC_READ_ID,dataout,550,FALSE);if(result==-1)return;//红外忙，返回
+				if(result==FALSE)
+				{
+					//读不到数据
+					pch->readerr++;
+					return;
+				}else{
+					//读到数据
+					pch->readok++;
+				}
+		 }
 		  
 			//读数据
+		 if(step==2)
+		 {
 			result = channel_read(pch,RC_READ_DATA,dataout,650,FALSE);if(result==-1)return;//红外忙，返回
 			if(result==FALSE)
 			{
@@ -63,9 +71,12 @@ static void read_data(Channel*pch,U8 ch)
 					pch->state.read_error = pch->readerr=0;                //错误计数清0
 				}
 				pch->readok=0;
-			}		
+			}	
+		 }			
 
       //加密
+		 if(step==3)
+		 {
 			if((is_ver_6() || is_ver_7()) && (is_system_lease()==FALSE) )
 			{
 				if(pch->bao_output!=0x06)
@@ -75,7 +86,7 @@ static void read_data(Channel*pch,U8 ch)
 					pch->bao_output= (BaoOutput)dataout[0];
 				}
 			}
-
+		 }
 		}
 	}
 	/*摆臂开关无效数据清0*/
@@ -109,7 +120,11 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 			pch = channel_data_get(i);
 
 			/*=====================读取充电宝=========================*/
-				read_data(pch,i);
+			read_data(pch,i,1);//读id    
+			os_delay(channel,100);
+			read_data(pch,i,2);//读数据
+			os_delay(channel,100);
+			read_data(pch,i,3);//加密
 			/*-----------循环等待时间---------------------------------*/
 			if(channel_read_delay_ms>0)
 			{
