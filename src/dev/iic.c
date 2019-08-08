@@ -5,7 +5,6 @@
 /*===================================================
                 配置文件
 ====================================================*/
-#define sda_out()
 /**************************************
 	private 模拟i2c驱动
 **************************************/
@@ -33,6 +32,19 @@
 
 #define i2c_delayus(x)      delayus(5*x)
 
+/*=========================================================*/
+#include "stm32f0xx_gpio.h"
+#include "driver_config_types.h"
+extern t_gpio_map gpio_map[];
+extern const unsigned char gpio_number;
+void sda_out(U8 sda)
+{
+	t_gpio_map map = gpio_map[sda-1];
+	if(sda>gpio_number)return;
+  cpu_gpio_cfg(map.xPort,map.xPin,GPIO_Mode_OUT,GPIO_OType_OD,GPIO_PuPd_NOPULL,1,GPIO_Speed_50MHz);
+}
+
+
 //判断时钟线是否为高
 //不高则等待一定时间，大概950us左右
 //2017-7-21
@@ -52,7 +64,7 @@ void wait_scl_high(U8 scl)
 
 static void I2C_Start(U8 sda,U8 scl)
 {
-  sda_out();
+  sda_out(sda);
 	SDA_H();
 	SCL_H();
  	i2c_delayus(5);	
@@ -66,7 +78,7 @@ static void I2C_Start(U8 sda,U8 scl)
 
 static void I2C_Restart(U8 sda,U8 scl)
 {
-  sda_out();
+  sda_out(sda);
 	SCL_L();
 	i2c_delayus(5);
 	SDA_H();
@@ -82,7 +94,7 @@ static void I2C_Restart(U8 sda,U8 scl)
 
 static void I2C_Stop(U8 sda,U8 scl)
 {
-	sda_out();
+	sda_out(sda);
 	SDA_L();
 	i2c_delayus(5);
 	SCL_H();

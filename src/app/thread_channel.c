@@ -86,7 +86,6 @@ static void read_data(Channel*pch,U8 ch)
 				extern void fsm_charge(U8 ch,int arg);
 				fsm_charge(ch,0x88);//充电状态机复位
 				channel_data_clear(ch);
-				pch->dingzhen_counter = pch->ir_error_counter = 0; //顶针，红外错误计数清
 			}
 	}
 }

@@ -115,7 +115,7 @@ void fsm_charge(U8 ch,int arg)
 
 	if((is_system_in_return(pch->addr)==TRUE) )return;   //当前是归还仓道，不读(另有归还线程在读)
 	if(arg==0x88){line=0;return;}                        //复位,arg=0x88
-  if(arg==0x99){pch->first_insert=TRUE; channel_clear(ch); goto entry;}//中断触发,上电触发(0x99),清数据,跳到line=1
+  if(arg==0x99){pch->first_insert=TRUE; goto entry;}   //中断触发,上电触发(0x99),清数据,跳到line=1
 	if(arg==0x87){if(line==0) goto stop_charge;else return;} //充电宝插入,无法识别, 但 后来 可以识别了==>直接跳到(停止充电)stop_charge;
 	/*-----------------------充电状态机-------------------------------------------*/
 	//开始(等待中断触发/上电触发==>arg==0x99)

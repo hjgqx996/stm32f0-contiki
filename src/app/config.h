@@ -15,7 +15,7 @@ typedef enum{
 //-------- <<< Use Configuration Wizard in Context Menu >>> -----------------
 
 //<e>是否使用看门狗
-#define ENABLE_IWDG               0
+#define ENABLE_IWDG               1
 //</e>
 
 //<o>485串口号  <1=>uart1 <2=>uart2
@@ -26,6 +26,9 @@ typedef enum{
 #define disable_485_tx()  ld_gpio_set(2,0)
 #define enable_485_rx()   disable_485_tx()
 #define disable_485_rx()  enable_485_tx()
+
+//<s>PCB板编号
+#define PCD_VERSION    "(LD-MZ-DRIVER-5-A-V6)"
 
 //<o>硬件编号<0-0xFFFF:1>
 //<i>带红外的硬件版本 0203

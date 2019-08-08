@@ -154,7 +154,7 @@ BOOL channel_data_clear(U8 ch)
 	memset((void*)&(pch->state),0,1);                  //状态位清
 	pch->warn.temperature=0;                           //温度报警清
 	pch->error.ir=pch->error.temp=pch->error.thimble=0;//错误状态清
-	//pch->dingzhen_counter = pch->ir_error_counter = 0; //顶针，红外错误计数清
+	pch->dingzhen_counter = pch->ir_error_counter = 0; //顶针，红外错误计数清
 	pch->readerr = pch->readok = 0;
 	return TRUE;
 }
@@ -171,14 +171,6 @@ BOOL channel_data_clear_by_addr(U8 ch_addr)
 		}
 	}
 	return FALSE;
-}
-/*---------------- 清除地址为ch的所有的数据---------- */
-BOOL channel_clear(U8 ch)
-{
-	Channel*pch = channel_data_get(ch);
-	if(pch==NULL)return FALSE;
-	memset((void*)&(pch->iic_dir),0,sizeof(Channel)-((int)&(pch->iic_dir) - (int)pch));//除地址外，其它清0
-	return TRUE;
 }
 
 /*-------------- 获取仓道数据 channel:1-n----------------*/
