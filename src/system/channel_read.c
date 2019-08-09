@@ -184,6 +184,12 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 		}
 		
 		if(result==TRUE){pch->dingzhen_counter=0;}                //顶针识别清0
+		else{
+//			U8 pr[6]={0xEE,ch};
+//			memcpy(pr+2,&pch->ir_error_counter,4);		
+//			enable_485_tx();;
+//		  ld_uart_send(COM_485,pr,6);                                //打印故障计数
+		}//打印iic出错
 		
 		if(once==FALSE)
 			iic_ir_select_poll(pch,(result==TRUE?FALSE:TRUE),FALSE);//记录一次，是否要切换
@@ -240,12 +246,12 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 		
 		//红外识别故障++
 		pch->ir_error_counter++;
-		{
-			U8 pr[5]={ch};
-			memcpy(pr+1,&pch->ir_error_counter,4);		
-			enable_485_tx();;
-		  ld_uart_send(COM_485,pr,5);                                //打印故障计数
-		}
+//		{
+//			U8 pr[6]={0xFF,ch};
+//			memcpy(pr+2,&pch->ir_error_counter,4);		
+//			enable_485_tx();;
+//		  ld_uart_send(COM_485,pr,6);                                //打印故障计数
+//		}
 		
 		iic_ir_select_poll(pch,TRUE,FALSE);                          //记错一次
 		return FALSE;

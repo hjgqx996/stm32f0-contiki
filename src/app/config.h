@@ -35,7 +35,7 @@ typedef enum{
 #define HARDWARE_VERSION          0x0203
 //<o>软件编号<0-0xFFFF:1>
 //<i>软件编号从0001开始叠加
-#define SOFTWARE_VERSION          0x0001
+#define SOFTWARE_VERSION          0x000F
 
 //<o>仓道个数
 #define CHANNEL_MAX           5

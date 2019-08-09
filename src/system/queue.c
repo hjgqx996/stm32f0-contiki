@@ -206,7 +206,7 @@ BOOL request_charge_hangup_all(U32 seconds)
 		{
 			Channel*pch = channel_data_get(ch);
 			if(pch==NULL)continue;
-			if(!is_force_charge_on(ch))//不强制充电,就断电
+			//if(!is_force_charge_on(ch))//不强制充电,就断电
 			 reset_out5v();//禁止所有输出
 		}
 		hangall=TRUE;
