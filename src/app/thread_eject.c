@@ -1,4 +1,7 @@
 #include "includes.h"
+
+
+extern BOOL diancifa(Channel*pch,int flashtime,int timeout,int hightime_max);
 /*-----------------------------------------------------------
  //(到位开关无效 && 摆臂开关有效 && 读不到数据)==>认为是一个锁仓事件
  //弹仓>6次失败后,等待2小时后，重新开始，检测锁仓
@@ -68,15 +71,9 @@ AUTOSTART_THREAD_WITH_TIMEOUT(eject)
 					if(clec>=2)
 					{
 						clec=0;
-						request_charge_hangup_all(1); //挂起所有充电
-						os_delay(eject,10);//延时10ms
-						dian_ci_fa(pch,HIGH);//电磁阀动作
-						os_delay(eject,500);//等待500ms
-						dian_ci_fa(pch,LOW);//电磁阀空闲
 						pch->warn.eject = 1;//事件位置1
 						cle10min=600;       //事件位清0,计时10分钟后eject清0
-            os_delay(eject,50); //延时
-            if(isvalid_baibi()) //摆臂开关还有效表示没有弹仓成功
+            if(diancifa(pch,0,500,250)==FALSE) //摆臂开关还有效表示没有弹仓成功
 						{
 							pch->error.motor = 1;//电磁阀故障
 							cleec++;             //错误计数++

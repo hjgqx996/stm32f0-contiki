@@ -26,7 +26,7 @@ static int bai_bi_counter(Channel*pch,int timeout)
 * hightime_min  :摆臂开关有效的最大时间
 * return        :TRUE or FALSE
 */
-static BOOL diancifa(Channel*pch,int flashtime,int timeout,int hightime_max)
+BOOL diancifa(Channel*pch,int flashtime,int timeout,int hightime_max)
 {
 	int bcounter=0;
 	channel_led_flash(channel_data_get_index(pch),flashtime);//闪灯	
