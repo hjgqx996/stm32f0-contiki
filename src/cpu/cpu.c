@@ -36,7 +36,7 @@ void cpu_us_delay(int us)
 void cpu_ms_delay(int ms)
 {
 	while(ms >0){
-		cpu_us_delay(1000);
+		cpu_us_delay(922);
 		ms--;
 	}	
 }

@@ -75,23 +75,20 @@ typedef struct{
 	ChannelConfigureMap*map;        //通道控制io配置
 	U8 addr;                        //通道地址flash[]<----System.addr_ch-------Channel.addr
 
-	/*--------------插入充电--------------------------*/
-  BOOL first_insert;              //第一次插入(==TRUE,时大循环不读，thread_insert线程读)
-	
 	/*--------------仓道灯----------------------------*/
 	BOOL flash;                     //是否闪烁
 	volatile int  flash_ms;         //闪烁总时间(ms)
 	volatile int  flash_now;        //计时
 	
-	/*--------------iic方向切换------------------------*/
+	/*--------------插入充电--------------------------*/
+  BOOL first_insert;              //第一次插入(==TRUE,时大循环不读，thread_insert线程读)
+		
+	/*--------------iic方向切换,------------------------*/
 	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
-	U8  iic_dir_counter;             //出错计数
-	int dingzhen_counter;            //顶针识别故障 计数
+	U8  iic_error_counter;           //顶针识别故障 计数
 	int ir_error_counter;            //红外识别故障 计数
-	
-	/*--------------iic,ir切换------------------------*/
-	U8 iic_ir_mode;                 //iic方向 0:正常方向  1:方向反转
-	U8 iic_ir_mode_counter;         //出错计数
+	/*--------------iic,ir模式选择----------------------*/
+	U8 iic_ir_mode;                  // 0:选择iic  1:选择红外
 
 	/*--------------运行状态数据----------------------*/
 	ChannelState state;             //运行状态

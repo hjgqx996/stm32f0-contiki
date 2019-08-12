@@ -105,7 +105,7 @@ static void channel_error_check(U8 ch)
 	else pch->error.temp=0;
 	
 	//顶针识别故障,识别计数>=2,并且摆臂开关非故障下
-	if( (pch->dingzhen_counter>=BAO_DINGZHEN_ERROR_TIMES) && (pch->error.baibi==0) )
+	if( (pch->iic_error_counter>=BAO_DINGZHEN_ERROR_TIMES) && (pch->error.baibi==0) )
 		pch->error.thimble=1; 
 	else pch->error.thimble = 0;
 	
@@ -114,7 +114,6 @@ static void channel_error_check(U8 ch)
 		pch->error.ir=1;
 	else 
 	{
-		pch->ir_error_counter=0;
 		pch->error.ir=0;
 	}
 	
@@ -154,7 +153,7 @@ BOOL channel_data_clear(U8 ch)
 	memset((void*)&(pch->state),0,1);                  //状态位清
 	pch->warn.temperature=0;                           //温度报警清
 	pch->error.ir=pch->error.temp=pch->error.thimble=0;//错误状态清
-	pch->dingzhen_counter = pch->ir_error_counter = 0; //顶针，红外错误计数清
+	pch->iic_error_counter = pch->ir_error_counter = 0;//顶针，红外错误计数清
 	pch->readerr = pch->readok = 0;
 	return TRUE;
 }
@@ -167,7 +166,7 @@ BOOL channel_data_clear_by_addr(U8 ch_addr)
 	{
 		if(chs[i].addr==ch_addr)
 		{
-			return channel_data_clear(i+1);
+			memset((void*)&(chs[i].first_insert),0,sizeof(Channel)-((int)&(chs[i].first_insert) - (int)(&chs[i])));//除地址外，其它清0
 		}
 	}
 	return FALSE;

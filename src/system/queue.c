@@ -76,11 +76,11 @@ static int charge_front(void)
 	{
 		pch = channel_data_get(l.ch);
 		if(pch==NULL)continue;
-		if(l.used && (hangall==FALSE))
+		if(l.used && (hangall==FALSE))//有效 and 不挂起
 		{
 			if(charge_counter<CHANNEL_CHARGE_MAX)
 			{	
-				charge_counter++;
+				charge_counter++; //当前计数++
 				l.charge=1;       //正在充电
 				set_out5v();      //输出5V
 				continue;
@@ -121,6 +121,7 @@ static void charge_timeout(void)
 			if(hangtime>0)hangtime--;
 		}	
 	}
+	
 	//挂起超时，恢复倒计时
 	if(hangtime==0)hangall=FALSE;
 }
@@ -171,11 +172,11 @@ static BOOL direct_charge(U8 ch,BOOL charged)
 BOOL request_charge_on(U8 ch,U32 seconds,BOOL hard)
 {
 	Queue_Type *qt = request_channel_find(ch);
-	if(!inited)request_init();
+	if(!inited)request_init();//未初始化，应该初始化
 	if(qt==NULL)return FALSE;
-  qt->hard=hard;
-	qt->charge_time = seconds;
-	qt->used=1;
+  qt->hard=hard;            //hard=1:表示5秒or10min紧急充电
+	qt->charge_time = seconds;//申请充电时间
+	qt->used=1;               //有效标志 
 	return TRUE;
 }
 
@@ -190,8 +191,12 @@ BOOL request_charge_off(U8 ch)
 	{
 		Channel*pch = channel_data_get(qt->ch);
 		if(pch==NULL)return FALSE;
-		if(!is_force_charge_on(ch))//不强制充电，就断电
-			reset_out5v();//马上断电
+		/*-----------------------------------------
+		*  如果是强制充电，对于单个仓道，不应该断电
+		*  否则出现三角波
+		------------------------------------------*/
+		if(!is_force_charge_on(ch))
+			reset_out5v();           //马上断电
 	}
   return TRUE;
 }
@@ -221,7 +226,7 @@ BOOL ld_is_queue_hang(void)
 	return (BOOL)((system.enable==0)||((system.enable==1)&&(system.mode==1)));
 }
 /*===================================================
-                充电调试任务
+                充电调度任务
 ====================================================*/
 AUTOSTART_THREAD_WITH_TIMEOUT(queue)
 {
@@ -237,7 +242,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(queue)
 				int i = 0;
 				for(;i<CHANNEL_MAX;i++)
 				{
-					direct_charge(i+1,(BOOL)system.chs[i]);
+					direct_charge(i+1,(BOOL)system.chs[i]);//强制输出
 				}
 			}
 			
@@ -251,7 +256,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(queue)
 		
 		//不充电
 		else{
-		  request_charge_hangup_all(0);
+		  request_charge_hangup_all(0);//强制关断
 		}
  	  os_delay(queue,100);   
 	}

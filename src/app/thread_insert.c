@@ -210,7 +210,7 @@ void fsm_charge(U8 ch,int arg)
 	/*================================状态:补充(检测是否补充)========================================================*/
 	state(recharge)
 	{
-		request_charge_off(ch);       //断输出
+		request_charge_off(ch);       //断输出,对于强制输出,不应断电
 		request=FALSE;                
 		if( (pch->Ufsoc<=BUCHONG_STOP_UFSOC_MAX) && (pch->Ufsoc>BUCHONG_1HOUR_STOP_UFSOC_MAX) )//85%-99%,充电3次，时间1小时
 		{

@@ -58,15 +58,6 @@ typedef enum{
 //<o>仓道灯亮时，最小电量%
 #define CHANNEL_LED_LIGHT_UFSOC   50
 
-//<o>红外---->iic    切换时，通讯失败次数
-#define IR_TO_IIC_SWITCH_ERROR_MAX   2
-
-//<o>iic------>红外 切换时，通讯失败次数
-#define IIC_TO_IR_SWITCH_ERROR_MAX   1
-
-//<o>iic切换方向时，通讯失败次数
-#define IIC_DIR_SWITCH_MAX        1
-
 //<o>循环读充电宝时长(ms)
 #define BAO_READ_DATA_MAX_MS      2500
 
@@ -83,7 +74,7 @@ typedef enum{
 //<o>顶针识别故障计数
 #define BAO_DINGZHEN_ERROR_TIMES           2
 
-//<o>红外识别故障计娄
+//<o>红外识别故障计数
 #define BAO_IR_ERROR_TIMES                 2
 //</h>
 
