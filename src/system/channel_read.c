@@ -108,7 +108,11 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 		/*iic 读失败*/
 		IIC_READ_ERROR:
 		if(result==FALSE){
-			//ld_uart_send(COM_485,&pch->iic_ir_mode,1);ld_uart_send(COM_485,&pch->addr,1);//打印结果
+			
+			U8 pb[8];pb[0]=RTM_IIC; pb[1]=pch->addr;
+			enable_485_tx();//使能发送
+			ld_uart_send(COM_485,pb,2);//打印结果
+			
 			pch->iic_error_counter++;                              //顶针识别计数++
 			if( (once==TRUE && system.iic_ir_mode!=SIIM_ONLY_IIC)  //可以读一次红外
 				||(pch->iic_error_counter>=BAO_DINGZHEN_ERROR_TIMES))//3次iic错误，转红外
@@ -170,7 +174,12 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 		if(pch->ir_error_counter>=BAO_IR_ERROR_TIMES){
 			pch->iic_ir_mode=RTM_IIC;
 		}
-		//ld_uart_send(COM_485,&pch->iic_ir_mode,1);ld_uart_send(COM_485,&pch->addr,1);//打印结果
+		
+		{
+			U8 pb[8];pb[0]=RTM_IR; pb[1]=pch->addr;
+			enable_485_tx();//使能发送
+			ld_uart_send(COM_485,pb,2);//打印结果
+		}
 		return FALSE;
 	}
 	
