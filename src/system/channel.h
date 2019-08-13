@@ -170,9 +170,11 @@ void channel_check_timer_2s(void);
 #define isvalid_baibi()  (ld_gpio_get(pch->map->io_sw))     //摆臂开关有效
 #define isin5v()         (ld_gpio_get(pch->map->io_mp_detect))//是否充电输入
 #define isout5v()        (ld_gpio_get(pch->map->io_mp))     //是否充电输出
-#define is_ver_6()       ((pch->id[6]&0x0F)==0x06)        //6代宝
-#define is_ver_7()       ((pch->id[6]&0x0F)==0x07)        //7代宝
-#define is_ver_lte_5()   ((pch->id[6]&0x0F)<=0x05)        //5代或以下
+//#define is_ver_6()       ((pch->id[6]&0x0F)==0x06)        //6代宝
+//#define is_ver_7()       ((pch->id[6]&0x0F)==0x07)        //7代宝
+//#define is_ver_lte_5()   ((pch->id[6]&0x0F)<=0x05)        //5代或以下
+#define is_ver_5()         ((pch->id[6]&0x0F)==0x05)         //5代宝不解锁，其它代 加解密2019-8-13
+#define data_is_ver_5(d)   ((d&0x0F)==0x05)                 //5代宝不解锁，其它代 加解密2019-8-13
 #define is_readok()      (pch->state.read_ok==1)             //判断读取成功
 #define is_readerr()     (pch->state.read_error==1)          //判断是否读失败
 #define is_has_read()    ( (pch->state.read_ok==1) || (pch->state.read_error==1)) //判断是否已经读

@@ -77,9 +77,9 @@ static void read_data(Channel*pch,U8 ch,U8 step)
       //¼ÓÃÜ
 		 if(step==3)
 		 {
-			if((is_ver_6() || is_ver_7()) && (is_system_lease()==FALSE) )
+			if((!is_ver_5()) && (is_system_lease()==FALSE) )
 			{
-				if(pch->bao_output!=0x06)
+				if(pch->bao_output!=BAO_NOTALLOW)
 				{
 					dataout[0]=0;
 					channel_read(pch,RC_LOCK,dataout,650,FALSE);

@@ -235,7 +235,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 			
 			//if(pch->state.read_ok)//充电宝是否有效
 			{
-				if(is_ver_6() || is_ver_7())//6代宝解锁,600ms,失败返回应答包
+				if(!is_ver_5())//非5代包，解锁
 				{
 					int result=0;
 					U8 lock[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};	
@@ -326,7 +326,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_ctrl)
 			if(cmd==0x01)//运维打开仓门，使能充电1小时
 			{
 							
-				if((bao_id[6]&0x0F)>=0x06)//6代宝以上，解锁1小时
+				if(!(data_is_ver_5(bao_id[6])))//6代宝以上，解锁1小时
 				{
 					 channel_read(pch,RC_UNLOCK_1HOUR,dataout,1000,TRUE);
 				}
