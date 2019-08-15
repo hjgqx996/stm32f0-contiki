@@ -73,10 +73,9 @@ int packet_send(HPacket*hp, U8 cmd,U16 len,U8*data,U8 addr)
 	cs= cs8((U8*)p,6+len);	
 	hp->p.data[len] = cs;
 	enable_485_tx();//Ê¹ÄÜ·¢ËÍ
-	delayms(1);
+	delayus(100);
 	ld_uart_send(COM_485,(U8*)&hp->p,7+len);
 	memset(hp,0,sizeof(HPacket));
-	delayms(10);
 	return len;
 }
 

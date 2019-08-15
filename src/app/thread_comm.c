@@ -81,7 +81,6 @@ static void send_lease_state(HPacket*hp, U8 s,U8 ch_addr,U8*ids)
 	}
 	
 	//发送数据包
-	delayms(10);
 	packet_send(hp,0x02,3+CHANNEL_ID_MAX,data,system.addr485);
 }
 //返回归还状态
