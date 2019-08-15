@@ -14,6 +14,12 @@
 ====================================================*/
 #include "includes.h"
 
+
+#define force_using_iic()  (system.iic_ir_mode==SIIM_ONLY_IIC)
+#define force_using_ir()   (system.iic_ir_mode==SIIM_ONLY_IR)
+
+
+
 /*===================================================
                 本地变量
 ====================================================*/
@@ -38,7 +44,7 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 	U8 iic_cmd = 0;//红外与iic的加密 解密 指令是不一样的
 	U16 buffer[8];
 	U8 ch = channel_data_get_index(pch);    //索引从 1 开始
-	READ_TYPE_MODE mode = (READ_TYPE_MODE)pch->iic_ir_mode; //iic ir模式   
+	#define mode  pch->iic_ir_mode
 	int result = 0;
 	int wanlen = 0;
 	if(ch==0||pch==NULL)return FALSE;
@@ -48,7 +54,7 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 	if(system.iic_ir_mode==SIIM_ONLY_IIC)mode=RTM_IIC;
 	
 	/*------------------------iic 方式 读取 -----------------------------------*/
-	if(mode == RTM_IIC || (once&&system.iic_ir_mode!=SIIM_ONLY_IR) )//是否允许
+	if( (mode == RTM_IIC) || ( once && (!force_using_ir()) ) )//是否允许
 	{
 		U8 dir = pch->iic_dir; 	//方向
 		U8 sda = (dir==1)?pch->map->io_scl:pch->map->io_sda;
@@ -96,9 +102,9 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 													}	
 													
 			break;
-			case RC_UNLOCK:if(iic_cmd==0)      iic_cmd=BAO_ALLOW;         //iic指令 解      05
+			case RC_UNLOCK:      if(iic_cmd==0)iic_cmd=BAO_ALLOW;         //iic指令 解      05
 		  case RC_UNLOCK_1HOUR:if(iic_cmd==0)iic_cmd=BAO_ALLOW_ONE_HOUR;//iic指令 解1小时 07
-			case RC_LOCK:if(iic_cmd==0)        iic_cmd=BAO_NOTALLOW;      //iic指令 不输出  06
+			case RC_LOCK:        if(iic_cmd==0)iic_cmd=BAO_NOTALLOW;      //iic指令 不输出  06
 			 result = ld_bq27541_de_encrypt_charge(sda,scl,iic_cmd);
 			 if(result==TRUE)
 				 result =ld_bq27541_output_flag(sda,scl,dataout);           //读输出标志
@@ -113,11 +119,12 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 			enable_485_tx();//使能发送
 			ld_uart_send(COM_485,pb,2);//打印结果
 			
-			pch->iic_error_counter++;                              //顶针识别计数++
-			if( (once==TRUE && system.iic_ir_mode!=SIIM_ONLY_IIC)  //可以读一次红外
-				||(pch->iic_error_counter>=BAO_DINGZHEN_ERROR_TIMES))//3次iic错误，转红外
+			pch->iic_error_counter++;//顶针识别计数++
+			if(!force_using_iic())//非强制使用iic
 			{
-				goto READ_IR;                //读一次ir
+				//读一次 || 3次iic错误
+				if( once==TRUE || (pch->iic_error_counter>=BAO_DINGZHEN_ERROR_TIMES) )
+				goto READ_IR;//读一次ir
 			}
 			return FALSE;
 		}else
@@ -132,7 +139,7 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 		if(ld_gpio_get(pch->map->io_re))return -1;/*红外被拉高，表示红外忙，直接返回-1*/
 		
 		READ_IR:
-		pch->iic_ir_mode=RTM_IR;
+		mode=RTM_IR;
 		switch(cmd)
 		{
 			case RC_READ_ID  :wanlen =  7;break;  //实测406ms
@@ -172,7 +179,8 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 		
 		/*失败两次转iic*/
 		if(pch->ir_error_counter>=BAO_IR_ERROR_TIMES){
-			pch->iic_ir_mode=RTM_IIC;
+			if(!force_using_ir())//非强制使用IR       
+				mode=RTM_IIC;
 		}
 		
 		{
