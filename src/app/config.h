@@ -1,8 +1,8 @@
 
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
-#include "contiki.h"
+#ifndef __APP_CONFIG_H__
+#define __APP_CONFIG_H__
+
 //===========================类型=============================//
 typedef enum{
 	PROCESS_EVENT_PACKET           =0x40,   //事件:数据包接收
@@ -27,21 +27,28 @@ typedef enum{
 #define enable_485_rx()   disable_485_tx()
 #define disable_485_rx()  enable_485_tx()
 
+//<e>用于8/16口机
+#define APP_USING_8_16_MACHINE 1
+#if APP_USING_8_16_MACHINE>0
 //<s>PCB板编号
-#define PCD_VERSION    "(LD-MZ-DRIVER-5-A-V6)"
+#define PCB_VERSION    "(LD-MZ-DRIVER-8-A-V21.0)"
 
 //<o>硬件编号<0-0xFFFF:1>
 //<i>带红外的硬件版本 0203
 #define HARDWARE_VERSION          0x0203
 //<o>软件编号<0-0xFFFF:1>
 //<i>软件编号从0001开始叠加
-#define SOFTWARE_VERSION          0x000F
+#define SOFTWARE_VERSION          0x0005
 
 //<o>仓道个数
-#define CHANNEL_MAX           5
+#define CHANNEL_MAX           4
+#endif
+//</e>
+
+
 
 //<o>允许同时充电的最大仓道数
-#define CHANNEL_CHARGE_MAX    2
+#define CHANNEL_CHARGE_MAX    1
 
 //<o>仓道编号长度
 #define CHANNEL_ID_MAX             10
@@ -125,7 +132,12 @@ typedef enum{
 #define is_6_battery(ids)          if((ids[6]&0x0F)==0x06)              
 //电磁阀输出
 #define dian_ci_fa(channel,level)  ld_gpio_set(channel->map->io_motor,level)
-
+#if APP_USING_25_50_MACHINE>0
+#define dian_ci_fa_power(enable)
+#endif
+#if APP_USING_8_16_MACHINE>0
+#define dian_ci_fa_power(enable)   ld_gpio_set(43,enable)
+#endif
 
 /******************租借处理结果***************************/
 #define Lease_fall   					0x00
@@ -159,13 +171,6 @@ typedef enum{
 #define IR_OUTENABLE       	30   //允许输出
 #define IR_OUTDISABLE      	50   //禁止输出
 #define IR_OUTANHOUR      	40   //输出1小时
-
-
-
-//==========================================================//
-#include "channel.h"
-extern ChannelConfigureMap channel_config_map[];
-
 
 
 

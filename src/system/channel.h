@@ -1,7 +1,10 @@
 
 #ifndef __CHANNEL_H__
 #define __CHANNEL_H__
+
 #include "types.h"
+#include "config.h"
+
 /*===================================================
                 宏，类型
 ====================================================*/
@@ -163,22 +166,27 @@ void channels_les_flash_timer(int timer_ms);
 -------------------------------------------------------*/
 void channel_check_timer_2s(void);
 
+extern ChannelConfigureMap channel_config_map[];
 /*------------------------------------------------------
 		判断
 -------------------------------------------------------*/
-#define isvalid_daowe()  (ld_gpio_get(pch->map->io_detect)) //到位开关有效
-#define isvalid_baibi()  (ld_gpio_get(pch->map->io_sw))     //摆臂开关有效
-#define isin5v()         (ld_gpio_get(pch->map->io_mp_detect))//是否充电输入
-#define isout5v()        (ld_gpio_get(pch->map->io_mp))     //是否充电输出
-//#define is_ver_6()       ((pch->id[6]&0x0F)==0x06)        //6代宝
-//#define is_ver_7()       ((pch->id[6]&0x0F)==0x07)        //7代宝
-//#define is_ver_lte_5()   ((pch->id[6]&0x0F)<=0x05)        //5代或以下
-#define is_ver_5()         ((pch->id[6]&0x0F)==0x05)         //5代宝不解锁，其它代 加解密2019-8-13
-#define data_is_ver_5(d)   ((d&0x0F)==0x05)                 //5代宝不解锁，其它代 加解密2019-8-13
-#define is_readok()      (pch->state.read_ok==1)             //判断读取成功
-#define is_readerr()     (pch->state.read_error==1)          //判断是否读失败
+#define isvalid_daowe()  (ld_gpio_get(pch->map->io_detect))    //到位开关有效
+#define isvalid_baibi()  (ld_gpio_get(pch->map->io_sw))        //摆臂开关有效
+#define isin5v()         (ld_gpio_get(pch->map->io_mp_detect)) //是否充电输入
+#define isout5v()        (ld_gpio_get(pch->map->io_mp))        //是否充电输出
+#define is_ver_5()       ((pch->id[6]&0x0F)==0x05)             //5代宝不解锁，其它代 加解密2019-8-13
+#define data_is_ver_5(d) ((d&0x0F)==0x05)                      //5代宝不解锁，其它代 加解密2019-8-13
+#define is_readok()      (pch->state.read_ok==1)               //判断读取成功
+#define is_readerr()     (pch->state.read_error==1)            //判断是否读失败
 #define is_has_read()    ( (pch->state.read_ok==1) || (pch->state.read_error==1)) //判断是否已经读
+
+#if APP_USING_8_16_MACHINE>0
+#define set_out5v()      do{ld_gpio_set_io(pch->map->io_mp_detect,TRUE,1);ld_gpio_set(pch->map->io_mp,1);ld_gpio_set_io(pch->map->io_mp_detect,FALSE,0);}while(0)
+#endif
+#if APP_USING_25_50_MACHINE>0
 #define set_out5v()     ld_gpio_set(pch->map->io_mp,1) //输出5V
+#endif
+
 #define reset_out5v()   ld_gpio_set(pch->map->io_mp,0) //不输出5V
 
 int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL once);

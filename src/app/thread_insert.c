@@ -22,7 +22,8 @@ static U8   _last[CHANNEL_MAX]={0};       //上一次状态
 static int  _to[CHANNEL_MAX]={0};         //timeout超时           
 static int  _s120[CHANNEL_MAX]={0};       //秒 120秒电流计时 
 static BOOL _hang[CHANNEL_MAX]={FALSE};   //计时挂起     
-static BOOL _request[CHANNEL_MAX]={FALSE};//申请充电     
+static BOOL _request[CHANNEL_MAX]={FALSE};//申请充电    
+static BOOL _highTemp[CHANNEL_MAX]={FALSE};//高温标志
 static int  _1hour[CHANNEL_MAX]={0};      //1小时补充计时
 static U8   _1hourcount[CHANNEL_MAX]={0}; //1小时计数
 static int  _3hour[CHANNEL_MAX]={0};      //3小时补充计时
@@ -37,6 +38,7 @@ static U8   buffer[16];                   //读充电宝时数据缓存
 #define hour1   _1hour[ch-1]      // 1小时充电计时
 #define hour3   _3hour[ch-1]      // 3小时充电计时
 #define request _request[ch-1]    //是否申请了充电
+#define HTemp   _highTemp[ch-1]   //高温挂起标志
 
 /*===================================================
 			上电检测，如果发现在有充电宝，按充电流程走
@@ -272,7 +274,6 @@ void fsm_charge(U8 ch,int arg)
 			goto recharge;
 		}
 	}
-	
 	defaultx()
 	
 	
@@ -287,6 +288,18 @@ void fsm_charge(U8 ch,int arg)
 	{
 		request_charge_off(ch);
 		goto entry;
+	}
+	/*================================温度过高,挂起计时,等待温度降低,恢复充电===========================================*/
+	if( ( ((pch->Ufsoc>=50) && (pch->Temperature>50)) //电量>=50% 温度>50度,挂起充电
+		  ||((pch->Ufsoc <50) && (pch->Temperature>55))	//电量<50%  温度>55度,挂起充电
+			) && request==TRUE && HTemp==FALSE){
+				hang=TRUE;                //挂起
+				HTemp=TRUE;               //高温标志
+				request_charge_hangup(ch);//立即断电
+	}else{
+		if(request==TRUE && HTemp==TRUE)
+			request_charge_recovery(ch);//恢复排队
+		HTemp=FALSE;                  //清高温标志
 	}
 	
   /*================================判断充电电流<100mA持续2min,断电===================================================*/		

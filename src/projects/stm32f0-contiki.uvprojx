@@ -662,6 +662,11 @@
               <FileType>5</FileType>
               <FilePath>..\说明\上行命令.txt</FilePath>
             </File>
+            <File>
+              <FileName>测试结果.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\说明\测试结果.txt</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

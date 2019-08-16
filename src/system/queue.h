@@ -10,5 +10,7 @@ BOOL request_charge_off(U8 ch);/*中止充电*/
 BOOL request_charge_hangup_all(U32 scondes);/*挂起所有输出*/
 BOOL ld_is_queue_hang(void);/*充电调度器是否挂起?*/
 
+BOOL request_charge_hangup(U8 ch);/*挂起一个充电*/
+BOOL request_charge_recovery(U8 ch);/*恢复一个充电*/
 #endif
 

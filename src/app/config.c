@@ -9,3 +9,24 @@ ChannelConfigureMap channel_config_map[]={
 		CCM(1) CCM(2) CCM(3) CCM(4) CCM(5)
 };
 
+
+
+
+
+//<e>用于25/50口机
+#define APP_USING_25_50_MACHINE 0
+#if APP_USING_25_50_MACHINE>0
+//<s>PCB板编号
+#define PCB_VERSION    "(LD-MZ-DRIVER-5-A-V6)"
+
+//<o>硬件编号<0-0xFFFF:1>
+//<i>带红外的硬件版本 0203
+#define HARDWARE_VERSION          0x0203
+//<o>软件编号<0-0xFFFF:1>
+//<i>软件编号从0001开始叠加
+#define SOFTWARE_VERSION          0x000F
+
+//<o>仓道个数
+#define CHANNEL_MAX           5
+#endif
+//</e>

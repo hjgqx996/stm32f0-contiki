@@ -17,8 +17,6 @@ typedef enum{TRUE=1,FALSE=!TRUE}  BOOL;
 #define time_t U32
 #endif
 
-#include "time.h"
-
 #ifndef NULL
 #define NULL 0
 #endif /* NULL */

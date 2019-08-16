@@ -200,7 +200,29 @@ BOOL request_charge_off(U8 ch)
 	}
   return TRUE;
 }
-
+/*挂起一个充电*/
+BOOL request_charge_hangup(U8 ch)
+{
+	Channel*pch = channel_data_get(ch);
+	Queue_Type *qt = request_channel_find(ch);
+	if(pch==NULL)return FALSE;
+	if(qt ==NULL)return FALSE;
+	if(!inited)request_init();
+	qt->used=0;
+	reset_out5v();           //马上断电
+	return TRUE;
+}
+/*恢复一个充电*/
+BOOL request_charge_recovery(U8 ch)
+{
+	Channel*pch = channel_data_get(ch);
+	Queue_Type *qt = request_channel_find(ch);
+	if(pch==NULL)return FALSE;
+	if(qt ==NULL)return FALSE;
+	if(!inited)request_init();
+	qt->used=1;
+	return TRUE;
+}
 /*挂起充电*/
 BOOL request_charge_hangup_all(U32 seconds)
 {

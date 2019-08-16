@@ -31,10 +31,12 @@ BOOL diancifa(Channel*pch,int flashtime,int timeout,int hightime_max)
 	int bcounter=0;
 	channel_led_flash(channel_data_get_index(pch),flashtime);//闪灯	
 	request_charge_hangup_all(0);//关闭输出,2s
+	dian_ci_fa_power(1);         //使能电磁阀电源
 	delayms(10);                 //由于595在定时器中被刷新，有一个延时，必须等待，否则重启
 	dian_ci_fa(pch,HIGH);        //电磁阀动作
 	bcounter = bai_bi_counter(pch,timeout);//电磁阀打开的时候，读取摆臂开关电平
 	dian_ci_fa(pch,LOW);         //关闭电磁阀
+	dian_ci_fa_power(0);         //关闭电磁阀电源
 	if(bcounter < (hightime_max*10))return TRUE;
 	else return FALSE;
 }
