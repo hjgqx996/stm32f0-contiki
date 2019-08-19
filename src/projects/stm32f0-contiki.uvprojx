@@ -418,14 +418,19 @@
               <FilePath>..\app\config.h</FilePath>
             </File>
             <File>
-              <FileName>8-16-NAS.h</FileName>
+              <FileName>25-50-NAS-V5.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\app\8-16-NAS.h</FilePath>
+              <FilePath>..\app\25-50-NAS-V5.h</FilePath>
             </File>
             <File>
-              <FileName>25-50-NAS.h</FileName>
+              <FileName>25-50-NAS-V6.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\app\25-50-NAS.h</FilePath>
+              <FilePath>..\app\25-50-NAS-V6.h</FilePath>
+            </File>
+            <File>
+              <FileName>8-16-NAS-V21.0.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\app\8-16-NAS-V21.0.h</FilePath>
             </File>
           </Files>
         </Group>

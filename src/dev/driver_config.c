@@ -16,6 +16,7 @@
 #include "config.h"
 #include "driver_config_types.h"
 #include "types.h"
+#include "config.h"
 //#include "gtDev.h"
 
 /******************************************************************
@@ -63,25 +64,7 @@ t_gpio_map gpio_map[]=
 {
 	//系统LED灯    485发送使能                                                                    
 	  OUT(F,5)     OUT(A,1)
-
-#if APP_USING_25_50_MACHINE >0	
-	//电磁阀 摆臂开关 到位开关  红外发送  红外接收   led灯      充电使能  充电输出检测     sda       scl
-	OUT(C,2) IN(B,10) IN(B,15)  OUT(HC,2)  IN(F, 4)  OUT(HC,0)  OUT(HC,1)  IN(C,0)         ODH(B,8)  ODH(B,9)  //仓道1
-	OUT(C,3) IN(B,1)  IN(A,8)   OUT(HC,6)  IN(F, 0)  OUT(HC,4)  OUT(HC,5)  IN(C,1)         ODH(B,6)  ODH(B,7)  //仓道2
-	OUT(B,14)IN(A,0)  IN(F,6)   OUT(HC,7)  IN(F, 1)  OUT(HC,8)  OUT(HC,9)  IN(C,5)         ODH(B,4)  ODH(B,5)  //仓道3
-	OUT(B,11)IN(C,13) IN(F,7)   OUT(HC,10) IN(B,12)  OUT(HC,12) OUT(HC,13) IN(C,4)         ODH(D,2)  ODH(B,3)  //仓道4
-	OUT(C,6) IN(C,9)  IN(A,12)  OUT(HC,11) IN(C,7)   OUT(HC,14) OUT(HC,15) IN(B,13)        ODH(C,11) ODH(C,12)  //仓道5
-#endif
-	
-#if APP_USING_8_16_MACHINE	>0
-	//电磁阀 摆臂开关 到位开关  红外发送  红外接收   led灯      充电使能  充电输出检测     sda       scl
-	OUT(C,9) IN(B,10) IN(B,15)  OUT(C, 8)  IN(A,12)  OUT(A, 7)  OUT(B, 3)  IN(C,0)         ODH(B,8)  ODH(B,9)  //仓道1
-	OUT(C,7) IN(B,1)  IN(A,8)   OUT(C, 3)  IN(A,11)  OUT(A, 6)  OUT(A,15)  IN(C,1)         ODH(B,6)  ODH(B,7)  //仓道2
-	OUT(B,14)IN(A,0)  IN(F,6)   OUT(B, 2)  IN(B, 0)  OUT(A, 5)  OUT(B, 5)  IN(C,5)         ODH(C,12) ODH(D,2)  //仓道3
-	OUT(B,12)IN(C,13) IN(F,7)   OUT(B,11)  IN(B,13)  OUT(A, 4)  OUT(B, 4)  IN(C,4)         ODH(C,10) ODH(C,11)  //仓道4
-	//电磁阀电源使能
-	OUT(C,2)
-#endif
+		driver_config_io_map()
    0,
 };
 const unsigned char gpio_number = (sizeof(gpio_map)/sizeof(t_gpio_map)) - 1;
@@ -92,32 +75,7 @@ const unsigned char gpio_number = (sizeof(gpio_map)/sizeof(t_gpio_map)) - 1;
 #define exti(pp,pin)  {PORT_##pp,pin,pin,EXTI_Trigger_Rising},
 //<o> exti
 t_exti_map exti_map[]={
-	
-//	//摆臂      
-//	exti(B,10)  //仓道1
-//	exti(B, 1)  //仓道2
-//	exti(A, 0)  //仓道3
-//	exti(C,13)  //仓道4
-//	exti(C, 9)  //仓道5
-
-#if APP_USING_25_50_MACHINE >0		
-	//到位
-	exti(B,15)  //仓道1
-	exti(A, 8)  //仓道2
-	exti(F, 6)  //仓道3
-	exti(F, 7)  //仓道4
-	exti(A,12)  //仓道5
-#endif
-
-#if APP_USING_8_16_MACHINE >0		
-	//到位
-	exti(B,15)  //仓道1
-	exti(A, 8)  //仓道2
-	exti(F, 6)  //仓道3
-	exti(F, 7)  //仓道4
-//	exti(A,12)  //仓道5
-#endif
-	
+	driver_config_exti_map()
 	0
 };
 const unsigned char exti_number = (sizeof(exti_map) /sizeof(t_exti_map)) - 1;
