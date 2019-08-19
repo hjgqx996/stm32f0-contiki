@@ -180,13 +180,6 @@ extern ChannelConfigureMap channel_config_map[];
 #define is_readerr()     (pch->state.read_error==1)            //判断是否读失败
 #define is_has_read()    ( (pch->state.read_ok==1) || (pch->state.read_error==1)) //判断是否已经读
 
-#if APP_USING_8_16_MACHINE>0
-#define set_out5v()      do{ld_gpio_set_io(pch->map->io_mp_detect,TRUE,1);ld_gpio_set(pch->map->io_mp,1);ld_gpio_set_io(pch->map->io_mp_detect,FALSE,0);}while(0)
-#endif
-#if APP_USING_25_50_MACHINE>0
-#define set_out5v()     ld_gpio_set(pch->map->io_mp,1) //输出5V
-#endif
-
 #define reset_out5v()   ld_gpio_set(pch->map->io_mp,0) //不输出5V
 
 int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL once);

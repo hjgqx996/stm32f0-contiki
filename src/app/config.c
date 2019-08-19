@@ -10,20 +10,3 @@ ChannelConfigureMap channel_config_map[]={
 };
 
 
-//<e>用于8/16口机
-#define APP_USING_8_16_MACHINE 0
-#if APP_USING_8_16_MACHINE>0
-//<s>PCB板编号
-#define PCB_VERSION    "(LD-MZ-DRIVER-8-A-V21.0)"
-
-//<o>硬件编号<0-0xFFFF:1>
-//<i>带红外的硬件版本 0203
-#define HARDWARE_VERSION          0x0203
-//<o>软件编号<0-0xFFFF:1>
-//<i>软件编号从0001开始叠加
-#define SOFTWARE_VERSION          0x0005
-
-//<o>仓道个数
-#define CHANNEL_MAX           4
-#endif
-//</e>

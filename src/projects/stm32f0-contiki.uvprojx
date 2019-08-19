@@ -417,6 +417,16 @@
               <FileType>5</FileType>
               <FilePath>..\app\config.h</FilePath>
             </File>
+            <File>
+              <FileName>8-16-NAS.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\app\8-16-NAS.h</FilePath>
+            </File>
+            <File>
+              <FileName>25-50-NAS.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\app\25-50-NAS.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -27,24 +27,11 @@ typedef enum{
 #define enable_485_rx()   disable_485_tx()
 #define disable_485_rx()  enable_485_tx()
 
+//<s>使用硬件配置
+#define USING_HARDWARE_CONFIG  "25-50-NAS.h"
+#include USING_HARDWARE_CONFIG
 
-//<e>用于25/50口机
-#define APP_USING_25_50_MACHINE 1
-#if APP_USING_25_50_MACHINE>0
-//<s>PCB板编号
-#define PCB_VERSION    "(LD-MZ-DRIVER-5-A-V6)"
 
-//<o>硬件编号<0-0xFFFF:1>
-//<i>带红外的硬件版本 0203
-#define HARDWARE_VERSION          0x0203
-//<o>软件编号<0-0xFFFF:1>
-//<i>软件编号从0001开始叠加
-#define SOFTWARE_VERSION          0x0011
-
-//<o>仓道个数
-#define CHANNEL_MAX           5
-#endif
-//</e>
 
 //<o>允许同时充电的最大仓道数
 #define CHANNEL_CHARGE_MAX    2
@@ -131,12 +118,6 @@ typedef enum{
 #define is_6_battery(ids)          if((ids[6]&0x0F)==0x06)              
 //电磁阀输出
 #define dian_ci_fa(channel,level)  ld_gpio_set(channel->map->io_motor,level)
-#if APP_USING_25_50_MACHINE>0
-#define dian_ci_fa_power(enable)
-#endif
-#if APP_USING_8_16_MACHINE>0
-#define dian_ci_fa_power(enable)   ld_gpio_set(43,enable)
-#endif
 
 /******************租借处理结果***************************/
 #define Lease_fall   					0x00
