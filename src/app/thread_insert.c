@@ -287,7 +287,8 @@ void fsm_charge(U8 ch,int arg)
 	if( isvalid_baibi() && is_readerr() )
 	{
 		request_charge_off(ch);
-		goto entry;
+		line=0;
+		return;
 	}
 	/*================================温度过高,挂起计时,等待温度降低,恢复充电===========================================*/
 	if( ( ((pch->Ufsoc>=50) && (pch->Temperature>50)) //电量>=50% 温度>50度,挂起充电
