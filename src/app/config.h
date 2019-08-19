@@ -39,7 +39,7 @@ typedef enum{
 #define HARDWARE_VERSION          0x0203
 //<o>软件编号<0-0xFFFF:1>
 //<i>软件编号从0001开始叠加
-#define SOFTWARE_VERSION          0x0010
+#define SOFTWARE_VERSION          0x0011
 
 //<o>仓道个数
 #define CHANNEL_MAX           5
@@ -47,7 +47,7 @@ typedef enum{
 //</e>
 
 //<o>允许同时充电的最大仓道数
-#define CHANNEL_CHARGE_MAX    1
+#define CHANNEL_CHARGE_MAX    2
 
 //<o>仓道编号长度
 #define CHANNEL_ID_MAX             10
