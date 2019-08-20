@@ -7,10 +7,9 @@
   (3) 读输出标志
   (4) 6代宝以上,非租借条件下，应该 加密
 								
-								return: 0:正在运行 1:失败  2:成功
-								step:1 读id
-								step:2 读数据
-								step:3 加密
+	step:1 读id
+	step:2 读数据
+	step:3 加密
 ---------------------------------------------------------*/
 static void read_data(Channel*pch,U8 ch,U8 step)
 {

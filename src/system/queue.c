@@ -1,22 +1,19 @@
 
 #include "includes.h"
 
-
 /*是否强制充电*/
 #define is_force_charge_on(ch)    ((system.mode==1) && (system.chs[ch-1]==0x01))   //强制充电
 #define is_force_charge_off(ch)   ((system.mode==1) && (system.chs[ch-1]==0x00))   //强制断电
-
-
 
 /*互斥(contiki非抢占,所以不会多线程同时访问)*/
 #define queue_lock()
 #define queue_unlock()
 
 #define l list[ch]
-
 static BOOL inited = FALSE;   //是否初始化
 static BOOL hangall = FALSE;  //是否挂起
 static U32  hangtime = 0;     //挂起时间 秒
+
 /*排队结构*/
 #pragma pack(1)
 typedef struct{
@@ -39,7 +36,7 @@ static Queue_Type list[CHANNEL_MAX]={0,0,0,0,0,0,0,0};    //列表
 *  只有一个hard在最前面:保证有一个宝在充电
 *  [hard] [......] [hard][hard]...
 */
-/*冒泡排序:hard==1,value=200   hard==0,value=剩余电量*/
+/*冒泡排序*/
 static void bubble_sort(void)
 {
 	int va = 0,vb=0;
@@ -126,7 +123,6 @@ static void charge_timeout(void)
 	if(hangtime==0)hangall=FALSE;
 }
 
-
 /*队列初始化*/
 static void request_init(void)
 {
@@ -141,6 +137,7 @@ static void request_init(void)
 	}
 	inited=TRUE;
 }
+
 /*查找元素*/
 static Queue_Type*request_channel_find(U8 channel)
 {
@@ -212,6 +209,7 @@ BOOL request_charge_hangup(U8 ch)
 	reset_out5v();           //马上断电
 	return TRUE;
 }
+
 /*恢复一个充电*/
 BOOL request_charge_recovery(U8 ch)
 {
@@ -223,6 +221,7 @@ BOOL request_charge_recovery(U8 ch)
 	qt->used=1;
 	return TRUE;
 }
+
 /*挂起充电*/
 BOOL request_charge_hangup_all(U32 seconds)
 {
@@ -241,6 +240,7 @@ BOOL request_charge_hangup_all(U32 seconds)
 		return TRUE;
 	}
 }
+
 /*充电调度器是否挂起?*/
 BOOL ld_is_queue_hang(void)
 {
@@ -266,8 +266,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(queue)
 				{
 					direct_charge(i+1,(BOOL)system.chs[i]);//强制输出
 				}
-			}
-			
+			}	
 			//自由充电方式
 			else{
 			bubble_sort();          //排序

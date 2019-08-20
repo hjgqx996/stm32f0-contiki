@@ -258,22 +258,24 @@ void channels_les_flash_timer(int timer_ms)
 	{
 		Channel*ch =channel_data_get(i+1);
 		if(ch->map==NULL)continue;
+		/*闪烁使能*/
 		if(ch->flash){
-			ch->flash_now+=timer_ms;
-			if(ch->flash_now>=LEASE_LED_FLASH_TIME)
+			ch->flash_now+=timer_ms;//超时累加
+			if(ch->flash_now>=LEASE_LED_FLASH_TIME)//单次超时,led取反
 			{	
 				//时间递减
 				ch->flash_now-=LEASE_LED_FLASH_TIME;
 				ch->flash_ms-=LEASE_LED_FLASH_TIME;
-				if(ch->flash_ms<LEASE_LED_FLASH_TIME)
+				if(ch->flash_ms<LEASE_LED_FLASH_TIME)//闪烁时间到
 				{
 					ch->flash=FALSE;
 					ld_gpio_set(ch->map->io_led,LOW);//停止闪烁
 				}
 				else
-					ld_gpio_set(ch->map->io_led,ld_gpio_get(ch->map->io_led)==0?HIGH:LOW);
+					ld_gpio_set(ch->map->io_led,ld_gpio_get(ch->map->io_led)==0?HIGH:LOW);//反转led电平
 			}
 		}
+		/*闪烁不使能*/
 		else{
 			if( (ch->Ufsoc>CHANNEL_LED_LIGHT_UFSOC) && (ch->state.read_ok) )//电量大于50%灯亮
 				ld_gpio_set(ch->map->io_led,HIGH);

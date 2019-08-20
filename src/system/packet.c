@@ -5,7 +5,7 @@
 /*接收一个字节，返回是否成功接收一个数据包*/
 HPacket *packet_recv(U8 data,HPacket*m)
 {
-	  PacketState*s = &m->s;
+	  PacketState*s = &m->s;//当前数据包接收状态
     unsigned char*d = (unsigned char*)&m->p;
     if(m->s.len > PACKET_DATA_MAX)goto DECODE_ERROR;
     d[m->s.len] = data;
