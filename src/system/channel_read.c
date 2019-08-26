@@ -115,9 +115,9 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 		IIC_READ_ERROR:
 		if(result==FALSE){
 			
-			U8 pb[8];pb[0]=RTM_IIC; pb[1]=pch->addr;
-			enable_485_tx();//使能发送
-			ld_uart_send(COM_485,pb,2);//打印结果
+//			U8 pb[8];pb[0]=RTM_IIC; pb[1]=pch->addr;
+//			enable_485_tx();//使能发送
+//			ld_uart_send(COM_485,pb,2);//打印结果
 			
 			pch->iic_error_counter++;//顶针识别计数++
 			if(!force_using_iic())//非强制使用iic
@@ -183,11 +183,11 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 				mode=RTM_IIC;
 		}
 		
-		{
-			U8 pb[8];pb[0]=RTM_IR; pb[1]=pch->addr;
-			enable_485_tx();//使能发送
-			ld_uart_send(COM_485,pb,2);//打印结果
-		}
+//		{
+//			U8 pb[8];pb[0]=RTM_IR; pb[1]=pch->addr;
+//			enable_485_tx();//使能发送
+//			ld_uart_send(COM_485,pb,2);//打印结果
+//		}
 		return FALSE;
 	}
 	

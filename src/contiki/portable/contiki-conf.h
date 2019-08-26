@@ -10,7 +10,7 @@
 #define WITH_ASCII 1
 
 //定时器频率
-#define CLOCK_CONF_SECOND 1000  
+#define CLOCK_CONF_SECOND 100  
 
 //使用自启线程
 #define AUTOSTART_ENABLE  1

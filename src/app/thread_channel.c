@@ -91,12 +91,15 @@ static void read_data(Channel*pch,U8 ch,U8 step)
 	/*摆臂开关无效数据清0*/
 	else {
 		if(!isvalid_baibi())
+		{
+			delayms(1);
 			if(!isvalid_baibi())
 			{
 				extern void fsm_charge(U8 ch,int arg);
 				fsm_charge(ch,0x88);//充电状态机复位
 				channel_data_clear(ch);
 			}
+		}
 	}
 }
 

@@ -2,7 +2,7 @@
 ::=========================================================================
 ::  请根据不同的电脑，设置自己的环境变量
 set jflash=D:\"Program Files (x86)"\SEGGER\JLink_V630d\JFlash.exe
-set fromelf=D:\Keil_v5\ARM\ARMCC\bin\fromelf.exe
+set fromelf=D:\Keil\ARM\ARMCC\bin\fromelf.exe
 ::=========================================================================
 del ..\生成\*.bin   /F /Q
 del ..\生成\*.hex   /F /Q

@@ -28,7 +28,7 @@ typedef enum{
 #define disable_485_rx()  enable_485_tx()
 
 //<s> π”√”≤º˛≈‰÷√
-#define USING_HARDWARE_CONFIG  "25-50-NAS-V6.h"
+#define USING_HARDWARE_CONFIG  "8-16-NAS-V21.0.h"
 #include USING_HARDWARE_CONFIG
 
 
