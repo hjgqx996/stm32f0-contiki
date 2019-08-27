@@ -25,17 +25,17 @@ extern void ld_gpio_set(U32 index,U8 value);
 //默认等待时间片为FSM_TICK,可自行定义
 #define FSM_WAIT_TICK  FSM_TICK
 #define wait_re_until_not(level,timeout_us) \
-    /*计时清0*/   pir->counter=0; \
+    /*计时清0*/   irs.counter=0; \
     /*读入电平*/  while(re()==level){ \
-		/*等待时间片*/	  waitus(FSM_WAIT_TICK); pir->counter+=FSM_WAIT_TICK; \
-		/*判断超时退出*/  if(pir->counter>timeout_us)break; \
+		/*等待时间片*/	  waitus(FSM_WAIT_TICK); irs.counter+=FSM_WAIT_TICK; \
+		/*判断超时退出*/  if(irs.counter>timeout_us)break; \
 		              }
 		
 //判断一个电平不在一个时间范围(min_us,max_us)
-#define if_re_not_between(min_us,max_us)     if(pir->counter<min_us||pir->counter>max_us)
-#define if_re_between(min_us,max_us)         if(pir->counter>=min_us&&pir->counter<=max_us)
-#define if_re_higher(max_us)                 if(pir->counter>max_us)
-#define if_re_lower(min_us)                  if(pir->counter<min_us)
+#define if_re_not_between(min_us,max_us)     if((irs.counter<min_us)|| (irs.counter>max_us) )
+#define if_re_between(min_us,max_us)         if((irs.counter>=min_us) && (irs.counter<=max_us) )
+#define if_re_higher(max_us)                 if(irs.counter>max_us)
+#define if_re_lower(min_us)                  if(irs.counter<min_us)
 
 /*===================================================
                 类型
@@ -65,7 +65,7 @@ typedef enum{
 	FSM fsm;         //状态机私有变量
 }IR_Type;
 
-static IR_Type irs;
+static volatile IR_Type irs;
 
 typedef struct {U8 ir;U8 re;}IR_IO_Type;
 static IR_IO_Type ir_ios[IR_CHANNEL_MAX];
@@ -80,15 +80,16 @@ static IR_IO_Type ir_ios[IR_CHANNEL_MAX];
 * 2.读取是否成功使用 ld_ir_read_isok
 */
 static U32 fsm_time = 0;
-static void ir_fsm(IR_Type*pir,FSM*fsm)
+static void ir_fsm(void)
 {
-	U8 io_re = pir->io_re;
-	U8 io_ir = pir->io_ir;
+	FSM*fsm=&irs.fsm;
+  U8 io_re=irs.io_re;
+	U8 io_ir=irs.io_ir;
 	ld_gpio_refresh();
+	if( (irs.start==FALSE) || (irs.inited==FALSE) )return;	
 	//////////////////////////////////
 	Start()
 	{
-		if( (pir->start==FALSE) || (pir->inited==FALSE) )return;	
 		/*---------- 高低100ms --------------------- */
 		ir(HIGH);
 		waitms(100);
@@ -96,12 +97,12 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 		waitms(100);
 		
 		/*---------- 发送指令 --------------------- */
-		for(fsm->i=0;fsm->i<(pir->cmd-1);fsm->i++)
+		for(fsm->i=0;fsm->i<(irs.cmd-1);fsm->i++)
 		{
 			ir(HIGH);
-			waitms(2);
+			waitus(2400);//waitms(2);
 			ir(LOW);
-			waitms(2);
+			waitus(2400);//waitms(2);
 		}
 		
 		ir(HIGH);     
@@ -132,9 +133,9 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 
 		/*---------- 读取数据 --------------------- */
 
-		for(fsm->i=0;fsm->i<pir->wanlen;fsm->i++)
+		for(fsm->i=0;fsm->i<irs.wanlen;fsm->i++)
 		{
-			pir->tmp=0;
+			irs.tmp=0;
 			for(fsm->j=0;fsm->j<8;fsm->j++)
 			{
 				//高电平200-600,超时600//实测300-400-500us
@@ -147,7 +148,7 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 				if_re_not_between(200,2400)
 					goto Data_Error;
 				
-			  pir->tmp>>=1;
+			  irs.tmp>>=1;
 				
 				//200us-600us :低电平    //实测300-400
 				if_re_lower(200)
@@ -155,7 +156,7 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 			
 				//1200us-1700us:高电平  //实测1500-1600
 				if_re_between(1000,2400)
-					pir->tmp|=0x80;//保存一位数据		
+					irs.tmp|=0x80;//保存一位数据		
 			}
 			
 			//读取停止码 H=200us-600us  //实测300-400-500
@@ -164,45 +165,45 @@ static void ir_fsm(IR_Type*pir,FSM*fsm)
 				goto Data_Error;
 			
 			//读取停止码 L=700us-1400us //实测 1000-1100-1200
-			if(fsm->i!=(pir->wanlen-1))//最一个字节不读取
+			if(fsm->i!=(irs.wanlen-1))//最一个字节不读取
 			{
 				wait_re_until_not(LOW,1800)  		
         if_re_not_between(800,1800)
 					goto Data_Error;				
 			}
 			//保存一个字节
-			pir->data[fsm->i]=pir->tmp;
+			irs.data[fsm->i]=irs.tmp;
 		}
 		
 		//接收成功
-		pir->counter = 0;
-		pir->start=FALSE;
-		pir->state=IR_State_OK;
-		pir->fsm.line=0;
-		pir->fsm.save=0;
-		pir->fsm.end=0;
+		irs.counter = 0;
+		irs.start=FALSE;
+		irs.state=IR_State_OK;
+		irs.fsm.line=0;
+		irs.fsm.save=0;
+		irs.fsm.end=0;
 	}
 	Default()
 	ld_gpio_refresh();
 	return ;
 		
 	Header_Error:
-	pir->counter = 0;
-	pir->start=FALSE;
-	pir->state=IR_Error_Header;
-	pir->fsm.line=0;
-	pir->fsm.save=0;
-	pir->fsm.end=0;
+	irs.counter = 0;
+	irs.start=FALSE;
+	irs.state=IR_Error_Header;
+	irs.fsm.line=0;
+	irs.fsm.save=0;
+	irs.fsm.end=0;
 	return;
 		
 		
 	Data_Error:
-	pir->counter = 0;
-	pir->start=FALSE;
-	pir->state=IR_Error_Data;
-	pir->fsm.line=0;
-	pir->fsm.save=0;
-	pir->fsm.end=0;	
+	irs.counter = 0;
+	irs.start=FALSE;
+	irs.state=IR_Error_Data;
+	irs.fsm.line=0;
+	irs.fsm.save=0;
+	irs.fsm.end=0;	
 }
 
 /*===================================================
@@ -224,11 +225,6 @@ void ld_ir_init(U8 ch,U8 io_ir,U8 io_re)
 	if(inited==FALSE)
 	{
 		memset(&irs,0,sizeof(IR_Type));
-		irs.io_ir=0;
-		irs.io_re=0;
-		irs.start=FALSE;
-		irs.state=IR_State_NULL;
-		irs.inited = TRUE;
 		inited = TRUE;
 	}
 	ir_unlock();
@@ -237,7 +233,7 @@ void ld_ir_init(U8 ch,U8 io_ir,U8 io_re)
 void ld_ir_timer_100us(void)
 {
 	fsm_time+= FSM_TICK;
-	ir_fsm(&irs,&irs.fsm);
+	ir_fsm();
 	//ld_gpio_set(1,!ld_gpio_get(1));
 }
 
@@ -245,19 +241,17 @@ void ld_ir_timer_100us(void)
 BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 {
 	irs.start=FALSE;
-	if(ch>IR_CHANNEL_MAX)return FALSE;
+	if((ch>IR_CHANNEL_MAX)||(ch==0))return FALSE;
 	ir_lock();
-
 	//开始读
-	fsm_time = 0;
+	memset(&irs,0,sizeof(irs));
 	irs.io_ir = ir_ios[ch-1].ir;
 	irs.io_re = ir_ios[ch-1].re;
 	irs.cmd = cmd;
 	irs.wanlen=wanlen;
-	memset(irs.data,0,IR_DATA_MAX);
-	memset(&irs.fsm,0,sizeof(FSM));//复位状态机
+	fsm_time = 0;
+	irs.inited=TRUE;
 	irs.start=TRUE;
-	
 	ir_unlock();
 	return TRUE;
 }
@@ -310,7 +304,10 @@ int ld_ir_read_isok(U8 ch,U8*dataout,U8 size)
 			{
 				U8 cs = 0xFF-cs8(irs.data,6);
 				U8 i = 0;
-				if(cs!=irs.data[6]){err=-1;goto END;}//检验失败
+				if(cs!=irs.data[6]){
+					err=-1;
+					goto END;
+				}//检验失败
 				memset(dataout,0,10);
 				for(i=0;i<6;i++){dataout[9-i]=irs.data[i];}
 			}break;
@@ -318,7 +315,10 @@ int ld_ir_read_isok(U8 ch,U8*dataout,U8 size)
 			case RC_READ_DATA://[0] 版本号 [1] 电量 [2] 温度 [3] 故障码 [4-5] 循环次数 [6-7] 容量 [8-9] 电芯电压 [10-11] 电流 (低位在前)
 			{
 				U8 cs = 0xFF-cs8(irs.data,12);
-				if(cs!=irs.data[12]){err=-1;goto END;}//检验失败
+				if(cs!=irs.data[12]){
+					err=-1;
+					goto END;
+				}//检验失败
 				dataout[0]=irs.data[0];
 				dataout[1]=irs.data[3];
 				dataout[2]=irs.data[4];
@@ -337,7 +337,11 @@ int ld_ir_read_isok(U8 ch,U8*dataout,U8 size)
 			case RC_UNLOCK:
 			case RC_UNLOCK_1HOUR:
 			{
-				if((0xFF-irs.data[0])!=irs.data[1]){err=-1;goto END;}//检验失败
+				if((0xFF-irs.data[0])!=irs.data[1])
+				{
+					err=-1;
+					goto END;
+				}//检验失败
 				dataout[0] = irs.data[0];
 			}break;
 			case RC_OUTPUT:

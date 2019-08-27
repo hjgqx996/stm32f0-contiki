@@ -153,8 +153,6 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 	IR_READ_MODE_OPERATION:
 	{
 		if(ld_gpio_get(pch->map->io_re))return -1;/*红外被拉高，表示红外忙，直接返回-1*/
-		
-		READ_IR:
 		mode=RTM_IR;
 		switch(cmd)
 		{

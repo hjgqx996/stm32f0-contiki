@@ -212,7 +212,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 	static HPacket*hp;
 	static Channel*pch;
 	static U8 buffer[20];
-	static int bcounter = 0;  //电磁阀动作时500,高电平计数
+//	static int bcounter = 0;  //电磁阀动作时500,高电平计数
 	static int i = 0;
 	
 	PROCESS_BEGIN();
@@ -243,10 +243,10 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 					//尝试解锁几次，当红外忙时，最长等待时间2.5秒
 					for(i=0;i<UNLOCK_RETRY_TIMES;i++)
 					{
-						result = channel_read(pch,RC_UNLOCK,lock,650,((i+1)==UNLOCK_RETRY_TIMES)?TRUE:FALSE); //最后一次可以转通讯方式
+						result = channel_read(pch,RC_UNLOCK,lock,650,(((i+1)==UNLOCK_RETRY_TIMES)?TRUE:FALSE)); //最后一次可以转通讯方式
 						if(result==TRUE)break;
-						if(result==-1){ delayms(200); bcounter+=200;}//红外忙，等待
-						if(bcounter>2500){result=FALSE;break;}
+//						if(result==-1){ delayms(200); bcounter+=200;}//红外忙，等待
+//						if(bcounter>2500){result=FALSE;break;}
 					}
 					if( (result!=TRUE) || (lock[0] != 0x05) ){//解锁失败
 						send_lease_state(hp,Lease_decrypt_fall,lch,buffer+1);

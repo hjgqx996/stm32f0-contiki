@@ -338,7 +338,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(insert)
 		{
 			fsm_charge(i,NULL);
 		}
-		os_delay(insert,40);
+		os_delay(insert,100);
 		ld_iwdg_reload();
 	}
 	PROCESS_END();
