@@ -247,27 +247,19 @@ BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 	irs.start=FALSE;
 	if(ch>IR_CHANNEL_MAX)return FALSE;
 	ir_lock();
-//	if(irs.inited==FALSE){ir_unlock();return FALSE;}//未初始化
-//	
-//	if(irs.start==TRUE){ir_unlock();return TRUE;}//红外已经开始读
-//	
-//	if(irs.start==FALSE)//红外未开始读
-//  {
-		//开始读
-	  fsm_time = 0;
-		irs.io_ir = ir_ios[ch-1].ir;
-		irs.io_re = ir_ios[ch-1].re;
-		irs.cmd = cmd;
-		irs.wanlen=wanlen;
-		memset(irs.data,0,IR_DATA_MAX);
-		memset(&irs.fsm,0,sizeof(FSM));//复位状态机
-	  irs.start=TRUE;
-		ir_unlock();
-	  
-		return TRUE;
-//	}
-//	ir_unlock();
-//	return FALSE;
+
+	//开始读
+	fsm_time = 0;
+	irs.io_ir = ir_ios[ch-1].ir;
+	irs.io_re = ir_ios[ch-1].re;
+	irs.cmd = cmd;
+	irs.wanlen=wanlen;
+	memset(irs.data,0,IR_DATA_MAX);
+	memset(&irs.fsm,0,sizeof(FSM));//复位状态机
+	irs.start=TRUE;
+	
+	ir_unlock();
+	return TRUE;
 }
 
 BOOL ld_ir_busy(U8 ch)

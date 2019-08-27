@@ -11,15 +11,15 @@
 	step:2 读数据
 	step:3 加密
 ---------------------------------------------------------*/
-static void read_data(Channel*pch,U8 ch,U8 step)
+static BOOL read_data(Channel*pch,U8 ch,U8 step)
 {
 	
 	extern BOOL is_system_in_return(U8 addr);
 	int result=0;
 	U8 dataout[13];
   
-	if(pch==NULL)return;
-	if((is_system_in_return(pch->addr)==TRUE)  || (pch->first_insert==TRUE) )return;//当前是归还仓道，不读   当前是第一次插入仓道不读
+	if(pch==NULL)return FALSE;
+	if((is_system_in_return(pch->addr)==TRUE)  || (pch->first_insert==TRUE) )return FALSE;//当前是归还仓道，不读   当前是第一次插入仓道不读
 	
 	//根据失败次数，判断成功 or 失败
 	if(pch->readerr>=BAO_READ_ERROR_RETYR_TIMES) 
@@ -37,12 +37,12 @@ static void read_data(Channel*pch,U8 ch,U8 step)
 			//读id
 			if(step==1)
 			{
-				result = channel_read(pch,RC_READ_ID,dataout,550,FALSE);if(result==-1)return;//红外忙，返回
+				result = channel_read(pch,RC_READ_ID,dataout,550,FALSE);if(result==-1)return TRUE;//红外忙，返回
 				if(result==FALSE)
 				{
 					//读不到数据
 					pch->readerr++;
-					return;
+					return TRUE;
 				}else{
 					//读到数据
 					pch->readok++;
@@ -52,12 +52,12 @@ static void read_data(Channel*pch,U8 ch,U8 step)
 			//读数据
 		 if(step==2)
 		 {
-			result = channel_read(pch,RC_READ_DATA,dataout,650,FALSE);if(result==-1)return;//红外忙，返回
+			result = channel_read(pch,RC_READ_DATA,dataout,650,FALSE);if(result==-1)return TRUE;//红外忙，返回
 			if(result==FALSE)
 			{
 				//读不到数据
 				pch->readerr++;
-				return;
+				return TRUE;
 			}else{
 				//读到数据
 				{
@@ -87,6 +87,8 @@ static void read_data(Channel*pch,U8 ch,U8 step)
 			}
 		 }
 		}
+		
+		return TRUE;
 	}
 	/*摆臂开关无效数据清0*/
 	else {
@@ -98,9 +100,11 @@ static void read_data(Channel*pch,U8 ch,U8 step)
 				extern void fsm_charge(U8 ch,int arg);
 				fsm_charge(ch,0x88);//充电状态机复位
 				channel_data_clear(ch);
+				return FALSE;
 			}
 		}
 	}
+	return FALSE;
 }
 
 
@@ -112,6 +116,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 {
 	static U8 i = 0;
 	static Channel*pch;
+	static BOOL result = FALSE;
 	PROCESS_BEGIN();          
 	while(1)
 	{
@@ -122,19 +127,21 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 			pch = channel_data_get(i);
 
 			/*=====================读取充电宝=========================*/
-			read_data(pch,i,1);//读id    
-			os_delay(channel,100);
-			read_data(pch,i,2);//读数据
-			os_delay(channel,100);
-			read_data(pch,i,3);//加密
+			result = read_data(pch,i,1);//读id    
+			if(result){
+				os_delay(channel,50);
+				read_data(pch,i,2);//读数据
+			  os_delay(channel,50);
+			  read_data(pch,i,3);//加密
+			}
 			/*-----------循环等待时间---------------------------------*/
-			if(channel_read_delay_ms>0)
+			if((result) && (channel_read_delay_ms>0) )
 			{
 				os_delay(channel,channel_read_delay_ms);
 			}
 			else 
 			{
-				os_delay(channel,100);
+				os_delay(channel,50);
 			}				
 			ld_iwdg_reload();		
 		}

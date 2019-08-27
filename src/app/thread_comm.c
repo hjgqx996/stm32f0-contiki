@@ -243,7 +243,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 					//尝试解锁几次，当红外忙时，最长等待时间2.5秒
 					for(i=0;i<UNLOCK_RETRY_TIMES;i++)
 					{
-						result = channel_read(pch,RC_UNLOCK,lock,650,TRUE);
+						result = channel_read(pch,RC_UNLOCK,lock,650,((i+1)==UNLOCK_RETRY_TIMES)?TRUE:FALSE); //最后一次可以转通讯方式
 						if(result==TRUE)break;
 						if(result==-1){ delayms(200); bcounter+=200;}//红外忙，等待
 						if(bcounter>2500){result=FALSE;break;}
