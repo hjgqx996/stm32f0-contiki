@@ -256,26 +256,6 @@ BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 	return TRUE;
 }
 
-BOOL ld_ir_busy(U8 ch)
-{
-	BOOL r = FALSE;
-	ch-=1;
-	ir_lock();
-	if(ch>=IR_CHANNEL_MAX){ir_unlock();return FALSE;}
-	r = irs.start;
-	ir_unlock();
-	return r;
-}
-
-BOOL ld_ir_cmd(U8 ch,U8 cmd)
-{
-	ch-=1;
-	ir_lock();
-	if(ch>=IR_CHANNEL_MAX){ir_unlock();return FALSE;}
-	ir_unlock();
-	return (BOOL)(cmd==irs.cmd);
-}
-
 /*查看是否读完成
 * return : <0：error
 *        :  0: 无操作

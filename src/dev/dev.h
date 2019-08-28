@@ -65,8 +65,6 @@ void ld_ir_timer_100us(void);
 //===============标准化接口==========================//
 BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen);
 int ld_ir_read_isok(U8 ch,U8*dataout,U8 size);
-BOOL ld_ir_busy(U8 ch);
-BOOL ld_ir_cmd(U8 ch,U8 cmd);
 /*===================================================
                 iic数据接口
 ====================================================*/

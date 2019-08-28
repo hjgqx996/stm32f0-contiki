@@ -244,9 +244,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 					for(i=0;i<UNLOCK_RETRY_TIMES;i++)
 					{
 						result = channel_read(pch,RC_UNLOCK,lock,650,(((i+1)==UNLOCK_RETRY_TIMES)?TRUE:FALSE)); //最后一次可以转通讯方式
-						if(result==TRUE)break;
-//						if(result==-1){ delayms(200); bcounter+=200;}//红外忙，等待
-//						if(bcounter>2500){result=FALSE;break;}
+						if( (result!=TRUE) || (lock[0] != 0x05))continue;
 					}
 					if( (result!=TRUE) || (lock[0] != 0x05) ){//解锁失败
 						send_lease_state(hp,Lease_decrypt_fall,lch,buffer+1);
