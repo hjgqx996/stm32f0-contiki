@@ -143,3 +143,33 @@ void ld_dev_init(void)
 	//定时器
 	ld_timer3_init();
 }
+
+/*===================================================
+                调试信息
+====================================================*/
+#define DEGUG_MAX 200
+static DebugInfo debuginfo[DEGUG_MAX];
+static int offset=0;
+void ld_debug_printf(U8 type,U8 ch,U8 mode)
+{
+	if(offset <(DEGUG_MAX-1))
+	{
+		debuginfo[offset].type=type;
+		debuginfo[offset].ch=ch;
+		debuginfo[offset].mode=mode;
+		debuginfo[offset].ms=time(0);
+		offset++;
+		offset%=DEGUG_MAX;
+	}
+}
+int ld_debug_counter(void){return offset;}
+void ld_debug_read(int o,char*d)
+{
+	o%=DEGUG_MAX;
+	memcpy(d,&debuginfo[o],sizeof(DebugInfo));
+}
+void ld_debug_printf_clear(void)
+{
+	memset(debuginfo,0,sizeof(debuginfo));
+	offset=0;
+}

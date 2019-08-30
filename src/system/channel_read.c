@@ -56,6 +56,10 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 	if(mode == RTM_IIC){first_mode=RTM_IIC;goto IIC_READ_MODE_OPERATION;}//使用iic
 	if(mode == RTM_IR) {first_mode=RTM_IR;goto IR_READ_MODE_OPERATION;  }//使用ir
 	
+	#ifdef USING_DEBUG_INFO
+		 ld_debug_printf(8,ch,pch->iic_ir_mode);//无效通讯方式
+	#endif
+	  first_mode=RTM_IIC;
 		/*------------------------iic 方式 读取 -----------------------------------*/
 		IIC_READ_MODE_OPERATION:
 	  mode=RTM_IIC;
@@ -152,7 +156,7 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 	/*------------------------红外 方式 读取 -----------------------------------*/
 	IR_READ_MODE_OPERATION:
 	{
-		if(ld_gpio_get(pch->map->io_re))return -1;/*红外被拉高，表示红外忙，直接返回-1*/
+		//if(ld_gpio_get(pch->map->io_re))return -1;/*红外被拉高，表示红外忙，直接返回-1*/
 		mode=RTM_IR;
 		switch(cmd)
 		{

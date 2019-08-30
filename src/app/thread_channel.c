@@ -24,6 +24,9 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 	//根据失败次数，判断成功 or 失败
 	if(pch->readerr>=BAO_READ_ERROR_RETYR_TIMES) 
 	{
+		#ifdef USING_DEBUG_INFO
+		 if(channel_id_is_not_null(pch->id))ld_debug_printf(3,ch,pch->iic_ir_mode);
+		#endif
 		channel_data_clear(ch);
 		pch->readok=0; pch->readerr=0;pch->state.read_error=1;pch->state.read_ok=0;
 	}
@@ -37,7 +40,10 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 			//读id
 			if(step==1)
 			{
-				result = channel_read(pch,RC_READ_ID,dataout,550,FALSE);if(result==-1)return TRUE;//红外忙，返回
+				if(channel_id_is_not_null(pch->id)==FALSE)
+					result = channel_read(pch,RC_READ_ID,dataout,550,FALSE);
+				else 
+					result =TRUE;
 				if(result==FALSE)
 				{
 					//读不到数据
@@ -99,6 +105,10 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 			{
 				extern void fsm_charge(U8 ch,int arg);
 				fsm_charge(ch,0x88);//充电状态机复位
+				
+				#ifdef USING_DEBUG_INFO
+				 if(channel_id_is_not_null(pch->id))ld_debug_printf(4,ch,pch->iic_ir_mode);
+				#endif
 				channel_data_clear(ch);
 				return FALSE;
 			}

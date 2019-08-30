@@ -230,6 +230,13 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 
 			//充电宝编号不对，充电宝编号为0==>differ
 			if( (pch==NULL) ||  (buffer_cmp(pch->id,buffer+1,CHANNEL_ID_MAX)==FALSE) || (channel_id_is_not_null(pch->id)==FALSE) ){
+				
+				#ifdef USING_DEBUG_INFO
+				  if(pch==NULL) ld_debug_printf(7,lch,0);
+				  if(buffer_cmp(pch->id,buffer+1,CHANNEL_ID_MAX)==FALSE) ld_debug_printf(6,lch,pch->iic_ir_mode);
+				  if(channel_id_is_not_null(pch->id)==FALSE) ld_debug_printf(5,lch,pch->iic_ir_mode);
+				#endif
+				
 				send_lease_state(hp,Lease_differ,lch,((pch==NULL)?(buffer+1):(pch->id)));
 				goto LEASE_RESET_CONTINUE;
 			}//充电宝编号不对
@@ -394,7 +401,35 @@ static void com_update_mode_query(HPacket*hp)
 	memcpy((void*)system.firmware_MD5,data+6,16);
 	send_update_state(hp,normal_model);
 }
-
+/*扩展信息:调试命令*/
+#ifdef USING_DEBUG_INFO
+static void com_debug_info(HPacket*hp)
+{
+	/*data[0] = 01 读调试信息   [02] 信息清0*/
+	/*返回 03 读+信息           [04] 信息清成功 0 or 1*/
+	if(hp->p.data[0]==01)
+	{
+		int l = ld_debug_counter();
+		int o=0;
+		while(l>0)
+		{
+			hp->p.data[0] = 3;	
+			ld_debug_read(o,(char*)&hp->p.data[1]);
+			packet_send(hp,PC_DEBUGINFO,1+sizeof(DebugInfo),hp->p.data,system.addr485);	
+			delayms(20);
+			o++;
+			l--;			
+		}
+	}
+	else if(hp->p.data[0]==02)
+	{
+		ld_debug_printf_clear();
+		hp->p.data[0] = 4;
+		hp->p.data[1] = 1;
+		packet_send(hp,PC_DEBUGINFO,2,hp->p.data,system.addr485);
+	}
+}
+#endif
 
 /*命令分配处理函数*/
 static void com_process(HPacket*hp)
@@ -411,8 +446,13 @@ static void com_process(HPacket*hp)
 			case PC_CTRL				:		process_post(&thread_comm_ctrl,PROCESS_EVENT_COMM_CTRL,(void*)hp);return;   //同步处理,事件发送给了线程thread_lease
 			case PC_UPDATE_ENTRY:		process_post(&thread_comm_entry,PROCESS_EVENT_COMM_ENTRY,(void*)hp);return;   //同步处理,事件发送给了线程thread_entry                                               //保存升级标志，复位==>bootloader完成升级
 			case PC_UPDATE_MODE :		com_update_mode_query(hp);return;
-			
+			                                                
 			case PC_UPDATE_DATA://数据放在bootloader接收这里不接收
+				
+			#ifdef USING_DEBUG_INFO
+			case PC_DEBUGINFO   :   com_debug_info(hp);return;  //调试命令 
+			#endif
+			
 			default:break;
 
 		}	

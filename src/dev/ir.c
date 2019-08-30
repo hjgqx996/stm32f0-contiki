@@ -80,13 +80,14 @@ static IR_IO_Type ir_ios[IR_CHANNEL_MAX];
 * 2.读取是否成功使用 ld_ir_read_isok
 */
 static U32 fsm_time = 0;
-static void ir_fsm(void)
+void ld_ir_timer_100us(void)
 {
 	FSM*fsm=&irs.fsm;
   U8 io_re=irs.io_re;
 	U8 io_ir=irs.io_ir;
 	ld_gpio_refresh();
 	if( (irs.start==FALSE) || (irs.inited==FALSE) )return;	
+	fsm_time+= FSM_TICK;
 	//////////////////////////////////
 	Start()
 	{
@@ -100,9 +101,9 @@ static void ir_fsm(void)
 		for(fsm->i=0;fsm->i<(irs.cmd-1);fsm->i++)
 		{
 			ir(HIGH);
-			waitus(2400);//waitms(2);
+			waitus(2000);//waitms(2);
 			ir(LOW);
-			waitus(2400);//waitms(2);
+			waitus(2000);//waitms(2);
 		}
 		
 		ir(HIGH);     
@@ -188,6 +189,9 @@ static void ir_fsm(void)
 	return ;
 		
 	Header_Error:
+	#ifdef USING_DEBUG_INFO
+		 ld_debug_printf(1,irs.io_ir|0x80,2);//无效通讯方式
+	#endif
 	irs.counter = 0;
 	irs.start=FALSE;
 	irs.state=IR_Error_Header;
@@ -198,6 +202,9 @@ static void ir_fsm(void)
 		
 		
 	Data_Error:
+	#ifdef USING_DEBUG_INFO
+		 ld_debug_printf(2,irs.io_ir|0x80,2);//无效通讯方式
+	#endif
 	irs.counter = 0;
 	irs.start=FALSE;
 	irs.state=IR_Error_Data;
@@ -228,13 +235,6 @@ void ld_ir_init(U8 ch,U8 io_ir,U8 io_re)
 		inited = TRUE;
 	}
 	ir_unlock();
-}
-//定时器中断服务，用于收发时序
-void ld_ir_timer_100us(void)
-{
-	fsm_time+= FSM_TICK;
-	ir_fsm();
-	//ld_gpio_set(1,!ld_gpio_get(1));
 }
 
 //开始读取红外数据   (ch:1-n,opposite:TRUE反向(未使用), cmd 命令, 长度)

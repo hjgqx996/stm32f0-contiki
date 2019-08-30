@@ -29,7 +29,7 @@ void ld_exti_init(void)
 	
 	//中断向量表
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI4_15_IRQn;//irq_ch(map->line);
-	NVIC_InitStructure.NVIC_IRQChannelPriority = 0x00;
+	NVIC_InitStructure.NVIC_IRQChannelPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 	

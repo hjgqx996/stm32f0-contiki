@@ -112,6 +112,9 @@ typedef enum{
 #define BOOT_LOADER_SIZE                   0x3000
 //</e>
 
+//<c>使用调试信息
+#define USING_DEBUG_INFO   
+//</c>
 
 
 
