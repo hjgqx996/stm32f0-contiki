@@ -152,24 +152,29 @@ void ld_dev_init(void)
 /*===================================================
                 µ÷ÊÔÐÅÏ¢
 ====================================================*/
+#ifdef USING_DEBUG_INFO
 #define DEGUG_MAX 200
 static DebugInfo debuginfo[DEGUG_MAX];
 static int offset=0;
-void ld_debug_printf(U8 type,U8 ch,U8 mode)
+static BOOL full=FALSE;
+void ld_debug_printf(U8 type,U8 ch,U8 cmd,U8 mode)
 {
 	if(offset <(DEGUG_MAX-1))
 	{
 		debuginfo[offset].type=type;
 		debuginfo[offset].ch=ch;
 		debuginfo[offset].mode=mode;
+		debuginfo[offset].cmd=cmd;
 		debuginfo[offset].ms=time(0);
 		offset++;
+		if(offset==DEGUG_MAX)full=TRUE;
 		offset%=DEGUG_MAX;
 	}
 }
-int ld_debug_counter(void){return offset;}
+int ld_debug_counter(void){return (full)?(DEGUG_MAX):offset;}
 void ld_debug_read(int o,char*d)
 {
+	o+=(full)?offset:0;
 	o%=DEGUG_MAX;
 	memcpy(d,&debuginfo[o],sizeof(DebugInfo));
 }
@@ -178,3 +183,4 @@ void ld_debug_printf_clear(void)
 	memset(debuginfo,0,sizeof(debuginfo));
 	offset=0;
 }
+#endif

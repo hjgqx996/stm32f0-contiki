@@ -232,9 +232,10 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 			if( (pch==NULL) ||  (buffer_cmp(pch->id,buffer+1,CHANNEL_ID_MAX)==FALSE) || (channel_id_is_not_null(pch->id)==FALSE) ){
 				
 				#ifdef USING_DEBUG_INFO
-				  if(pch==NULL) ld_debug_printf(7,lch,0);
-				  if(buffer_cmp(pch->id,buffer+1,CHANNEL_ID_MAX)==FALSE) ld_debug_printf(6,lch,pch->iic_ir_mode);
-				  if(channel_id_is_not_null(pch->id)==FALSE) ld_debug_printf(5,lch,pch->iic_ir_mode);
+				/*pch==NULL:7  !=:6  ==NULL:5 */
+				  if(pch==NULL) ld_debug_printf(7,lch,0,0);
+				  if(buffer_cmp(pch->id,buffer+1,CHANNEL_ID_MAX)==FALSE) ld_debug_printf(6,lch,0,pch->iic_ir_mode);
+				  if(channel_id_is_not_null(pch->id)==FALSE) ld_debug_printf(5,lch,0,pch->iic_ir_mode);
 				#endif
 				
 				send_lease_state(hp,Lease_differ,lch,((pch==NULL)?(buffer+1):(pch->id)));
@@ -251,7 +252,10 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 					for(i=0;i<UNLOCK_RETRY_TIMES;i++)
 					{
 						result = channel_read(pch,RC_UNLOCK,lock,650,(((i+1)==UNLOCK_RETRY_TIMES)?TRUE:FALSE)); //最后一次可以转通讯方式
-						if( (result!=TRUE) || (lock[0] != 0x05))continue;
+						if( (result!=TRUE) || (lock[0] != 0x05))
+							continue;
+						else 
+							break;
 					}
 					if( (result!=TRUE) || (lock[0] != 0x05) ){//解锁失败
 						send_lease_state(hp,Lease_decrypt_fall,lch,buffer+1);
@@ -401,24 +405,27 @@ static void com_update_mode_query(HPacket*hp)
 	memcpy((void*)system.firmware_MD5,data+6,16);
 	send_update_state(hp,normal_model);
 }
+
 /*扩展信息:调试命令*/
 #ifdef USING_DEBUG_INFO
 static void com_debug_info(HPacket*hp)
 {
-	/*data[0] = 01 读调试信息   [02] 信息清0*/
+	/*data[0] = 01 读调试信息   [1] offset [2]counter
+	            02信息清0*/
 	/*返回 03 读+信息           [04] 信息清成功 0 or 1*/
 	if(hp->p.data[0]==01)
 	{
 		int l = ld_debug_counter();
-		int o=0;
-		while(l>0)
+		int o=hp->p.data[1];
+		int c=hp->p.data[2];
+		while(o<l&&c>0)
 		{
 			hp->p.data[0] = 3;	
 			ld_debug_read(o,(char*)&hp->p.data[1]);
 			packet_send(hp,PC_DEBUGINFO,1+sizeof(DebugInfo),hp->p.data,system.addr485);	
 			delayms(20);
 			o++;
-			l--;			
+			c--;			
 		}
 	}
 	else if(hp->p.data[0]==02)
@@ -523,17 +530,15 @@ AUTOSTART_THREAD_WITH_TIMEOUT(return)
 					if(isvalid_baibi())
 					{
 						static int result = 0;
-						static int i=0,ecounter=0;
+						static int i=0;
 						
-						//尝试解锁几次，当红外忙时，最长等待时间2.5秒
+						//异步归还时，读两次
 						for(i=0;i<RETURN_READ_TIMES;i++)
 						{
-																result = channel_read(pch,RC_READ_ID,dataout,500,TRUE);
-							if(result==FALSE) result = channel_read(pch,RC_READ_ID,dataout,500,TRUE);    
-							if(result==TRUE)  result = channel_read(pch,RC_READ_DATA,dataout,600,TRUE);
+																result = channel_read(pch,RC_READ_ID,dataout,550,TRUE);
+							if(result==FALSE) result = channel_read(pch,RC_READ_ID,dataout,550,TRUE);    
+							if(result==TRUE)  result = channel_read(pch,RC_READ_DATA,dataout,650,TRUE);
 							if(result==TRUE){pch->state.read_ok=1;break;}//成功读取，第一时间标志
-							if(result==-1){ delayms(200); ecounter+=200;}
-							if(ecounter>2500){result=FALSE;break;}
 						}
 
 						if(!channel_id_is_not_null(pch->id) || (result!=TRUE) )//无法识别

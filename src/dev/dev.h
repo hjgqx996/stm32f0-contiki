@@ -107,6 +107,7 @@ void ld_timer3_init(void);
 
 void ld_iwdg_init(void);
 void ld_iwdg_reload(void);
+
 /*===================================================
                 调试支持
 ====================================================*/
@@ -117,12 +118,14 @@ typedef struct {
 	type:4,   //类型 1: 红外前导码 2:红外数据  3.读失败数据清0  4.摆臂开关无效清0 5.宝与仓道不符时id==0 6.宝与仓道不符时id!=0 7.宝与仓道不符pch=NULL
 	          // 8 :无效通讯方式
 	mode:2,   //当前通讯方式 0:无 1:iic 2:红外
-	unused:2;
+	unused:2; //
+	U8 cmd;   //当前指令
   U32 ms;//当前时间
 }DebugInfo;
 #pragma pack()
-void ld_debug_printf(U8 type,U8 ch,U8 mode);
+void ld_debug_printf(U8 type,U8 ch,U8 cmd,U8 mode);
 void ld_debug_read(int o,char*d);
 void ld_debug_printf_clear(void);
 int ld_debug_counter(void);
 #endif
+

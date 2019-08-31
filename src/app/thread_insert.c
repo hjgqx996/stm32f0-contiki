@@ -139,9 +139,9 @@ void fsm_charge(U8 ch,int arg)
 	state(identify)
 	{
 				/*---------------能识别---------------------------------*/
-													result = channel_read(pch,RC_READ_ID,buffer,550,TRUE);   //if(result==-1)return; //红外拉高，忙，不读,识别一次
-				if(result==FALSE) result = channel_read(pch,RC_READ_ID,buffer,550,TRUE);   // if(result==-1)return; //红外拉高，忙，不读,再识别一次
-				if(result==TRUE) result = channel_read(pch,RC_READ_DATA,buffer,650,TRUE);  // if(result==-1)return; //红外拉高，忙，不读
+													result = channel_read(pch,RC_READ_ID,buffer,550,TRUE);   
+				if(result==FALSE) result = channel_read(pch,RC_READ_ID,buffer,550,TRUE);  
+				if(result==TRUE) result = channel_read(pch,RC_READ_DATA,buffer,650,TRUE);
 				if(result==TRUE)
 				{			
 					pch->first_insert=FALSE;

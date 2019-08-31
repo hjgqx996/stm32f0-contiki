@@ -82,7 +82,7 @@ static IR_IO_Type ir_ios[IR_CHANNEL_MAX];
 static U32 fsm_time = 0;
 void ld_ir_timer_100us(void)
 {
-	FSM*fsm=&irs.fsm;
+	FSM*fsm=(FSM*)&irs.fsm;
   U8 io_re=irs.io_re;
 	U8 io_ir=irs.io_ir;
 	ld_gpio_refresh();
@@ -190,7 +190,7 @@ void ld_ir_timer_100us(void)
 		
 	Header_Error:
 	#ifdef USING_DEBUG_INFO
-		 ld_debug_printf(1,irs.io_ir|0x80,2);//无效通讯方式
+		 ld_debug_printf(1,irs.io_ir|0x80,irs.cmd ,2);//headr 读出错 type=1
 	#endif
 	irs.counter = 0;
 	irs.start=FALSE;
@@ -203,7 +203,7 @@ void ld_ir_timer_100us(void)
 		
 	Data_Error:
 	#ifdef USING_DEBUG_INFO
-		 ld_debug_printf(2,irs.io_ir|0x80,2);//无效通讯方式
+		 ld_debug_printf(2,irs.io_ir|0x80,irs.cmd,2);//data 读出错 type=2
 	#endif
 	irs.counter = 0;
 	irs.start=FALSE;
@@ -231,7 +231,7 @@ void ld_ir_init(U8 ch,U8 io_ir,U8 io_re)
 	ir_ios[ch-1].re = io_re;
 	if(inited==FALSE)
 	{
-		memset(&irs,0,sizeof(IR_Type));
+		memset((void*)&irs,0,sizeof(IR_Type));
 		inited = TRUE;
 	}
 	ir_unlock();
@@ -244,7 +244,7 @@ BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 	if((ch>IR_CHANNEL_MAX)||(ch==0))return FALSE;
 	ir_lock();
 	//开始读
-	memset(&irs,0,sizeof(irs));
+	memset((void*)&irs,0,sizeof(irs));
 	irs.io_ir = ir_ios[ch-1].ir;
 	irs.io_re = ir_ios[ch-1].re;
 	irs.cmd = cmd;

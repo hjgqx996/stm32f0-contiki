@@ -57,7 +57,7 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 	if(mode == RTM_IR) {first_mode=RTM_IR;goto IR_READ_MODE_OPERATION;  }//使用ir
 	
 	#ifdef USING_DEBUG_INFO
-		 ld_debug_printf(8,ch,pch->iic_ir_mode);//无效通讯方式
+		 ld_debug_printf(8,ch,cmd,pch->iic_ir_mode);//无效通讯方式
 	#endif
 	  first_mode=RTM_IIC;
 		/*------------------------iic 方式 读取 -----------------------------------*/
@@ -127,11 +127,7 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 				/*iic 读失败*/
 				IIC_READ_ERROR:
 				if(result==FALSE){
-					
-		//			U8 pb[8];pb[0]=RTM_IIC; pb[1]=pch->addr;
-		//			enable_485_tx();//使能发送
-		//			ld_uart_send(COM_485,pb,2);//打印结果
-				
+	
 					pch->iic_error_counter++;//顶针识别计数++
 					if(!force_using_ir())//非强制使用iic
 					{
@@ -209,16 +205,8 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 			if(!force_using_ir())//非强制使用IR       
 				mode=RTM_IIC;
 		}
-		
-//		{
-//			U8 pb[8];pb[0]=RTM_IR; pb[1]=pch->addr;
-//			enable_485_tx();//使能发送
-//			ld_uart_send(COM_485,pb,2);//打印结果
-//		}
 		return FALSE;
 	}
-	
-	return result;
 }
 
 
