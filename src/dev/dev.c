@@ -92,6 +92,11 @@ void MSetSysClock(unsigned char SK)
 	 SystemCoreClock    = 16000000;
 	 RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLMULL4);//16
 	}
+	if(SK==24)
+	{
+	 SystemCoreClock    = 24000000;
+	 RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLXTPRE_PREDIV1 | RCC_CFGR_PLLMULL6);//24		
+	}
 	else if(SK==48)
 	{
 	 SystemCoreClock    = 48000000;
@@ -121,7 +126,7 @@ void MSetSysClock(unsigned char SK)
 ====================================================*/
 void ld_dev_init(void)
 {
-	MSetSysClock(16);
+	MSetSysClock(24);
 	//bootloader下重定向向量表
 	#if USING_BOOT_LOADER >0
 	IAP_Set();
