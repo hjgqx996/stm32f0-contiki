@@ -11,7 +11,14 @@ void ld_system_init(void)
 {
 	//地址恢复 --从flash中读取
 	ld_flash_read(0, (U8*)&system.addr485, 6,RS485_ADDR);//读取485地址
+	
+	//是否支持IR,不支持IR时，只使用IIC
+	#ifdef NOT_USING_IR
+	system.iic_ir_mode = SIIM_ONLY_IIC; 
+	#else
 	system.iic_ir_mode = SIIM_IIC_IR;                    //默认iic ir都支持
+	#endif
+	
 	channel_addr_set((U8*)system.addr_ch);               //将地址设置到Channel变量看    
 
   //充电使能:默认:冒泡排队，使能输出

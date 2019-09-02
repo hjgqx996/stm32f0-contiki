@@ -31,7 +31,6 @@ void cpu_us_delay(int us)
 			//24M 100us
 			__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
 			__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-			__NOP();__NOP();__NOP();__NOP();
 			
 //		//16M 100us
 		//__NOP();__NOP();__NOP();__NOP();
@@ -171,8 +170,6 @@ int cpu_gpio_cfg(U8 xPort,U8 xPin,U8 xMode,U8 xOType,U8 xPP,U8 sta,U8 xSpeed)
     GPIO_TypeDef* GPIOx;
     if(xPort>6)return FALSE;
     GPIOx=	GPIO_TABLE[xPort];
-
-	  if(xPort==5&&xPin==0)RCC->CR &= ~((uint32_t)RCC_CR_HSEON);
 	
     xGpioInit.GPIO_Pin = (1<<xPin)&0xFFFF;
     xGpioInit.GPIO_Mode=(GPIOMode_TypeDef)xMode;

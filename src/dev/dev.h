@@ -51,20 +51,13 @@ int ld_uart_dump(U8 xUart,U8 type);//清收发缓冲:type  :bit0 :rx data    bit1 tx 
 int ld_uart_isp(U8 xUart,char*byte,U8 type);	//type: 0 接收    1发送
 
 
-
 /*===================================================
                 红外数据接口
 ====================================================*/
-/*红外操作接口
-* ch    :仓道号 1-n
-* io_ir :发送端口
-* io_re :接收端口
-*/
-void ld_ir_init(U8 ch,U8 io_ir,U8 io_re);
+
 void ld_ir_timer_100us(void);
-//===============标准化接口==========================//
-BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen);
-int ld_ir_read_isok(U8 ch,U8*dataout,U8 size);
+BOOL ld_ir_read_start(U8 ir,U8 re,U8 cmd,U8 wanlen);
+int ld_ir_read_isok(U8*dataout,U8 size);
 /*===================================================
                 iic数据接口
 ====================================================*/
@@ -73,17 +66,6 @@ BOOL ld_bq27541_read_id(U8 sda,U8 scl,U8*dataout);
 BOOL ld_bq27541_de_encrypt_charge(U8 sda,U8 scl,U8 cmd);
 BOOL ld_bq27541_check_ack(U8 sda,U8 scl);
 BOOL ld_bq27541_output_flag(U8 sda,U8 scl,U8*data);
-
-
-
-
-//===============标准化接口==========================//
-void ld_iic_init(U8 ch,U8 sda,U8 scl);
-BOOL ld_iic_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen);//(ch:1-n,opposite:TRUE反向, cmd 命令, 长度)
-int ld_iic_read_isok(U8 ch,U8*dataout,U8 size);//0: 无操作  1: 正在读 2: 读正确
-BOOL ld_iic_busy(U8 ch);
-BOOL ld_iic_cmd(U8 ch,U8 cmd);
-
 
 /*===================================================
                 flash读写数据接口

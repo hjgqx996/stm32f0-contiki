@@ -3,6 +3,10 @@
 #include "lib.h"
 #include "channel.h"
 #include "dev.h"
+#include "config.h"
+
+#ifndef NOT_USING_IR
+
 /*===================================================
                 配置文件
 ====================================================*/
@@ -65,12 +69,9 @@ typedef enum{
 	FSM fsm;         //状态机私有变量
 }IR_Type;
 
+U8 prebuffer[16];
 static volatile IR_Type irs;
-
-typedef struct {U8 ir;U8 re;}IR_IO_Type;
-static IR_IO_Type ir_ios[IR_CHANNEL_MAX];
-
-
+U8 afterbuffer[16];
 /*===================================================
                 本地函数
 ====================================================*/
@@ -216,37 +217,15 @@ void ld_ir_timer_100us(void)
 /*===================================================
                 全局函数
 ====================================================*/
-#include "channel.h"
-/*初始化配置
-* ch    :仓道号 1-n
-* io_ir :发送端口
-* io_re :接收端口
-*/
-static BOOL inited = FALSE;
-void ld_ir_init(U8 ch,U8 io_ir,U8 io_re)
-{
-	ir_lock();
-	if(ch>IR_CHANNEL_MAX)return ;
-	ir_ios[ch-1].ir = io_ir;
-	ir_ios[ch-1].re = io_re;
-	if(inited==FALSE)
-	{
-		memset((void*)&irs,0,sizeof(IR_Type));
-		inited = TRUE;
-	}
-	ir_unlock();
-}
-
 //开始读取红外数据   (ch:1-n,opposite:TRUE反向(未使用), cmd 命令, 长度)
-BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
+BOOL ld_ir_read_start(U8 ir,U8 re,U8 cmd,U8 wanlen)
 {
 	irs.start=FALSE;
-	if((ch>IR_CHANNEL_MAX)||(ch==0))return FALSE;
 	ir_lock();
 	//开始读
 	memset((void*)&irs,0,sizeof(irs));
-	irs.io_ir = ir_ios[ch-1].ir;
-	irs.io_re = ir_ios[ch-1].re;
+	irs.io_ir = ir;
+	irs.io_re = re;
 	irs.cmd = cmd;
 	irs.wanlen=wanlen;
 	fsm_time = 0;
@@ -262,12 +241,11 @@ BOOL ld_ir_read_start(U8 ch,BOOL opposite,U8 cmd,U8 wanlen)
 *        :  1: 正在读
 *        :  2: 读正确
 */
-int ld_ir_read_isok(U8 ch,U8*dataout,U8 size)
+int ld_ir_read_isok(U8*dataout,U8 size)
 {
 	int err = -1;
-	ch-=1;
   ir_lock();
-	if(ch>=IR_CHANNEL_MAX||irs.inited==FALSE)goto END;
+	if(irs.inited==FALSE)goto END;
 	if(irs.start==FALSE)
 	{
 		err=(int)irs.state;
@@ -370,4 +348,7 @@ int ld_ir_read_isok(U8 ch,U8*dataout,U8 size)
 //	}
 //	PROCESS_END();
 //}
+
+#endif
+
 

@@ -139,9 +139,13 @@ void fsm_charge(U8 ch,int arg)
 	state(identify)
 	{
 				/*---------------ÄÜÊ¶±ð---------------------------------*/
-													result = channel_read(pch,RC_READ_ID,buffer,550,TRUE);   
-				if(result==FALSE) result = channel_read(pch,RC_READ_ID,buffer,550,TRUE);  
-				if(result==TRUE) result = channel_read(pch,RC_READ_DATA,buffer,650,TRUE);
+													                result = channel_read(pch,RC_READ_ID,buffer,550,TRUE);                    	
+				if(result==FALSE) {  delayms(100);result = channel_read(pch,RC_READ_ID,buffer,550,TRUE);} 
+				if(result==TRUE)  {  
+														result = channel_read(pch,RC_READ_DATA,buffer,650,TRUE);
+					 if(result==FALSE){delayms(100);result = channel_read(pch,RC_READ_DATA,buffer,650,TRUE);}
+				}
+				
 				if(result==TRUE)
 				{			
 					pch->first_insert=FALSE;
@@ -337,8 +341,9 @@ AUTOSTART_THREAD_WITH_TIMEOUT(insert)
 		for(i=1;i<=CHANNEL_MAX;i++)
 		{
 			fsm_charge(i,NULL);
+			ld_iwdg_reload();
 		}
-		os_delay(insert,100);
+		os_delay(insert,200);
 		ld_iwdg_reload();
 	}
 	PROCESS_END();

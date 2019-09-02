@@ -14,11 +14,12 @@ int main(void)
 	process_init();     //线程初始化
 	process_start(&etimer_process,NULL); //启动定时器
 	autostart_start((struct process * const*)&autostart$$Base,((int)((int)&autostart$$Limit-(int)&autostart$$Base))/4);//自动运行线程
+	
 	while(1){
 		while(process_run()> 0);//线程循环  
-		idle_count++;  	
+		idle_count++;  
+    ld_iwdg_reload();		
 	}
-//	return 0;
 }
 
 

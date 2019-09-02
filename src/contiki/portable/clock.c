@@ -62,11 +62,14 @@ void   SysTick_Handler(void)
 		}	
 	}
 	
-//	//刷新595
-//	{
-//		extern void ld_gpio_refresh();
-//		ld_gpio_refresh();
-//	}
+	//刷新595
+	#include "config.h"
+	#ifdef NOT_USING_IR
+	{
+		extern void ld_gpio_refresh();
+		ld_gpio_refresh();
+	}
+	#endif
 }
 
 /*初始化系统定时器*/

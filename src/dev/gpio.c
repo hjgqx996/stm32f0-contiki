@@ -4,7 +4,7 @@
 
 
 //static 
-volatile U16 hc595data=0;//数据缓冲
+volatile U32 hc595data=0;//数据缓冲
 /*===================================================
                 配置文件
 ====================================================*/
@@ -12,9 +12,8 @@ extern t_gpio_map gpio_map[];
 extern const unsigned char gpio_number;
 
 extern void ld_hc595_init(void);
-void ld_hc595_send(uint32_t data);
-extern void ld_hc595_reload(void);
-
+extern void ld_hc595_send(uint32_t data);
+U8 ld_gpio_refresh(void);
 /*===================================================
                 全局函数
 ====================================================*/
@@ -27,6 +26,7 @@ void ld_gpio_init(void)
 		 cpu_gpio_map_config(gpio_map,i);
 	}
 	ld_hc595_init();
+	ld_gpio_refresh();
 }
 
 //设置电平
@@ -87,7 +87,7 @@ void ld_gpio_set_io(U32 index,BOOL out,U8 value)
 /*只对595有效*/
 U8 ld_gpio_refresh(void)
 {
-	static U16 d = 0;
+	static U32 d = 0xFFFFFFFF;
 	if(d!=hc595data)
 	{
 		ld_hc595_send(hc595data);

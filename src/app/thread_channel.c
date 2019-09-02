@@ -19,7 +19,7 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 	U8 dataout[13];
   
 	if(pch==NULL)return FALSE;
-	if((is_system_in_return(pch->addr)==TRUE)  || (pch->first_insert==TRUE) )return FALSE;//当前是归还仓道，不读   当前是第一次插入仓道不读
+	if((is_system_in_return(pch->addr)==TRUE)  || (pch->first_insert!=FALSE) )return FALSE;//当前是归还仓道，不读   当前是第一次插入仓道不读
 	
 	//根据失败次数，判断成功 or 失败
 	if(pch->readerr>=BAO_READ_ERROR_RETYR_TIMES) 
@@ -139,10 +139,10 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 			/*=====================读取充电宝=========================*/
 			result = read_data(pch,i,1);//读id    
 			if(result){
-				os_delay(channel,50);
 				read_data(pch,i,2);//读数据
 			  os_delay(channel,50);
 			  read_data(pch,i,3);//加密
+				os_delay(channel,50);
 			}
 			/*-----------循环等待时间---------------------------------*/
 			if((result) && (channel_read_delay_ms>0) )

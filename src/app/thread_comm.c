@@ -164,7 +164,9 @@ static void com_send_tick(HPacket*hp)
 	if(p->llen>0)system.enable = (BOOL)data[0]; //背板是否允许充电
 	if(p->llen>1)system.mode   = data[1];       //强制 or 自由
 	if(en_len)memcpy(system.chs,data+2,en_len); //强制标志 
+	#ifndef NOT_USING_IR
 	if(p->llen > (2+CHANNEL_MAX))system.iic_ir_mode = (SYSTEM_IIC_IR_MODE)data[2+CHANNEL_MAX];//红外,iic模式选择 :1只iic  2:只ir  3:红外iic
+	#endif
 	
 	/*返回心跳包*/
 	data[0]=system.addr485;

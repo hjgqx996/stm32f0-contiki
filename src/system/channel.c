@@ -137,8 +137,7 @@ BOOL channel_data_init(void)
 	memset(chs,0,sizeof(chs));
 	for(;i<CHANNEL_MAX;i++)
 	{
-		chs[i].map = &channel_config_map[i]; //io
-		ld_ir_init(i+1,channel_config_map[i].io_ir,channel_config_map[i].io_re);
+		chs[i].map = &channel_config_map[i];
 	}	
 	return TRUE;
 }
