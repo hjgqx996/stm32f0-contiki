@@ -250,7 +250,7 @@ void fsm_charge(U8 ch,int arg)
 			}		
 		}//3次补充，都没有超过99%,只能等了
 		else{
-			hour1=s120;
+			hour1=s120=0;
 			request=FALSE;
 			request_charge_off(ch);
 		}//申请断电
@@ -311,12 +311,12 @@ void fsm_charge(U8 ch,int arg)
 	if( (pch->AverageCurrent<STOP_CURRENT_MAX) && (line>=200) && (pch->state.charging) && (request==TRUE))//出现电流<100mA
 	{
 		if(s120==0)
-			s120=STOP_CURRENT_TIMEOUT;            //开始倒计时
+			s120=STOP_CURRENT_TIMEOUT+10;            //开始倒计时
 	}
 	if( pch->AverageCurrent>=STOP_CURRENT_MAX)//出现电流>=100mA,计时复位
 		s120 = 0;
 	
-	if(s120==1 || s120==2)                   //最后一秒判断超时
+	if(s120 <=10 && s120 >0 )                   //最后一秒判断超时
 	{
 		pch->state.full_charge=1;              //已经充满
 		request_charge_off(ch);                //申请断电

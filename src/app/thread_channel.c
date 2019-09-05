@@ -144,6 +144,31 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 			  read_data(pch,i,3);//加密
 				os_delay(channel,50);
 			}
+			/*=====================测试红外功能=======================*/
+			#ifndef NOT_USING_IR
+			{
+				if( (!is_ver_5()) && (!is_ver_6()) && (channel_id_is_not_null(pch->id)))//读到id,id不是5代宝，不是6代宝，读一次红外
+				{
+					if(!is_ir_mode()){		
+						//隔一段时间读一次红外，如果失败，就认为红外故障了
+						U16 dataout[8];
+						if(pch->test_ir_counter%3==0)
+						{
+							if(channel_read_from_ir(pch,RC_READ_DATA,(U8*)dataout,650)==FALSE)
+							{
+								pch->ir_error_counter=BAO_IR_ERROR_TIMES;//红外识别故障
+								pch->error.ir=1;
+							}else{
+								pch->ir_error_counter=0;
+								pch->error.ir=0;
+							}
+						}
+						pch->test_ir_counter++;
+					}
+				}
+				os_delay(channel,50);
+			}
+			#endif
 			/*-----------循环等待时间---------------------------------*/
 			if((result) && (channel_read_delay_ms>0) )
 			{

@@ -113,7 +113,8 @@ typedef struct{
 	/*--------------是否正常读------------------------*/
 	U8 readok;                      //读id,读数据，是否正常,计数>=2正常
 	S8 readerr;                     //读出错计数
-	
+	/*--------------测试红外读计数--------------------*/
+	U8 test_ir_counter;
 }Channel;
 
 #pragma pack()
@@ -174,7 +175,9 @@ extern ChannelConfigureMap channel_config_map[];
 #define isvalid_baibi()  (ld_gpio_get(pch->map->io_sw))        //摆臂开关有效
 #define isin5v()         (ld_gpio_get(pch->map->io_mp_detect)) //是否充电输入
 #define isout5v()        (ld_gpio_get(pch->map->io_mp))        //是否充电输出
-#define is_ver_5()       ((pch->id[6]&0x0F)==0x05)             //5代宝不解锁，其它代 加解密2019-8-13
+#define is_ver_5()       ((pch->id[6]&0x0F)==0x05)             //5代宝不解锁  ，其它代 加解密2019-8-13
+#define is_ver_6()       ((pch->id[6]&0x0F)==0x06)             //6代宝没有红外，2019-9-3
+#define is_ir_mode()     (pch->iic_ir_mode==RTM_IR)            //当前通讯方式是否是红外
 #define data_is_ver_5(d) ((d&0x0F)==0x05)                      //5代宝不解锁，其它代 加解密2019-8-13
 #define is_readok()      (pch->state.read_ok==1)               //判断读取成功
 #define is_readerr()     (pch->state.read_error==1)            //判断是否读失败
@@ -183,6 +186,7 @@ extern ChannelConfigureMap channel_config_map[];
 #define reset_out5v()   ld_gpio_set(pch->map->io_mp,0) //不输出5V
 
 int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL once);
+BOOL channel_read_from_ir(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout);
 void channel_save_data(Channel*ch,U8*data);
 #endif
 
