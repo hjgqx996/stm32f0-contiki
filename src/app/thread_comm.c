@@ -5,7 +5,7 @@ HPacket hpacket;//发送数据包缓冲
 /*===================================================
                 本地函数
 ====================================================*/
-/*电磁阀动作时，读摆臂开关计数 */
+/*电磁阀动作时，读摆臂开关有效时长*/
 static int bai_bi_counter(Channel*pch,int timeout)
 {
 	int bc = 0;
@@ -17,27 +17,32 @@ static int bai_bi_counter(Channel*pch,int timeout)
 			bc++;
 		timeout-=10;
 	}
-	return bc;
+	return bc*10;
 }
 /*一次电磁阀动作 + 灯闪 + 检测成功 
 * pch           :仓道数据
 * flash_time    :仓道灯闪烁时长
 * timeout       :电磁阀动作时长
-* hightime_min  :摆臂开关有效的最大时间
+* hightime_min  :电磁阀动作时长
+* check_time    :检测时间
+* hightime_max  :摆臂开关最大有效时长 ms
 * return        :TRUE or FALSE
 */
-BOOL diancifa(Channel*pch,int flashtime,int timeout,int hightime_max)
+BOOL diancifa(Channel*pch,int flashtime,int timeout,int check_time,int hightime_max)
 {
 	int bcounter=0;
-	channel_led_flash(channel_data_get_index(pch),flashtime);//闪灯	
 	request_charge_hangup_all(0);//关闭输出,2s
 	dian_ci_fa_power(1);         //使能电磁阀电源
 	delayms(10);                 //由于595在定时器中被刷新，有一个延时，必须等待，否则重启
 	dian_ci_fa(pch,HIGH);        //电磁阀动作
-	bcounter = bai_bi_counter(pch,timeout);//电磁阀打开的时候，读取摆臂开关电平
+	delayms(500);
 	dian_ci_fa(pch,LOW);         //关闭电磁阀
+	bcounter = bai_bi_counter(pch,50);//电磁阀打开的时候，读取摆臂开关电平
 	dian_ci_fa_power(0);         //关闭电磁阀电源
-	if(bcounter < (hightime_max*10))return TRUE;
+	if(bcounter < hightime_max){
+		channel_led_flash(channel_data_get_index(pch),flashtime);//闪灯	
+		return TRUE;
+	}
 	else return FALSE;
 }
 
@@ -265,17 +270,21 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 					}
 				}	
 
-				if(diancifa(pch,ltimeout/1000,500,250))//电磁阀动作时间500ms,灯闪时间 ltimout/1000秒,摆臂开关(高电平时间<250ms)
+				if(diancifa(pch,ltimeout/1000,500,60,20)==FALSE)//电磁阀动作时间500ms,灯闪时间 ltimout/1000秒,摆臂开关(高电平时间<250ms)
+				{
+					if(channel_check_from_iic(pch))
+					{
+						send_lease_state(hp,Lease_dianchifa_fall,lch,buffer+1);//电磁阀失败
+						pch->error.motor = 1;//电磁阀故障			
+					  goto LEASE_RESET_CONTINUE;
+					}
+				}
+				//电磁阀成功
 				{
 					request_charge_off(channel_data_get_index(pch)); delayms(10);//如果在充电，马上关电
 					pch->error.motor = 0;//电磁阀故障清0
 					send_lease_state(hp,Lease_success,lch,buffer+1); //成功===>应答包
 				  channel_data_clear_by_addr(lch);                 //成功===>清数据
-				}
-				else
-				{
-					send_lease_state(hp,Lease_dianchifa_fall,lch,buffer+1);//电磁阀失败
-					pch->error.motor = 1;//电磁阀故障
 				}
 			}
 			
@@ -347,7 +356,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_ctrl)
 			if(cmd==0x01||cmd==0x02)//强制开仓	
 			{			
 
-				if(diancifa(pch,ctrl_time,500,250))//电磁阀动作时间500ms,灯闪时间ctrl_time秒,摆臂开关(高电平时间<250ms)
+				if(diancifa(pch,ctrl_time,500,60,20))//电磁阀动作时间500ms,灯闪时间ctrl_time秒,摆臂开关(高电平时间<250ms)
 				{
 					request_charge_off(channel_data_get_index(pch)); //如果在充电，马上关电
 					pch->error.motor = 0;                            //电磁阀故障清0

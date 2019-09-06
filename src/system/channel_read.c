@@ -29,6 +29,22 @@ const unsigned char TESTDATA1[] =
 //循环次数 /温度 /剩余容量           /电流
 };
 /*===================================================
+                全局检测应答iic
+====================================================*/
+BOOL channel_check_from_iic(Channel*pch)
+{
+		U8 dir = pch->iic_dir; 	//方向
+		U8 sda = (dir==1)?pch->map->io_scl:pch->map->io_sda;
+		U8 scl = (dir==1)?pch->map->io_sda:pch->map->io_scl;
+	  int result=ld_bq27541_check_ack(sda,scl);
+	  if(result==FALSE)
+		{
+			delayms(10);
+			result = ld_bq27541_check_ack(scl,sda);
+		}
+		return result;
+}
+/*===================================================
                 全局IIC读
 ====================================================*/
 BOOL channel_read_from_iic(Channel*pch,READ_TYPE_CMD cmd,U8*dataout)

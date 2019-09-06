@@ -230,6 +230,8 @@ void channel_check_timer_1s(void)
 	int i=1;
 	for(;i<=CHANNEL_MAX;i++)
 	{
+		extern BOOL is_system_lease(void);//×â½èÍ¨µÀ²»¼ì²â
+		if(is_system_lease())continue;
 		channel_state_check(i);
 		channel_warn_check(i);
 		channel_error_check(i);	

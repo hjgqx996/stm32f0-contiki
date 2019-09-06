@@ -187,6 +187,8 @@ extern ChannelConfigureMap channel_config_map[];
 
 int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL once);
 BOOL channel_read_from_ir(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout);
+BOOL channel_read_from_iic(Channel*pch,READ_TYPE_CMD cmd,U8*dataout);
+BOOL channel_check_from_iic(Channel*pch);
 void channel_save_data(Channel*ch,U8*data);
 #endif
 
