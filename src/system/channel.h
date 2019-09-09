@@ -89,7 +89,7 @@ typedef struct{
 	/*--------------iic方向切换,------------------------*/
 	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
 	U8  iic_error_counter;           //顶针识别故障 计数
-	int ir_error_counter;            //红外识别故障 计数
+	U8  ir_error_counter;            //红外识别故障 计数
 	/*--------------iic,ir模式选择----------------------*/
 	U8 iic_ir_mode;                  // 0:选择iic  1:选择红外
 

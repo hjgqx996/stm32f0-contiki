@@ -154,6 +154,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 						U16 dataout[8];
 						if(pch->test_ir_counter%3==0)
 						{
+							pch->test_ir_counter=0;
 							if(channel_read_from_ir(pch,RC_READ_DATA,(U8*)dataout,650)==FALSE)
 							{
 								pch->ir_error_counter=BAO_IR_ERROR_TIMES;//บ์อโสถฑ๐นสีฯ

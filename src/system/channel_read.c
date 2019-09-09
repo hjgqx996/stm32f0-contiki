@@ -193,7 +193,8 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 	  mode=RTM_IIC;
 	  result = channel_read_from_iic(pch,cmd,dataout);
 		if(result==FALSE){
-			pch->iic_error_counter++;//顶针识别计数++
+			if(pch->iic_error_counter < 200)
+				pch->iic_error_counter++;//顶针识别计数++
 			if(!force_using_ir())//非强制使用iic
 			{
 				if((once==TRUE)&&(first_mode==RTM_IIC))//once==true,读一次ir
@@ -225,7 +226,8 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
     result = channel_read_from_ir(pch,cmd,dataout,ms_timeout);
 		if(result==TRUE)return result;
 		//红外识别故障++
-		pch->ir_error_counter++;
+		if(pch->ir_error_counter<200)
+			pch->ir_error_counter++;
 		
 		if(!force_using_ir())//非强制使用ir
 		{
