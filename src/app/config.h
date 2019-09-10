@@ -53,7 +53,7 @@ typedef enum{
 #define CHANNEL_LED_LIGHT_UFSOC   50
 
 //<o>循环读充电宝时长(ms)
-#define BAO_READ_DATA_MAX_MS      1800
+#define BAO_READ_DATA_MAX_MS      1200
 
 //<o>告警温度(度)
 #define BAO_WARN_TEMPERATURE      60

@@ -138,15 +138,9 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 
 			/*=====================读取充电宝=========================*/
 			result = read_data(pch,i,1);//读id    
-			if(result){
-				read_data(pch,i,2);//读数据
-			  os_delay(channel,50);
-			  read_data(pch,i,3);//加密
-				os_delay(channel,50);
-			}
 			/*=====================测试红外功能=======================*/
 			#ifndef NOT_USING_IR
-			{
+			if(result){
 				if( (!is_ver_5()) && (!is_ver_6()) && (channel_id_is_not_null(pch->id)))//读到id,id不是5代宝，不是6代宝，读一次红外
 				{
 					if(!is_ir_mode()){		
@@ -159,6 +153,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 							{
 								pch->ir_error_counter=BAO_IR_ERROR_TIMES;//红外识别故障
 								pch->error.ir=1;
+								goto WAIT_NEXT_DELAY;
 							}else{
 								pch->ir_error_counter=0;
 								pch->error.ir=0;
@@ -170,7 +165,15 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 				os_delay(channel,50);
 			}
 			#endif
+			/*=====================读取充电宝数据=========================*/
+			if(result){
+				read_data(pch,i,2);//读数据
+			  os_delay(channel,50);
+			  read_data(pch,i,3);//加密
+				os_delay(channel,50);
+			}
 			/*-----------循环等待时间---------------------------------*/
+			WAIT_NEXT_DELAY:
 			if((result) && (channel_read_delay_ms>0) )
 			{
 				os_delay(channel,channel_read_delay_ms);
