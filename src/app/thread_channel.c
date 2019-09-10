@@ -146,6 +146,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 					if(!is_ir_mode()){		
 						//隔一段时间读一次红外，如果失败，就认为红外故障了
 						U16 dataout[8];
+						
 						if(pch->test_ir_counter%3==0)
 						{
 							pch->test_ir_counter=0;
@@ -153,6 +154,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 							{
 								pch->ir_error_counter=BAO_IR_ERROR_TIMES;//红外识别故障
 								pch->error.ir=1;
+								pch->test_ir_counter++;
 								goto WAIT_NEXT_DELAY;
 							}else{
 								pch->ir_error_counter=0;
