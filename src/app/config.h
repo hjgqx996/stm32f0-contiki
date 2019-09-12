@@ -32,7 +32,10 @@ typedef enum{
 #define USING_HARDWARE_CONFIG  "25-50-NAS-V6.h"
 #include USING_HARDWARE_CONFIG
 
-
+//<o>上电自检次数
+//<i>上电时，使用iic读，如果转向了ir,就会重新尝试iic读
+//<i>本参数，是上电时,iic尝试读的次数
+#define CHECK_TIMES_POWER_UP   4
 
 //<o>允许同时充电的最大仓道数
 #define CHANNEL_CHARGE_MAX    2

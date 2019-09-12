@@ -58,22 +58,29 @@ BOOL channel_read_from_iic(Channel*pch,READ_TYPE_CMD cmd,U8*dataout)
 		//检测应答,尝试两次
 		if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
 		{
-			delayms(10);//延时10ms ==>必须的
+			delayms(50);//延时10ms ==>必须的
 			if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
-			{	
-				/*改变方向，检测应答，尝试两次*/
-				pch->iic_dir=!pch->iic_dir;//改变方向
-				dir = pch->iic_dir;        //方向
-				sda = (dir==1)?pch->map->io_scl:pch->map->io_sda;//sda
-				scl = (dir==1)?pch->map->io_sda:pch->map->io_scl;//scl		
-				delayms(10);//延时10ms ==>必须的
+			{
+				delayms(20);//延时10ms ==>必须的
 				if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
-				{
+				{	
+					/*改变方向，检测应答，尝试两次*/
+					pch->iic_dir=!pch->iic_dir;//改变方向
+					dir = pch->iic_dir;        //方向
+					sda = (dir==1)?pch->map->io_scl:pch->map->io_sda;//sda
+					scl = (dir==1)?pch->map->io_sda:pch->map->io_scl;//scl		
 					delayms(10);//延时10ms ==>必须的
-					if((result=ld_bq27541_check_ack(sda,scl))==FALSE){ 
-						return FALSE;
-					}
-				}					
+					if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
+					{
+						delayms(50);//延时10ms ==>必须的
+						if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
+						{ 
+								delayms(20);//延时10ms ==>必须的
+								if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
+									return FALSE;
+						}
+					}					
+				}
 			}
 		}
 		//IIC读
@@ -214,6 +221,11 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 		else
 		{
 			pch->iic_error_counter=0;
+			if(is_ver_5() || is_ver_6())//可能: 入仓顶针，红外失败，后来顶针读到数据，但是非8代宝，清一下红外标志
+			{
+				pch->ir_error_counter=pch->test_ir_counter=0;
+				pch->error.ir=0;
+			}
 			return TRUE;
 		}
 	

@@ -45,16 +45,30 @@ static U8   buffer[16];                   //读充电宝时数据缓存
 ====================================================*/																						
 void recover_when_powerup(void)
 {
-	int i = 0;
-	for(i=1;i<=CHANNEL_MAX;i++)
+	int trytimes = 0;
+	while(trytimes < CHECK_TIMES_POWER_UP)
 	{
-		Channel*pch = channel_data_get(i);
-		if(pch==NULL)continue;
-		if( isvalid_baibi() )
-		{ 
-			void fsm_charge(U8 ch,int arg);
-			fsm_charge(i,0x99);
+		int i = 0;
+		for(i=1;i<=CHANNEL_MAX;i++)
+		{
+			Channel*pch = channel_data_get(i);
+			if(pch==NULL)continue;
+			if( isvalid_baibi() )
+			{ 
+				void fsm_charge(U8 ch,int arg);
+				if(pch->state.read_ok==0 || pch->state.read_from_ir==1)// 上电自检，如果iic失败，尝试4次
+				{		
+					channel_data_clear_by_addr(pch->addr); 
+					if(trytimes!=0)delayms(100);
+					fsm_charge(i,0x99);
+					fsm_charge(i,NULL);
+					fsm_charge(i,NULL);
+					fsm_charge(i,NULL);
+					ld_iwdg_reload();
+				}
+			}
 		}
+		trytimes++;
 	}
 }
 /*===================================================
@@ -332,10 +346,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(insert)
 {
 	static int i= 0;
 	PROCESS_BEGIN();
-	
-	os_delay(insert,500);
 	recover_when_powerup();//上电检测到已经有宝，按插入流程充电
-	
 	while(1)
 	{
 		for(i=1;i<=CHANNEL_MAX;i++)

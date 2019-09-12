@@ -30,7 +30,7 @@
 #define i2c_read_byte()     I2C_Read_Byte(sda,scl)
 #define i2c_check_ack()     if(i2c_wait_ack()==FALSE) {i2c_stop();return FALSE;}
 
-#define i2c_delayus(x)      delayus(5*x)
+#define i2c_delayus(x)      delayus(3*x)
 
 /*=========================================================*/
 #include "stm32f0xx_gpio.h"
@@ -68,8 +68,8 @@ static void I2C_Start(U8 sda,U8 scl)
 	SDA_H();
 	SCL_H();
  	i2c_delayus(5);	
-//	wait_scl_high(scl);	
-// 	i2c_delayus(5);
+	wait_scl_high(scl);	
+ 	i2c_delayus(5);
 	SDA_L();
 	i2c_delayus(5);
 	SCL_L();

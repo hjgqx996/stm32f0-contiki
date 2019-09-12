@@ -127,7 +127,8 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 	static U8 i = 0;
 	static Channel*pch;
 	static BOOL result = FALSE;
-	PROCESS_BEGIN();          
+	PROCESS_BEGIN(); 
+  os_delay(channel,1000);	
 	while(1)
 	{
 		
