@@ -217,6 +217,12 @@ void ld_ir_timer_100us(void)
 /*===================================================
                 全局函数
 ====================================================*/
+void ld_ir_init(void)
+{
+	memset((void*)&irs,0,sizeof(irs));
+	ld_gpio_refresh();
+	ld_gpio_refresh();
+}
 //开始读取红外数据   (ch:1-n,opposite:TRUE反向(未使用), cmd 命令, 长度)
 BOOL ld_ir_read_start(U8 ir,U8 re,U8 cmd,U8 wanlen)
 {

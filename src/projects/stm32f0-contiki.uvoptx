@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>Lw??/S</Name>
+          <Name>L琹w鬥?鬥?/鳦d</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -194,6 +194,11 @@
           <count>8</count>
           <WinNumber>1</WinNumber>
           <ItemText>hc595data</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>irs</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -418,7 +423,7 @@
 
   <Group>
     <GroupName>system</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -586,7 +591,7 @@
 
   <Group>
     <GroupName>dev</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

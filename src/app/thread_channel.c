@@ -128,7 +128,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 	static Channel*pch;
 	static BOOL result = FALSE;
 	PROCESS_BEGIN(); 
-  os_delay(channel,1000);	
+  os_delay(channel,500);	
 	while(1)
 	{
 		
@@ -139,9 +139,11 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 
 			/*=====================读取充电宝=========================*/
 			result = read_data(pch,i,1);//读id    
+			ld_iwdg_reload();	
 			/*=====================测试红外功能=======================*/
 			#ifndef NOT_USING_IR
 			if(result){
+				//测试红外
 				if( (!is_ver_5()) && (!is_ver_6()) && (channel_id_is_not_null(pch->id)))//读到id,id不是5代宝，不是6代宝，读一次红外
 				{
 					if(!is_ir_mode()){		
@@ -165,26 +167,46 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 						pch->test_ir_counter++;
 					}
 				}
-				os_delay(channel,50);
+				//重新读回iic
+				if(is_ir_mode())
+				{		
+					if(pch->test_iic_counter < 4)//连续三次iic都有问题，一直使用IR
+					{
+						U16 dataout[8];
+						if(channel_read_from_iic(pch,RC_READ_DATA,(U8*)dataout)==TRUE)
+						{
+							pch->iic_error_counter=0;
+							pch->error.thimble=0;
+							pch->iic_ir_mode=RTM_IIC;//切换回IIC
+							pch->test_iic_counter =0;
+							goto WAIT_NEXT_DELAY;
+						}
+					}
+					if(pch->test_iic_counter<100)
+						pch->test_iic_counter ++;
+					 os_delay(channel,20);
+				}
 			}
 			#endif
 			/*=====================读取充电宝数据=========================*/
 			if(result){
 				read_data(pch,i,2);//读数据
+				ld_iwdg_reload();	
 			  os_delay(channel,50);
-			  read_data(pch,i,3);//加密
-				os_delay(channel,50);
+			}
+			
+			WAIT_NEXT_DELAY:
+			/*=====================加密充电宝=========================*/
+			if(result)
+			{
+				read_data(pch,i,3);//加密
+				ld_iwdg_reload();	
 			}
 			/*-----------循环等待时间---------------------------------*/
-			WAIT_NEXT_DELAY:
-			if((result) && (channel_read_delay_ms>0) )
-			{
-				os_delay(channel,channel_read_delay_ms);
-			}
+			if((result) && (channel_read_delay_ms>0)){}
 			else 
-			{
-				os_delay(channel,50);
-			}				
+				channel_read_delay_ms=50;
+			os_delay(channel,channel_read_delay_ms);			
 			ld_iwdg_reload();		
 		}
 		ld_iwdg_reload();	

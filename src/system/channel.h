@@ -115,6 +115,7 @@ typedef struct{
 	S8 readerr;                     //读出错计数
 	/*--------------测试红外读计数--------------------*/
 	U8 test_ir_counter;
+	U8 test_iic_counter;
 }Channel;
 
 #pragma pack()

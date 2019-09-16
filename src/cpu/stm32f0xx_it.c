@@ -70,6 +70,8 @@ void HardFault_Handler(void)
   /* Go to infinite loop when Hard Fault exception occurs */
   while (1)
   {
+		extern void cpu_nvic_reset(void);
+		cpu_nvic_reset();
   }
 }
 

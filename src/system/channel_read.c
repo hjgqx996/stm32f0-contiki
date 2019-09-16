@@ -58,29 +58,21 @@ BOOL channel_read_from_iic(Channel*pch,READ_TYPE_CMD cmd,U8*dataout)
 		//检测应答,尝试两次
 		if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
 		{
-			delayms(50);//延时10ms ==>必须的
+			delayms(10);//延时10ms ==>必须的
 			if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
-			{
-				delayms(20);//延时10ms ==>必须的
-				if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
-				{	
-					/*改变方向，检测应答，尝试两次*/
-					pch->iic_dir=!pch->iic_dir;//改变方向
-					dir = pch->iic_dir;        //方向
-					sda = (dir==1)?pch->map->io_scl:pch->map->io_sda;//sda
-					scl = (dir==1)?pch->map->io_sda:pch->map->io_scl;//scl		
-					delayms(10);//延时10ms ==>必须的
+			{	
+				/*改变方向，检测应答，尝试两次*/
+				pch->iic_dir=!pch->iic_dir;//改变方向
+				dir = pch->iic_dir;        //方向
+				sda = (dir==1)?pch->map->io_scl:pch->map->io_sda;//sda
+				scl = (dir==1)?pch->map->io_sda:pch->map->io_scl;//scl		
+				delayms(50);//延时10ms ==>必须的
 					if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
-					{
-						delayms(50);//延时10ms ==>必须的
-						if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
-						{ 
-								delayms(20);//延时10ms ==>必须的
-								if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
-									return FALSE;
-						}
-					}					
-				}
+					{ 
+							delayms(10);//延时10ms ==>必须的
+							if((result=ld_bq27541_check_ack(sda,scl))==FALSE)
+								return FALSE;
+					}				
 			}
 		}
 		//IIC读

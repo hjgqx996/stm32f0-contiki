@@ -37,7 +37,7 @@
 #include "driver_config_types.h"
 extern t_gpio_map gpio_map[];
 extern const unsigned char gpio_number;
-void sda_out(U8 sda)
+void sda_out(volatile U8 sda)
 {
 	t_gpio_map map = gpio_map[sda-1];
 	if(sda>gpio_number)return;
@@ -48,12 +48,12 @@ void sda_out(U8 sda)
 //判断时钟线是否为高
 //不高则等待一定时间，大概950us左右
 //2017-7-21
-void wait_scl_high(U8 scl)
+void wait_scl_high(volatile U8 scl)
 {
-	U16 c=100; //100us超时
+	U16 c=500; //100us超时
 	while(c>0)
   {
-		 i2c_delayus(1);
+		 //i2c_delayus(1);
 		 if(SCL_READ()==1){
 			  c=c;
 		    return ;
@@ -62,7 +62,7 @@ void wait_scl_high(U8 scl)
   }
 }
 
-static void I2C_Start(U8 sda,U8 scl)
+static void I2C_Start(volatile U8 sda,volatile U8 scl)
 {
   sda_out(sda);
 	SDA_H();
@@ -76,7 +76,7 @@ static void I2C_Start(U8 sda,U8 scl)
 	i2c_delayus(5);
 }
 
-static void I2C_Restart(U8 sda,U8 scl)
+static void I2C_Restart(volatile U8 sda,volatile U8 scl)
 {
   sda_out(sda);
 	SCL_L();
@@ -92,7 +92,7 @@ static void I2C_Restart(U8 sda,U8 scl)
 	i2c_delayus(5);
 }
 
-static void I2C_Stop(U8 sda,U8 scl)
+static void I2C_Stop(volatile U8 sda,volatile U8 scl)
 {
 	sda_out(sda);
 	SDA_L();
@@ -103,7 +103,7 @@ static void I2C_Stop(U8 sda,U8 scl)
 	i2c_delayus(5);
 }
 
-static void I2C_Ack(U8 sda,U8 scl)
+static void I2C_Ack(volatile U8 sda,volatile U8 scl)
 {	
 	SDA_L();
 	i2c_delayus(2);
@@ -114,7 +114,7 @@ static void I2C_Ack(U8 sda,U8 scl)
 	i2c_delayus(2);
 }
 
-static void I2C_NoAck(U8 sda,U8 scl)
+static void I2C_NoAck(volatile U8 sda,volatile U8 scl)
 {	
 	SDA_H();
 	i2c_delayus(5);
@@ -125,10 +125,11 @@ static void I2C_NoAck(U8 sda,U8 scl)
 	i2c_delayus(5);
 }
 
-static BOOL I2C_WaitAck(U8 sda,U8 scl)	 //返回为:=TRUE有ACK,=FALSE无ACK
+static BOOL I2C_WaitAck(volatile U8 sda,volatile U8 scl)	 //返回为:=TRUE有ACK,=FALSE无ACK
 {
 	U8 data=0;
-	SDA_H();			
+	SDA_H();	
+  i2c_delayus(2);	
 	SCL_H();
 	i2c_delayus(5);
 	wait_scl_high(scl);
@@ -138,7 +139,7 @@ static BOOL I2C_WaitAck(U8 sda,U8 scl)	 //返回为:=TRUE有ACK,=FALSE无ACK
   return (data==1)?FALSE:TRUE;//sda==0,有应答
 }
 
-static void I2C_Send_Byte(U8 sda,U8 scl,U8 ucData) //数据从高位到低位//
+static void I2C_Send_Byte(volatile U8 sda,volatile U8 scl,U8 ucData) //数据从高位到低位//
 {
 	U8 i=0,temps,dat;
 	temps=ucData;
@@ -167,7 +168,7 @@ static void I2C_Send_Byte(U8 sda,U8 scl,U8 ucData) //数据从高位到低位//
 	i2c_delayus(1);
 }
 
-static  U8 I2C_Read_Byte(U8 sda,U8 scl)  //数据从高位到低位//
+static  U8 I2C_Read_Byte(volatile U8 sda,volatile U8 scl)  //数据从高位到低位//
 { 
 	U8 i=8;
 	U8 ucData=0;
@@ -200,7 +201,7 @@ static  U8 I2C_Read_Byte(U8 sda,U8 scl)  //数据从高位到低位//
 * cmd: 命令字节，这里指寄存器地址
 * dataout:返回的数据
 */
-static BOOL bq27541_read_word(U8 sda,U8 scl,U8 cmd,U16 *dataout)
+static BOOL bq27541_read_word(volatile U8 sda,volatile U8 scl,U8 cmd,U16 *dataout)
 {
 	U8 L,H;
 	i2c_start();
@@ -224,7 +225,7 @@ static BOOL bq27541_read_word(U8 sda,U8 scl,U8 cmd,U16 *dataout)
 * cmd: 命令字节，这里指寄存器地址
 * dataout:返回的数据
 */
-static BOOL bq27541_read_byte(U8 sda,U8 scl,U8 cmd,U8 *dataout)
+static BOOL bq27541_read_byte(volatile U8 sda,volatile U8 scl,U8 cmd,U8 *dataout)
 {
 	U8 temp;
 	i2c_start();
@@ -243,7 +244,7 @@ static BOOL bq27541_read_byte(U8 sda,U8 scl,U8 cmd,U8 *dataout)
 }
 
 //读取编号字节
-static BOOL bq27541_read_power(U8 sda,U8 scl,U8*dataout)
+static BOOL bq27541_read_power(volatile U8 sda,volatile U8 scl,U8*dataout)
 {
 	int i = 0;
 	for(;i<10;i++)
@@ -259,7 +260,7 @@ static BOOL bq27541_read_power(U8 sda,U8 scl,U8*dataout)
 /*The bq27541 detects whether the SMBus enters the Off State by monitoring the SMBC and SMBD lines. When
 both signals are continually low for at least 2.0 s, the bq27541 detects the Off State. When the SMBC and SMBD
 lines go high, the bq27541 detects the On State and can begin communication within 1 ms. */
-//static void bq27541_smb_on(U8 sda,U8 scl)
+//static void bq27541_smb_on(volatile U8 sda,volatile U8 scl)
 //{
 //	sda_out();
 //	SDA_H();
@@ -280,7 +281,7 @@ lines go high, the bq27541 detects the On State and can begin communication with
 * dataout: 数据输出
 *return  : TRUE or FALSE
 */
-BOOL ld_bq27541_read_words(U8 sda,U8 scl,U8*cmd,U8 cmdlen,U16 *dataout)
+BOOL ld_bq27541_read_words(volatile U8 sda,volatile U8 scl,U8*cmd,U8 cmdlen,U16 *dataout)
 {
 	if(cmd==NULL||dataout==NULL||cmdlen>100)return FALSE;
 	{
@@ -305,7 +306,7 @@ BOOL ld_bq27541_read_words(U8 sda,U8 scl,U8*cmd,U8 cmdlen,U16 *dataout)
 *  start----50ms----end
 *  原因是50ms硬延时可能会产生严重后果
 */
-BOOL ld_bq27541_read_id(U8 sda,U8 scl,U8*dataout)
+BOOL ld_bq27541_read_id(volatile U8 sda,volatile U8 scl,U8*dataout)
 {
 	U8 temp[10],cs,byte;
  	i2c_start();
@@ -352,7 +353,7 @@ BOOL ld_bq27541_read_id(U8 sda,U8 scl,U8*dataout)
 *  start----50ms----end
 *  原因是50ms硬延时可能会产生严重后果
 */
-BOOL ld_bq27541_de_encrypt_charge(U8 sda,U8 scl,U8 cmd)
+BOOL ld_bq27541_de_encrypt_charge(volatile U8 sda,volatile U8 scl,U8 cmd)
 {
 	U8 data[2]={0,0};
 	data[0]=data[0];
@@ -408,17 +409,22 @@ BOOL ld_bq27541_de_encrypt_charge(U8 sda,U8 scl,U8 cmd)
 /*bq27541检测应答
 *功能：开始读两次0x62，李工要求
 */
-BOOL ld_bq27541_check_ack(U8 sda,U8 scl)
+BOOL ld_bq27541_check_ack(volatile U8 sda,volatile U8 scl)
 {
 	
 	U16 data = 0;
-	if(bq27541_read_word(sda,scl,0x62,&data)==FALSE)return FALSE;
+	if(bq27541_read_word(sda,scl,0x62,&data)==FALSE){
+		i2c_stop();
+		i2c_stop();
+		i2c_stop();
+		return FALSE;
+	}
 	if(data!=0x6207)return FALSE ;
 	return TRUE;
 }
 
 /*bq27541充电宝输出标志*/
-BOOL ld_bq27541_output_flag(U8 sda,U8 scl,U8*data)
+BOOL ld_bq27541_output_flag(volatile U8 sda,volatile U8 scl,U8*data)
 {
 	U16 tmp;
 	if(bq27541_read_word(sda,scl,0x62,&tmp)==FALSE)return FALSE;

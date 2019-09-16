@@ -7,7 +7,8 @@ static void delay()
 	#ifdef USING_3_HC595
 	cpu_us_delay(10);
 	#else
-	cpu_us_delay(1);
+	//cpu_us_delay(1);
+	__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
 	#endif
 	
 }
@@ -47,7 +48,13 @@ void ld_hc595_send(uint32_t data)
 	uint8_t d = (data&0x8000)?1:0 ;
   for (j = 0; j < 16; j++)
 	{
-		d=(d==1)?(HC595_DATA_H()):( HC595_DATA_L());//输出电平,延时一段时间
+		//输出电平,延时一段时间
+		if(d==1){
+			HC595_DATA_H();
+		}
+		else{
+			HC595_DATA_L();
+		}
     HC595_CLK_L();              //上升沿发生移位		
 		data<<=1;                   //延时
 		d = (data&0x8000)?1:0;      //延时

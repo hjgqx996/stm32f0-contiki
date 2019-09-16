@@ -499,7 +499,7 @@ static void com_process(HPacket*hp)
 AUTOSTART_THREAD_WITHOUT_TIMEOUT(packet)
 {
 	PROCESS_BEGIN();
-  memset(&hpacket,0,sizeof(hpacket));         //缓冲清0 	                          
+  memset(&hpacket,0,sizeof(hpacket));         //缓冲清0 	
 	ld_uart_open(COM_485,115200,8,0,1,0,400);  //打开串口
 	enable_485_rx();                            //使能接收
 	while(1)

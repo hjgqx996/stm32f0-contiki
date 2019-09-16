@@ -34,6 +34,7 @@ void ld_gpio_set(U32 index,U8 value)
 {
 	index--;
 	if(index>=gpio_number)return;
+	index &=0xFF;
 	//HC595
 	if(gpio_map[index].xPort==0xFF)
 	{
@@ -57,6 +58,7 @@ U8 ld_gpio_get(U32 index)
 {
 	index--;
 	if(index>=gpio_number)return 0;
+	index&=0xFF;
 	//HC595
 	if(gpio_map[index].xPort==0xFF)
 	{
@@ -72,6 +74,7 @@ void ld_gpio_set_io(U32 index,BOOL out,U8 value)
 {
 	index--;
 	if(index>=gpio_number)return;	
+	index = 0xFF & index;
 	if(out){
 				cpu_gpio_cfg(gpio_map[index].xPort,gpio_map[index].xPin,
 				0x01,0x00,0x01,
