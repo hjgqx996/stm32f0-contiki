@@ -35,35 +35,31 @@ void   SysTick_Handler(void)
 				channel_read_delay_ms -=100;
 			if(channel_read_delay_ms<0)
 				channel_read_delay_ms=0;
-		}	
-		
-		//系统灯
-		if((current_clock+10)%TICK_CYCLE_100==0)//100ms一次	
-		{
-				extern void ld_system_led_timer(int ms);
-				ld_system_led_timer(100);
+
+			//系统灯
+			{
+					extern void ld_system_led_timer(int ms);
+					ld_system_led_timer(100);
+			}
+			
+			//仓道灯闪
+			{
+				extern void channels_les_flash_timer(int timer_ms);
+				channels_les_flash_timer(100);
+			}
+			
+			//充电状态机计时
+			{
+				extern void charge_fms_timer(int ms);
+				charge_fms_timer(100);
+			}
+			
+			//弹仓事件
+			{
+				extern void channel_lock_timer(int ms);
+				channel_lock_timer(100);
+			}	
 		}
-		
-		//仓道灯闪
-		if((current_clock+20)%TICK_CYCLE_100==0)//100ms一次	
-		{
-			extern void channels_les_flash_timer(int timer_ms);
-			channels_les_flash_timer(100);
-		}
-		
-		//充电状态机计时
-		if((current_clock+30)%TICK_CYCLE_100==0)//100ms一次	
-		{
-			extern void charge_fms_timer(int ms);
-			charge_fms_timer(100);
-		}
-		
-		//弹仓事件
-		if((current_clock+40)%TICK_CYCLE_100==0)//100ms一次	
-		{
-			extern void channel_lock_timer(int ms);
-			channel_lock_timer(100);
-		}	
 		
 	//刷新595
 	#include "config.h"

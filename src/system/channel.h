@@ -163,11 +163,6 @@ int channel_data_get_index(Channel*ch);
 void channel_led_flash(U8 ch,U8 seconds);
 void channels_les_flash_timer(int timer_ms);
 
-/*------------------------------------------------------
-²ÖµÀ×´Ì¬£¬¸æ¾¯£¬´íÎó 
--------------------------------------------------------*/
-void channel_check_timer_2s(void);
-
 extern ChannelConfigureMap channel_config_map[];
 /*------------------------------------------------------
 		ÅÐ¶Ï

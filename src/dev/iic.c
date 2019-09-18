@@ -415,8 +415,6 @@ BOOL ld_bq27541_check_ack(volatile U8 sda,volatile U8 scl)
 	U16 data = 0;
 	if(bq27541_read_word(sda,scl,0x62,&data)==FALSE){
 		i2c_stop();
-		i2c_stop();
-		i2c_stop();
 		return FALSE;
 	}
 	if(data!=0x6207)return FALSE ;

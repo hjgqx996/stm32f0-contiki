@@ -68,7 +68,6 @@ void recover_when_powerup(void)
 		}
 		trytimes++;
 	}
-	delayms(2000);
 }
 /*===================================================
 						  状态机计时函数

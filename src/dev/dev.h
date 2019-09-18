@@ -54,7 +54,6 @@ int ld_uart_isp(U8 xUart,char*byte,U8 type);	//type: 0 接收    1发送
 /*===================================================
                 红外数据接口
 ====================================================*/
-void ld_ir_init(void);
 void ld_ir_timer_100us(void);
 BOOL ld_ir_read_start(U8 ir,U8 re,U8 cmd,U8 wanlen);
 int ld_ir_read_isok(U8*dataout,U8 size);

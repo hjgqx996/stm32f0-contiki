@@ -36,7 +36,7 @@ BOOL channel_check_from_iic(Channel*pch)
 		U8 dir = pch->iic_dir; 	//方向
 		U8 sda = (dir==1)?pch->map->io_scl:pch->map->io_sda;
 		U8 scl = (dir==1)?pch->map->io_sda:pch->map->io_scl;
-	  int result=ld_bq27541_check_ack(sda,scl);
+	  BOOL result=ld_bq27541_check_ack(sda,scl);
 	  if(result==FALSE)
 		{
 			delayms(10);
@@ -49,7 +49,7 @@ BOOL channel_check_from_iic(Channel*pch)
 ====================================================*/
 BOOL channel_read_from_iic(Channel*pch,READ_TYPE_CMD cmd,U8*dataout)
 {
-		int result= FALSE;
+		BOOL result= FALSE;
 		U8 iic_cmd = 0;//红外与iic的加密 解密 指令是不一样的
 		U16 buffer[8];//缓冲数据
 		U8 dir = pch->iic_dir; 	//方向
