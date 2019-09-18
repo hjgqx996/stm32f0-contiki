@@ -58,6 +58,7 @@ void recover_when_powerup(void)
 				void fsm_charge(U8 ch,int arg);
 				if(pch->state.read_ok==0 || pch->state.read_from_ir==1 || pch->error.thimble==1 )// 上电自检，如果iic失败，尝试4次
 				{		
+					if(pch->state.read_from_ir==1)delayms(250);
 					fsm_charge(i,0x99);
 					fsm_charge(i,NULL);
 					fsm_charge(i,NULL);

@@ -157,18 +157,18 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 							{
 								pch->ir_error_counter=BAO_IR_ERROR_TIMES;//红外识别故障
 								pch->error.ir=1;
-								pch->test_ir_counter++;
-								goto WAIT_NEXT_DELAY;
 							}else{
 								pch->ir_error_counter=0;
 								pch->error.ir=0;
+								pch->test_ir_counter++;
+								goto WAIT_NEXT_DELAY;
 							}
 						}
 						pch->test_ir_counter++;
 					}
 				}
-				//重新读回iic
-				if(is_ir_mode())
+				//重新读回iic,(当前是红外，当前不是强制使用IR)
+				if(is_ir_mode()&&(system.iic_ir_mode!=SIIM_ONLY_IR))
 				{		
 					if(pch->test_iic_counter < 4)//连续三次iic都有问题，一直使用IR
 					{
