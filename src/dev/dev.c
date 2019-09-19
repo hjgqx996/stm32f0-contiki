@@ -146,7 +146,7 @@ void ld_dev_init(void)
 	ld_exti_init();
 
 	//¶¨Ê±Æ÷
-	#ifndef NOT_USING_IR
+	#if NOT_USING_IR ==0
 	ld_timer3_init();
 	#endif
 }

@@ -116,7 +116,7 @@ BOOL channel_read_from_iic(Channel*pch,READ_TYPE_CMD cmd,U8*dataout)
 /*===================================================
                 全局IR读
 ====================================================*/
-#ifndef NOT_USING_IR
+#if NOT_USING_IR==0
 BOOL channel_read_from_ir(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout)
 {
 	  U8 wanlen = 0;
@@ -223,7 +223,7 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
 	
 	/*------------------------红外 方式 读取 -----------------------------------*/
 	IR_READ_MODE_OPERATION:
-	#ifndef NOT_USING_IR
+	#if NOT_USING_IR==0
 	{
 		//if(ld_gpio_get(pch->map->io_re))return -1;/*红外被拉高，表示红外忙，直接返回-1*/
 		mode=RTM_IR;

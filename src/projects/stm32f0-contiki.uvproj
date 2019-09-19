@@ -1,26 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_projx.xsd">
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_proj.xsd">
 
-  <SchemaVersion>2.1</SchemaVersion>
+  <SchemaVersion>1.1</SchemaVersion>
 
   <Header>### uVision Project, (C) Keil Software</Header>
 
   <Targets>
     <Target>
-      <TargetName>stm32f0</TargetName>
+      <TargetName>stm32f0-contiki</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
-      <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F030R8</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F0xx_DFP.2.0.0</PackID>
-          <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x20001FFF) IROM(0x8000000-0x800FFFF) CLOCK(8000000) CPUTYPE("Cortex-M0")</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
-          <StartupFile>"Startup\ST\STM32F0xx\startup_stm32f030x8.s" ("STM32F030x8 Startup Code")</StartupFile>
+          <StartupFile>"Startup\ST\STM32F0xx\startup_stm32f030.s" ("STM32F030 Startup Code")</StartupFile>
           <FlashDriverDll>UL2CM3(-O207 -S0 -C0 -FO7 -FD20000000 -FC800 -FN1 -FF0STM32F0xx_64 -FS08000000 -FL010000)</FlashDriverDll>
           <DeviceId>7309</DeviceId>
           <RegisterFile>stm32f0xx.h</RegisterFile>
@@ -30,10 +26,10 @@
           <Linker></Linker>
           <OHString></OHString>
           <InfinionOptionDll></InfinionOptionDll>
-          <SLE66CMisc>-DSTM32F030X8</SLE66CMisc>
+          <SLE66CMisc>-DSTM32F030</SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32F030R8Tx$CMSIS\SVD\STM32F0x0.svd</SFDFile>
+          <SFDFile>SFD\ST\STM32F0xx\STM32F030.SFR</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -76,18 +72,14 @@
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
-            <nStopB1X>0</nStopB1X>
-            <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>..\生成\build.bat</UserProg1Name>
+            <UserProg1Name>"..\说明\build.bat"</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
-            <nStopA1X>0</nStopA1X>
-            <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
@@ -111,8 +103,8 @@
         <DllOption>
           <SimDllName>SARMCM3.DLL</SimDllName>
           <SimDllArguments>-REMAP</SimDllArguments>
-          <SimDlgDll>DARMSTM.DLL</SimDlgDll>
-          <SimDlgDllArguments>-pSTM32F030R8</SimDlgDllArguments>
+          <SimDlgDll>DARMCM1.DLL</SimDlgDll>
+          <SimDlgDllArguments>-pCM0</SimDlgDllArguments>
           <TargetDllName>SARMCM3.DLL</TargetDllName>
           <TargetDllArguments></TargetDllArguments>
           <TargetDlgDll>TARMCM1.DLL</TargetDlgDll>
@@ -126,6 +118,48 @@
             <HexOffset>0</HexOffset>
             <Oh166RecLen>16</Oh166RecLen>
           </OPTHX>
+          <Simulator>
+            <UseSimulator>0</UseSimulator>
+            <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
+            <RunToMain>1</RunToMain>
+            <RestoreBreakpoints>1</RestoreBreakpoints>
+            <RestoreWatchpoints>1</RestoreWatchpoints>
+            <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
+            <RestoreFunctions>1</RestoreFunctions>
+            <RestoreToolbox>1</RestoreToolbox>
+            <LimitSpeedToRealTime>0</LimitSpeedToRealTime>
+            <RestoreSysVw>1</RestoreSysVw>
+          </Simulator>
+          <Target>
+            <UseTarget>1</UseTarget>
+            <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
+            <RunToMain>1</RunToMain>
+            <RestoreBreakpoints>1</RestoreBreakpoints>
+            <RestoreWatchpoints>1</RestoreWatchpoints>
+            <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
+            <RestoreFunctions>0</RestoreFunctions>
+            <RestoreToolbox>1</RestoreToolbox>
+            <RestoreTracepoints>1</RestoreTracepoints>
+            <RestoreSysVw>1</RestoreSysVw>
+            <UsePdscDebugDescription>0</UsePdscDebugDescription>
+          </Target>
+          <RunDebugAfterBuild>0</RunDebugAfterBuild>
+          <TargetSelection>6</TargetSelection>
+          <SimDlls>
+            <CpuDll></CpuDll>
+            <CpuDllArguments></CpuDllArguments>
+            <PeripheralDll></PeripheralDll>
+            <PeripheralDllArguments></PeripheralDllArguments>
+            <InitializationFile></InitializationFile>
+          </SimDlls>
+          <TargetDlls>
+            <CpuDll></CpuDll>
+            <CpuDllArguments></CpuDllArguments>
+            <PeripheralDll></PeripheralDll>
+            <PeripheralDllArguments></PeripheralDllArguments>
+            <InitializationFile></InitializationFile>
+            <Driver>Segger\JL2CM3.dll</Driver>
+          </TargetDlls>
         </DebugOption>
         <Utilities>
           <Flash1>
@@ -184,14 +218,12 @@
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
             <RvdsVP>0</RvdsVP>
-            <RvdsMve>0</RvdsMve>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
             <useUlib>0</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
-            <nSecure>0</nSecure>
             <RoSelD>3</RoSelD>
             <RwSelD>3</RwSelD>
             <CodeSel>0</CodeSel>
@@ -325,15 +357,7 @@
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>1</uC99>
-            <uGnu>0</uGnu>
             <useXO>0</useXO>
-            <v6Lang>1</v6Lang>
-            <v6LangP>1</v6LangP>
-            <vShortEn>1</vShortEn>
-            <vShortWch>1</vShortWch>
-            <v6Lto>0</v6Lto>
-            <v6WtE>0</v6WtE>
-            <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F0XX,</Define>
@@ -351,7 +375,6 @@
             <NoWarn>0</NoWarn>
             <uSurpInc>0</uSurpInc>
             <useXO>0</useXO>
-            <uClangAs>0</uClangAs>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define></Define>
@@ -393,14 +416,14 @@
               <FilePath>..\app\thread_insert.c</FilePath>
             </File>
             <File>
-              <FileName>thread_comm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\app\thread_comm.c</FilePath>
-            </File>
-            <File>
               <FileName>thread_channel.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\app\thread_channel.c</FilePath>
+            </File>
+            <File>
+              <FileName>thread_comm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\thread_comm.c</FilePath>
             </File>
             <File>
               <FileName>thread_eject.c</FileName>
@@ -408,14 +431,14 @@
               <FilePath>..\app\thread_eject.c</FilePath>
             </File>
             <File>
-              <FileName>config.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\app\config.c</FilePath>
-            </File>
-            <File>
               <FileName>config.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\app\config.h</FilePath>
+            </File>
+            <File>
+              <FileName>config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\config.c</FilePath>
             </File>
             <File>
               <FileName>25-50-NAS-V2.h</FileName>
@@ -458,19 +481,74 @@
               <FilePath>..\system\channel_read.c</FilePath>
             </File>
             <File>
-              <FileName>queue.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\system\queue.c</FilePath>
-            </File>
-            <File>
               <FileName>packet.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\system\packet.c</FilePath>
             </File>
             <File>
+              <FileName>queue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\system\queue.c</FilePath>
+            </File>
+            <File>
               <FileName>system.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\system\system.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>dev</GroupName>
+          <Files>
+            <File>
+              <FileName>driver_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\driver_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>dev.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\dev.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>iic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\iic.c</FilePath>
+            </File>
+            <File>
+              <FileName>ir.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\ir.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer3.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\timer3.c</FilePath>
+            </File>
+            <File>
+              <FileName>74hc595.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dev\74hc595.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -508,144 +586,14 @@
               <FilePath>..\contiki\portable\clock.c</FilePath>
             </File>
             <File>
-              <FileName>contiki-default-conf.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\contiki\portable\contiki-default-conf.h</FilePath>
-            </File>
-            <File>
               <FileName>contiki-conf.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\contiki\portable\contiki-conf.h</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>dev</GroupName>
-          <Files>
             <File>
-              <FileName>driver_config.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\driver_config.c</FilePath>
-            </File>
-            <File>
-              <FileName>dev.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\dev.c</FilePath>
-            </File>
-            <File>
-              <FileName>gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>iic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\iic.c</FilePath>
-            </File>
-            <File>
-              <FileName>uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>ir.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\ir.c</FilePath>
-            </File>
-            <File>
-              <FileName>74hc595.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\74hc595.c</FilePath>
-            </File>
-            <File>
-              <FileName>flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\flash.c</FilePath>
-            </File>
-            <File>
-              <FileName>timer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\timer.c</FilePath>
-            </File>
-            <File>
-              <FileName>exti.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\dev\exti.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>cpu</GroupName>
-          <Files>
-            <File>
-              <FileName>cpu.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\cpu.c</FilePath>
-            </File>
-            <File>
-              <FileName>core_cm3.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\core_cm3.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f0xx_it.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\stm32f0xx_it.c</FilePath>
-            </File>
-            <File>
-              <FileName>system_stm32f0xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\system_stm32f0xx.c</FilePath>
-            </File>
-            <File>
-              <FileName>startup_stm32f030x8.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\cpu\startup_stm32f030x8.s</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f0xx_gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\src\stm32f0xx_gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f0xx_rcc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\src\stm32f0xx_rcc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f0xx_iwdg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\src\stm32f0xx_iwdg.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f0xx_misc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\src\stm32f0xx_misc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f0xx_usart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\src\stm32f0xx_usart.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f0xx_tim.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\src\stm32f0xx_tim.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f0xx_exti.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\src\stm32f0xx_exti.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f0xx_syscfg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\src\stm32f0xx_syscfg.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f0xx_flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\cpu\src\stm32f0xx_flash.c</FilePath>
+              <FileName>contiki-default-conf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\contiki\portable\contiki-default-conf.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -665,6 +613,86 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>cpu</GroupName>
+          <Files>
+            <File>
+              <FileName>startup_stm32f030x8.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\cpu\startup_stm32f030x8.s</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_it.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\stm32f0xx_it.c</FilePath>
+            </File>
+            <File>
+              <FileName>cpu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\cpu.c</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f0xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\system_stm32f0xx.c</FilePath>
+            </File>
+            <File>
+              <FileName>core_cm3.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\core_cm3.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_syscfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_syscfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_rcc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_rcc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_pwr.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_misc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_misc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_iwdg.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f0xx_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\cpu\src\stm32f0xx_exti.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>生成</GroupName>
           <Files>
             <File>
@@ -678,30 +706,29 @@
           <GroupName>说明</GroupName>
           <Files>
             <File>
+              <FileName>initmap.ini</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\说明\initmap.ini</FilePath>
+            </File>
+            <File>
               <FileName>readme.txt</FileName>
               <FileType>5</FileType>
               <FilePath>..\说明\readme.txt</FilePath>
-            </File>
-            <File>
-              <FileName>上行命令.txt</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\说明\上行命令.txt</FilePath>
             </File>
             <File>
               <FileName>测试结果.txt</FileName>
               <FileType>5</FileType>
               <FilePath>..\说明\测试结果.txt</FilePath>
             </File>
+            <File>
+              <FileName>上行命令.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\说明\上行命令.txt</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
     </Target>
   </Targets>
-
-  <RTE>
-    <apis/>
-    <components/>
-    <files/>
-  </RTE>
 
 </Project>

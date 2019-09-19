@@ -17,13 +17,13 @@
 //<o>仓道个数
 #define CHANNEL_MAX               5
 
-//<c>使用 3个HC595
-#define USING_3_HC595 
-//</c>
+//<e>使用 3个HC595
+#define USING_3_HC595             1
+//</e>
 
-//<c>不使用 IR
-#define NOT_USING_IR
-//</c>
+//<e>不使用 IR
+#define NOT_USING_IR               1
+//</e>
 
 
 

@@ -4,7 +4,7 @@
 static void delay()
 {
 	void cpu_us_delay(int us);
-	#ifdef USING_3_HC595
+	#if USING_3_HC595 ==1
 	cpu_us_delay(10);
 	#else
 	//cpu_us_delay(1);
@@ -41,7 +41,7 @@ void ld_hc595_reload(void)
 	HC595_CS_H();
 }
 
-#ifndef USING_3_HC595
+#if USING_3_HC595 ==0
 void ld_hc595_send(uint32_t data)
 {
   uint8_t j;
@@ -65,7 +65,7 @@ void ld_hc595_send(uint32_t data)
 }
 #endif
 
-#ifdef USING_3_HC595
+#if USING_3_HC595 == 1
 void ld_hc595_send(uint32_t data)
 {
   uint8_t j;

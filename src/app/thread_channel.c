@@ -141,7 +141,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 			result = read_data(pch,i,1);//读id    
 			ld_iwdg_reload();	
 			/*=====================测试红外功能=======================*/
-			#ifndef NOT_USING_IR
+			#if NOT_USING_IR ==0
 			if(result){
 				//测试红外
 				if( (!is_ver_5()) && (!is_ver_6()) && (channel_id_is_not_null(pch->id)))//读到id,id不是5代宝，不是6代宝，读一次红外

@@ -345,14 +345,16 @@ AUTOSTART_THREAD_WITH_TIMEOUT(insert)
 {
 	static int i= 0;
 	PROCESS_BEGIN();
-	recover_when_powerup();//上电检测到已经有宝，按插入流程充电
+	recover_when_powerup();            //上电检测到已经有宝，按插入流程充电
 	while(1)
 	{
 		for(i=1;i<=CHANNEL_MAX;i++)
 		{
-			fsm_charge(i,NULL);
-			ld_iwdg_reload();
+			fsm_charge(i,NULL);           //充电状态机流程
+			ld_iwdg_reload();             //喂狗
 		}
+		channel_data_map_init();        //2019-9-19: 端口配置初始化:长时间运行时不排除加载到内存中的端口配置出现问题,引起所有通道不正常工作
+		                                //最好的办法是，检测并初始化配置，减小程序风险
 		os_delay(insert,200);
 		ld_iwdg_reload();
 	}

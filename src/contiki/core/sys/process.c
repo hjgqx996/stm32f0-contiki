@@ -171,6 +171,7 @@ exit_process(struct process *p, struct process *fromprocess)
   process_current = old_current;
 }
 /*---------------------------------------------------------------------------*/
+int call_process_counter=0;
 static void
 call_process(struct process *p, process_event_t ev, process_data_t data)
 {
@@ -187,6 +188,11 @@ call_process(struct process *p, process_event_t ev, process_data_t data)
     PRINTF("process: calling process '%s' with event %d\n", PROCESS_NAME_STRING(p), ev);
     process_current = p;
     p->state = PROCESS_STATE_CALLED;
+		call_process_counter++;
+		if(call_process_counter==8)
+		{
+			call_process_counter=0;
+		}
     ret = p->thread(&p->pt, ev, data);
     if(ret == PT_EXITED ||
        ret == PT_ENDED ||

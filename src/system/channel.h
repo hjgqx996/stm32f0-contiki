@@ -145,6 +145,7 @@ BOOL channel_id_is_not_null(U8*id);
 /*-----------------------------------------------------
 * channel 数据初始化 清0，地址设置
 -------------------------------------------------------*/
+void channel_data_map_init(void);
 BOOL channel_data_init(void);               //初始化 
 BOOL channel_data_clear_by_addr(U8 ch_addr);//清数据
 BOOL channel_data_clear(U8 ch);             //清数据

@@ -98,7 +98,7 @@ void PendSV_Handler(void)
   * @param  None
   * @retval None
   */
-#ifndef NOT_USING_IR
+#if NOT_USING_IR ==0
 extern void ld_ir_timer_100us(void);
 void TIM3_IRQHandler(void)
 {

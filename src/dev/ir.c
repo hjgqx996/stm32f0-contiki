@@ -5,7 +5,7 @@
 #include "dev.h"
 #include "config.h"
 
-#ifndef NOT_USING_IR
+#if  NOT_USING_IR == 0
 
 /*===================================================
                 ≈‰÷√Œƒº˛

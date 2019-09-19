@@ -13,7 +13,7 @@ void ld_system_init(void)
 	ld_flash_read(0, (U8*)&system.addr485, 6,RS485_ADDR);//读取485地址
 	
 	//是否支持IR,不支持IR时，只使用IIC
-	#ifdef NOT_USING_IR
+	#if NOT_USING_IR ==1
 	system.iic_ir_mode = SIIM_ONLY_IIC; 
 	#else
 	system.iic_ir_mode = SIIM_IIC_IR;                    //默认iic ir都支持

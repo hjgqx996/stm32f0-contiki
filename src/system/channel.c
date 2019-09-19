@@ -131,18 +131,21 @@ static void channel_error_check(U8 ch)
 ====================================================*/
 
 /*--------------------channel数据初始化-------------*/
-BOOL channel_data_init(void)
+void channel_data_map_init(void)
 {
 	int i =0;
-	memset(chs,0,sizeof(chs));
 	for(;i<CHANNEL_MAX;i++)
 	{
-		chs[i].map = &channel_config_map[i];
+		if(chs[i].map != &channel_config_map[i])
+			chs[i].map = &channel_config_map[i];
 	}	
+}
+BOOL channel_data_init(void)
+{
+	memset(chs,0,sizeof(chs));
+	channel_data_map_init();
 	return TRUE;
 }
-
-
 /*--------------- 清除第ch(1-n)个仓道的数据----------- */
 BOOL channel_data_clear(U8 ch)
 {

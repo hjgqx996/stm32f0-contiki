@@ -63,7 +63,7 @@ void   SysTick_Handler(void)
 		
 	//Ë¢ÐÂ595
 	#include "config.h"
-	#ifdef NOT_USING_IR
+	#if NOT_USING_IR==1
 	{
 		extern void ld_gpio_refresh();
 		ld_gpio_refresh();

@@ -2,6 +2,8 @@
 /*===================================================
                 上行协议通讯数据包操作函数
 ====================================================*/
+extern System system;
+#define addr_485() system.addr485
 /*接收一个字节，返回是否成功接收一个数据包*/
 HPacket *packet_recv(U8 data,HPacket*m)
 {
@@ -22,6 +24,7 @@ HPacket *packet_recv(U8 data,HPacket*m)
 							goto DECODE_ERROR;
 			//add,cmd,h,l
 			case 2:
+					if( (data != 0xFE) && (data !=addr_485()) )goto DECODE_ERROR;
 			case 3:
 			case 4:
 			case 5:
@@ -49,7 +52,7 @@ HPacket *packet_recv(U8 data,HPacket*m)
     }
     return NULL;
     DECODE_ERROR:
-    memset(s,0,sizeof(PacketState));
+		s->len=s->state=0;
     return NULL;
 }
 /*===================================================
