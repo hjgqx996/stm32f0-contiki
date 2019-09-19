@@ -29,7 +29,7 @@ typedef enum{
 
 //<s>使用硬件配置
 //<i> "8-16-NAS-V21.0.h" "25-50-NAS-V5.h" "25-50-NAS-V6.h" "25-50-NAS-V2.h" "25-50-NAS-V4.h"
-#define USING_HARDWARE_CONFIG  "25-50-NAS-V4.h"
+#define USING_HARDWARE_CONFIG  "25-50-NAS-V6.h"
 #include USING_HARDWARE_CONFIG
 
 //<o>上电自检次数

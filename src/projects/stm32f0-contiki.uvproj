@@ -698,7 +698,7 @@
             <File>
               <FileName>build.bat</FileName>
               <FileType>5</FileType>
-              <FilePath>..\生成\build.bat</FilePath>
+              <FilePath>..\说明\build.bat</FilePath>
             </File>
           </Files>
         </Group>
