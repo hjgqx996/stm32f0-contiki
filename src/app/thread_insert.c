@@ -251,7 +251,7 @@ void fsm_charge(U8 ch,int arg)
 	//85%-99% 补充3次,当充电完成后，计数清0
 	state(recharge_3_times)
 	{
-		if(counter<3)
+		if(counter<=3)
 	  {//只充3次
 			if(timeout(hour1))//超时补充
 			{
@@ -261,11 +261,12 @@ void fsm_charge(U8 ch,int arg)
 				request=TRUE;
 				request_charge_on(ch,3600,FALSE);//申请充电
 			}		
-		}//3次补充，都没有超过99%,只能等了
+		}//3次补充，都没有超过99%==>充电完成
 		else{
 			hour1=s120=0;
 			request=FALSE;
 			request_charge_off(ch);
+			goto charge_complete;
 		}//申请断电
 
 		//电量不在85%-99%,重新检测是否补充

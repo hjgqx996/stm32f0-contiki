@@ -37,11 +37,19 @@ for /f "tokens=2 delims==x" %%a in (tmp.txt) do (
 ) 
 if %hver%==""  set hver=%hversion:~0,4%
 
+
 ::输出名字
 set name=%pver%-%hver%-%ver%
 echo 文件名=%name%
 del tmp.txt
 del tmp1.txt
+
+::发布版本
+set /a hhver=0x%hver%
+set /a vver=0x%ver%
+set release=fw_slot_nas_t%hhver%_%vver%
+echo 发布名=%release%
+
 
 ::生成镜像的文件夹
 set folder=%pver%
@@ -56,6 +64,9 @@ del ..\生成\%folder%\*.hex   /F /Q
 %fromelf% --bin --output=.\objects\v6.bin  .\objects\stm32f0-contiki.axf
 cmd.exe /C copy .\objects\v6.bin               ..\生成\%folder%\%name%.bin
 cmd.exe /C copy .\objects\stm32f0-contiki.hex  ..\生成\%folder%\%name%.hex
+
+::生成发布版本用于后台升级
+cmd.exe /C copy .\objects\v6.bin               ..\生成\%folder%\%release%.bin
 
 ::生成生产试产文件 bootloader+app
 set bd=..\说明\bootloader\bootloader.hex
