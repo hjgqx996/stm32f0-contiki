@@ -12,7 +12,7 @@
 #define HARDWARE_VERSION          0x0203
 //<o>软件编号<0-0xFFFF:1>
 //<i>软件编号从0001开始叠加
-#define SOFTWARE_VERSION          0x0014
+#define SOFTWARE_VERSION          0x0016
 
 //<o>仓道个数
 #define CHANNEL_MAX           4

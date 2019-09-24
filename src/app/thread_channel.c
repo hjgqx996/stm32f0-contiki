@@ -48,7 +48,7 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 				{
 					//读不到数据
 					pch->readerr++;
-					return TRUE;
+					return FALSE;
 				}else{
 					//读到数据
 					pch->readok++;
@@ -61,9 +61,17 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 			result = channel_read(pch,RC_READ_DATA,dataout,650,FALSE);//实测512ms
 			if(result==FALSE)
 			{
+				//充电宝休眠，加电再读
+				#if POWERUP_WHILE_READ_ERROR==1
+				if(pch->counter_while_powerup<POWERUP_TIMES){
+					request_charge_on(ch,POWREUP_TIME_WHILE_READ_ERROR,TRUE,TRUE);
+					pch->counter_while_powerup++;					
+				}
+				#endif				
+				
 				//读不到数据
 				pch->readerr++;
-				return TRUE;
+				return FALSE;
 			}else{
 				//读到数据
 				{
@@ -74,6 +82,12 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 				{
 					pch->state.read_ok=1;                                  //成功读到数据
 					pch->state.read_error = pch->readerr=0;                //错误计数清0
+					
+					//充电宝休眠，加电再读，清计数
+					#if POWERUP_WHILE_READ_ERROR==1
+						pch->counter_while_powerup=0;
+					#endif
+					
 				}
 				pch->readok=0;
 			}	

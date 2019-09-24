@@ -10,10 +10,14 @@ extern BOOL is_system_in_return(U8 addr);
 																				
 //宏:申请一次充电充电时间为seconds秒,充电可以被挂起
 #define request_charge_and_wait_timeout(seconds,hard,nextline)  \
-			/*申请充电*/                  request_charge_on(ch,seconds,hard); \
+			/*申请充电*/                  request_charge_on(ch,seconds,hard,FALSE); \
 			/*设置超时时间*/              to = time(0)+1000*seconds; \
 			/*标志一下当前为申请充电状态*/request=TRUE;goto nextline
 
+//温度挂起条件
+//电量>=50% 温度>50度,挂起充电
+//电量<50%  温度>55度,挂起充电
+#define is_temperature_high()   ( (pch->Ufsoc>=50&&pch->Temperature>50) ||(pch->Ufsoc <50&&pch->Temperature>55)	)
 /*===================================================
 						  私有变量
 ====================================================*/
@@ -259,7 +263,7 @@ void fsm_charge(U8 ch,int arg)
 				hour1=3600;
 				s120=0;
 				request=TRUE;
-				request_charge_on(ch,3600,FALSE);//申请充电
+				request_charge_on(ch,3600,FALSE,FALSE);//申请充电
 			}		
 		}//3次补充，都没有超过99%==>充电完成
 		else{
@@ -283,10 +287,10 @@ void fsm_charge(U8 ch,int arg)
 		{
 			hour3=3600*3;
 			request=TRUE;s120=0;
-			request_charge_on(ch,3600,FALSE);//申请充电
+			request_charge_on(ch,3600,FALSE,FALSE);//申请充电
 		}
-		//电量>=85%,退出无限补充
-	  if(pch->Ufsoc>=BUCHONG_1HOUR_STOP_UFSOC_MAX)
+		//电量>85%,退出无限补充
+	  if(pch->Ufsoc>BUCHONG_1HOUR_STOP_UFSOC_MAX)
 		{
 		  hour3=s120=0;
 			goto recharge;
@@ -309,12 +313,14 @@ void fsm_charge(U8 ch,int arg)
 		return;
 	}
 	/*================================温度过高,挂起计时,等待温度降低,恢复充电===========================================*/
-	if( ( ((pch->Ufsoc>=50) && (pch->Temperature>50)) //电量>=50% 温度>50度,挂起充电
-		  ||((pch->Ufsoc <50) && (pch->Temperature>55))	//电量<50%  温度>55度,挂起充电
-			) && request==TRUE && HTemp==FALSE){
+	if(is_temperature_high())
+	{
+		if(request==TRUE && HTemp==FALSE)
+		{
 				hang=TRUE;                //挂起
 				HTemp=TRUE;               //高温标志
 				request_charge_hangup(ch);//立即断电
+		}
 	}else{
 		if(request==TRUE && HTemp==TRUE)
 			request_charge_recovery(ch);//恢复排队

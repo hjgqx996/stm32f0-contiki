@@ -29,7 +29,7 @@ typedef enum{
 
 //<s>使用硬件配置
 //<i> "8-16-NAS-V21.0.h" "25-50-NAS-V5.h" "25-50-NAS-V6.h" "25-50-NAS-V2.h" "25-50-NAS-V4.h"
-#define USING_HARDWARE_CONFIG  "25-50-NAS-V2.h"
+#define USING_HARDWARE_CONFIG  "25-50-NAS-V5.h"
 #include USING_HARDWARE_CONFIG
 
 //<o>上电自检次数
@@ -85,6 +85,15 @@ typedef enum{
 //</h>
 
 //<h>充电流程参数
+
+//<e>读不到是否加电
+#define POWERUP_WHILE_READ_ERROR       1
+//<o> 加电时长(秒) <#-1>
+#define POWREUP_TIME_WHILE_READ_ERROR  2
+//<o> 加电次数
+#define POWERUP_TIMES                  1
+//</e>
+
 //<h> 补充
 //<o>停止补充电量%
 #define BUCHONG_STOP_UFSOC_MAX            99

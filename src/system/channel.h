@@ -97,6 +97,11 @@ typedef struct{
 	ChannelState state;             //运行状态
 	ChannelWarn  warn;              //运行告警
 	ChannelError error;             //运行错误
+	
+	/*--------------充电宝突然读不到，加电计数--------*/
+	#if POWERUP_WHILE_READ_ERROR==1
+	U8 counter_while_powerup;
+	#endif
 		
 	/*-------------通道数据-----------------------------iic-----ir-*/
 	volatile U8  Ufsoc;             //剩余电量  %        有     有
