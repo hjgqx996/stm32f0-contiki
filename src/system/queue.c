@@ -5,9 +5,6 @@
 #define is_force_charge_on(ch)    ((system.mode==1) && (system.chs[ch-1]==0x01))   //强制充电
 #define is_force_charge_off(ch)   ((system.mode==1) && (system.chs[ch-1]==0x00))   //强制断电
 
-/*是否紧急充电*/
-#define is_hard_charge_on()       (qt->used==1 && qt->hard==1)
-
 /*互斥(contiki非抢占,所以不会多线程同时访问)*/
 #define queue_lock()
 #define queue_unlock()
@@ -25,12 +22,9 @@ typedef struct{
 	charge:1,  				//允许充电:1   不许充电:0
 	hard:1,           //应急充电，不被打断
 	inited:1,         //初始化
-	saved:1,          //是否保存上一次的充电时间
-	harded:1,         //保存上一次的充电的hard
-	reversed:2;				//未使用位
+	reversed:4;				//未使用位
 	U8 ch;            //仓道号 1-n
 	U32 charge_time;	//充电时间(秒)
-  U32 save;         //如果有插入充电，保存上一次充电时间	
 }Queue_Type;
 #pragma pack()
 
@@ -116,13 +110,7 @@ static void charge_timeout(void)
 						l.charge_time--;
 					else
 					{
-						//如果上一次保存了充电时间，恢复上一次的充电时间
-						if(l.saved){
-							l.charge_time=l.save;
-							l.hard=l.harded;
-							l.saved=l.harded=l.save=0;
-						}else
-							l.used=0;//停止充电
+						l.used=0;//停止充电
 					}
 				}
 			}		
@@ -180,21 +168,11 @@ static BOOL direct_charge(U8 ch,BOOL charged)
 ====================================================*/
 
 /*申请充电*/
-BOOL request_charge_on(U8 ch,U32 seconds,BOOL hard,BOOL save)
+BOOL request_charge_on(U8 ch,U32 seconds,BOOL hard)
 {
 	Queue_Type *qt = request_channel_find(ch);
 	if(!inited)request_init();//未初始化，应该初始化
 	if(qt==NULL)return FALSE;
-	if(qt->used && save){
-		qt->saved=1;
-		qt->save=qt->charge_time;//保存上一次充电
-		qt->harded=qt->hard;
-	}
-	else{
-		qt->saved=0;
-		qt->save=0;
-		qt->harded=0;
-	}
   qt->hard=hard;            //hard=1:表示5秒or10min紧急充电
 	qt->charge_time = seconds;//+(((time(0)%1000)>500)?1:0);//申请充电时间
 	qt->used=1;               //有效标志 
@@ -206,7 +184,6 @@ BOOL request_charge_off(U8 ch)
 {
 	if(!inited)request_init();
 	Queue_Type *qt = request_channel_find(ch);
-	if(is_hard_charge_on() && ( (qt->charge_time<=5)||(qt->saved) ) )return FALSE;//最后几秒，就不要停啦，充完再停
 	qt->charge=qt->hard=qt->used=0;//复位有效标志
 	qt->charge_time=0;
 	{

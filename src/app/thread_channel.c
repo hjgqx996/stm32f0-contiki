@@ -1,4 +1,6 @@
 #include "includes.h"
+
+extern void fsm_charge(U8 ch,int arg);
 /*--------------------------------------------------------
 1.对所有通道检查，看充电宝是否有效
 2.有效的充电宝执行以下操作:
@@ -24,11 +26,24 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 	//根据失败次数，判断成功 or 失败
 	if(pch->readerr>=BAO_READ_ERROR_RETYR_TIMES) 
 	{
+		//调试信息
 		#ifdef USING_DEBUG_INFO
 		 if(channel_id_is_not_null(pch->id))ld_debug_printf(3,ch,0,pch->iic_ir_mode);
 		#endif
+		
+		//清除仓道数据
 		channel_data_clear(ch);
 		pch->readok=0; pch->readerr=0;pch->state.read_error=1;pch->state.read_ok=0;
+		
+		//充电宝休眠，加电再读
+		#if POWERUP_WHILE_READ_ERROR==1
+		if(pch->counter_while_powerup<POWERUP_TIMES){
+			fsm_charge(ch,0x99);          //充电状态机复位,重新进入流程
+			pch->counter_while_powerup++;		
+		}else
+		#endif	
+			fsm_charge(ch,0x88);          //充电状态机复位,不充电		
+		
 	}
 
 	/*摆臂开关有效可以读数据*/
@@ -61,23 +76,12 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 			result = channel_read(pch,RC_READ_DATA,dataout,650,FALSE);//实测512ms
 			if(result==FALSE)
 			{
-				//充电宝休眠，加电再读
-				#if POWERUP_WHILE_READ_ERROR==1
-				if(pch->counter_while_powerup<POWERUP_TIMES){
-					request_charge_on(ch,POWREUP_TIME_WHILE_READ_ERROR,TRUE,TRUE);
-					pch->counter_while_powerup++;					
-				}
-				#endif				
-				
 				//读不到数据
 				pch->readerr++;
 				return FALSE;
 			}else{
 				//读到数据
-				{
-					void fsm_charge(U8 ch,int arg);
-					fsm_charge(ch,0x87);                                   //通知充电状态机，我读到数据了
-				}
+				fsm_charge(ch,0x87);                                     //通知充电状态机，我读到数据了
 				if(channel_id_is_not_null(pch->id) && (pch->readok>=1) ) //判断是否读到id
 				{
 					pch->state.read_ok=1;                                  //成功读到数据
@@ -87,7 +91,6 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 					#if POWERUP_WHILE_READ_ERROR==1
 						pch->counter_while_powerup=0;
 					#endif
-					
 				}
 				pch->readok=0;
 			}	
@@ -117,12 +120,15 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 			delayms(1);
 			if(!isvalid_baibi())
 			{
-				extern void fsm_charge(U8 ch,int arg);
-				fsm_charge(ch,0x88);//充电状态机复位
+				//充电状态机复位
+				fsm_charge(ch,0x88);
 				
+				//调试信息
 				#ifdef USING_DEBUG_INFO
 				 if(channel_id_is_not_null(pch->id))ld_debug_printf(4,ch,0,pch->iic_ir_mode);
 				#endif
+				
+				//清除数据
 				channel_data_clear(ch);
 				return FALSE;
 			}
@@ -216,6 +222,8 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 				read_data(pch,i,3);//加密
 				ld_iwdg_reload();	
 			}
+			/*=====================充电宝休眠唤醒====================*/
+			
 			/*-----------循环等待时间---------------------------------*/
 			if((result) && (channel_read_delay_ms>0)){}
 			else 

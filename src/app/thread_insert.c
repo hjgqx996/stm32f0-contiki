@@ -10,7 +10,7 @@ extern BOOL is_system_in_return(U8 addr);
 																				
 //宏:申请一次充电充电时间为seconds秒,充电可以被挂起
 #define request_charge_and_wait_timeout(seconds,hard,nextline)  \
-			/*申请充电*/                  request_charge_on(ch,seconds,hard,FALSE); \
+			/*申请充电*/                  request_charge_on(ch,seconds,hard); \
 			/*设置超时时间*/              to = time(0)+1000*seconds; \
 			/*标志一下当前为申请充电状态*/request=TRUE;goto nextline
 
@@ -133,7 +133,7 @@ void fsm_charge(U8 ch,int arg)
 	Channel*pch=channel_data_get(ch);if(pch==NULL)return;//仓道数据
 
 	if((is_system_in_return(pch->addr)==TRUE) )return;   //当前是归还仓道，不读(另有归还线程在读)
-	if(arg==0x88){line=0;return;}                        //复位,arg=0x88
+	if(arg==0x88){line=0;request_charge_off(ch);return;} //复位,arg=0x88,不充电
   if(arg==0x99){if(pch->state.read_ok)return; pch->first_insert=TRUE; goto entry;}   //中断触发,上电触发(0x99),清数据,跳到line=1
 	if(arg==0x87){if(line==0) goto stop_charge;else return;} //充电宝插入,无法识别, 但 后来 可以识别了==>直接跳到(停止充电)stop_charge;
 	/*-----------------------充电状态机-------------------------------------------*/
@@ -170,14 +170,14 @@ void fsm_charge(U8 ch,int arg)
 					if(pch->Ufsoc>0){goto stop_charge;}  //电量>0===>停止充电
 					else 
 					{                                  
-						request_charge_and_wait_timeout(600,TRUE,charge_10_min);//电为0 ===>申请充电10分钟
+						request_charge_and_wait_timeout(POWERUP_TIME_0_UfSOC,TRUE,charge_10_min);//电为0 ===>申请充电10分钟
 					}
 				/*---------------不能识别---------------------------------*/
 			 }else{	
 					pch->first_insert=FALSE;						 
 					if(last==1)
 					{                        
-							request_charge_and_wait_timeout(5,TRUE,charge_5_second);//===>充电5秒
+							request_charge_and_wait_timeout(POWERUP_TIME_5_SECONDS,TRUE,charge_5_second);//===>充电5秒
 					}				
 					else{ line=0;}//充电5秒无法识别==>复位                
 			 }
@@ -263,7 +263,7 @@ void fsm_charge(U8 ch,int arg)
 				hour1=3600;
 				s120=0;
 				request=TRUE;
-				request_charge_on(ch,3600,FALSE,FALSE);//申请充电
+				request_charge_on(ch,3600,FALSE);//申请充电
 			}		
 		}//3次补充，都没有超过99%==>充电完成
 		else{
@@ -287,7 +287,7 @@ void fsm_charge(U8 ch,int arg)
 		{
 			hour3=3600*3;
 			request=TRUE;s120=0;
-			request_charge_on(ch,3600,FALSE,FALSE);//申请充电
+			request_charge_on(ch,3600,FALSE);//申请充电
 		}
 		//电量>85%,退出无限补充
 	  if(pch->Ufsoc>BUCHONG_1HOUR_STOP_UFSOC_MAX)
