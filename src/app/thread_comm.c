@@ -133,7 +133,7 @@ static void send_update_state(HPacket*hp,U8 s)
 {
 	U8*data=hp->p.data;
 	data[0]=s;//处理结果
-  packet_send(hp,0x05,1,data,system.addr485);
+  packet_send(hp,0x06,1,data,system.addr485);
 }
 
 //烧录器回复0x16
