@@ -48,6 +48,7 @@ del tmp1.txt
 set /a hhver=0x%hver%
 set /a vver=0x%ver%
 set release=fw_slot_nas_t%hhver%_%vver%
+set release0=fw_slot_nas_t0_%vver%
 echo 发布名=%release%
 
 
@@ -67,6 +68,7 @@ cmd.exe /C copy .\objects\stm32f0-contiki.hex  ..\生成\%folder%\%name%.hex
 
 ::生成发布版本用于后台升级
 cmd.exe /C copy .\objects\v6.bin               ..\生成\%folder%\%release%.bin
+cmd.exe /C copy .\objects\v6.bin               ..\生成\%folder%\%release0%.bin
 
 ::生成生产试产文件 bootloader+app
 set bd=..\说明\bootloader\bootloader.hex
