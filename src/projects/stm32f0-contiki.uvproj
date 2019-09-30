@@ -725,6 +725,16 @@
               <FileType>5</FileType>
               <FilePath>..\说明\上行命令.txt</FilePath>
             </File>
+            <File>
+              <FileName>bootloader-19200.hex</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\说明\bootloader\bootloader-19200.hex</FilePath>
+            </File>
+            <File>
+              <FileName>bootloader-115200.hex</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\说明\bootloader\bootloader-115200.hex</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

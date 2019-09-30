@@ -276,8 +276,9 @@ void fsm_charge(U8 ch,int arg)
 		//电量不在85%-99%,重新检测是否补充
 		if(!((pch->Ufsoc<=BUCHONG_STOP_UFSOC_MAX) && (pch->Ufsoc>BUCHONG_1HOUR_STOP_UFSOC_MAX)))
 		{
-			hour1=s120=counter=0;//又可以重新3次补充了
-			goto recharge;
+			hour1=counter=0;//又可以重新3次补充了
+			if(s120==0)     //充满再跳
+				goto recharge;
 		}
 	}
 	/*================================状态:每隔3小时无限补充=========================================================*/

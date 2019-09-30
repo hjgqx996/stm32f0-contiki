@@ -37,6 +37,16 @@ for /f "tokens=2 delims==x" %%a in (tmp.txt) do (
 ) 
 if %hver%==""  set hver=%hversion:~0,4%
 
+::bootloader版本115200 19200
+find "#define BAUDRATE" %configfile% >tmp.txt
+set baud=""
+set hbaud=""
+for /f "tokens=3 delims== " %%a in (tmp.txt) do (
+  if %hbaud%=="" set hbaud=%%a
+) 
+if %baud%==""  set baud=%hbaud%
+set bootname=bootloader-%baud%
+echo bootloader=%bootname%
 
 ::输出名字
 set name=%pver%-%hver%-%ver%
@@ -71,7 +81,7 @@ cmd.exe /C copy .\objects\v6.bin               ..\生成\%folder%\%release%.bin
 cmd.exe /C copy .\objects\v6.bin               ..\生成\%folder%\%release0%.bin
 
 ::生成生产试产文件 bootloader+app
-set bd=..\说明\bootloader\bootloader.hex
+set bd=..\说明\bootloader\%bootname%.hex
 set prj=..\说明\bootloader\stm32f03.jflash
 %jflash% -openprj%prj% -open%bd% -merge..\生成\%folder%\%name%.hex -saveas..\生成\%folder%\%name%(工厂烧录).hex -exit
 echo 生成:%name%.bin

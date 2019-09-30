@@ -17,6 +17,9 @@
 //<o>仓道个数
 #define CHANNEL_MAX           4
 
+//<o>串口波特率
+#define BAUDRATE                  115200
+
 
 //电磁阀电源使能
 #define dian_ci_fa_power(enable)   ld_gpio_set(43,enable)

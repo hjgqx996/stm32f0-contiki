@@ -100,7 +100,9 @@ typedef struct{
 	
 	/*--------------充电宝突然读不到，加电计数--------*/
 	#if POWERUP_WHILE_READ_ERROR==1
-	U8 counter_while_powerup;
+	U8   counter_while_powerup;       //加电次数
+	int  one_day_timer  ;             //倒计时  1天(秒)
+	U8   one_day_counter;             //一天内加电总次数
 	#endif
 		
 	/*-------------通道数据-----------------------------iic-----ir-*/

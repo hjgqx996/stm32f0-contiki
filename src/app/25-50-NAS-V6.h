@@ -17,9 +17,14 @@
 //<o>仓道个数
 #define CHANNEL_MAX           5
 
+
+//<o>串口波特率
+#define BAUDRATE              19200
+
 //<e>不使用 IR
 #define NOT_USING_IR          0
 //</e>
+
 
 //电磁阀电源使能
 #define dian_ci_fa_power(enable)

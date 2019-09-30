@@ -92,9 +92,11 @@ typedef enum{
 #define POWERUP_TIME_0_UfSOC           599
 
 //<e>读不到是否加电
-#define POWERUP_WHILE_READ_ERROR       0
-//<o> 加电次数
+#define POWERUP_WHILE_READ_ERROR       1
+//<o> 连续加电次数
 #define POWERUP_TIMES                  1
+//<o> 一天内总加电次数
+#define POWERUP_ONE_DAY                5
 //</e>
 
 //<h> 补充

@@ -17,6 +17,10 @@
 //<o>仓道个数
 #define CHANNEL_MAX           5
 
+
+//<o>串口波特率
+#define BAUDRATE              115200
+
 //<e>不使用 IR
 #define NOT_USING_IR          1
 //</e>

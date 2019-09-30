@@ -392,7 +392,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_entry)
 			system.firmware_updata_flag=0x88;
 			ld_flash_write(0,&system.firmware_updata_flag,1,FIRMWARE_updata);
 			send_update_state(hp,0x01);
-			delayms(1000);
+			delayms(500);
 			cpu_nvic_reset();//复位		
 		}
 	}
@@ -500,7 +500,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(packet)
 {
 	PROCESS_BEGIN();
   memset(&hpacket,0,sizeof(hpacket));         //缓冲清0 	
-	ld_uart_open(COM_485,115200,8,0,1,0,400);  //打开串口
+	ld_uart_open(COM_485,BAUDRATE,8,0,1,0,400);  //打开串口
 	enable_485_rx();                            //使能接收
 	while(1)
 	{	

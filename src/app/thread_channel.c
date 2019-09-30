@@ -37,9 +37,10 @@ static BOOL read_data(Channel*pch,U8 ch,U8 step)
 		
 		//充电宝休眠，加电再读
 		#if POWERUP_WHILE_READ_ERROR==1
-		if(pch->counter_while_powerup<POWERUP_TIMES){
+		if( (pch->one_day_counter<POWERUP_ONE_DAY) && (pch->counter_while_powerup<POWERUP_TIMES) ){
 			fsm_charge(ch,0x99);          //充电状态机复位,重新进入流程
-			pch->counter_while_powerup++;		
+			pch->counter_while_powerup++;	
+      pch->one_day_counter++;			
 		}else
 		#endif	
 			fsm_charge(ch,0x88);          //充电状态机复位,不充电		
