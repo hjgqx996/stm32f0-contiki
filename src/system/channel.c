@@ -287,5 +287,26 @@ void channels_les_flash_timer(int timer_ms)
 			else 
 				ld_gpio_set(ch->map->io_led,LOW);
 		}
+		
+		/*一天加电计时*/
+		#if POWERUP_WHILE_READ_ERROR==1
+		ch->one_day_timer-=timer_ms;
+		if(ch->one_day_timer<=0)
+		{
+			ch->one_day_timer=24*3600*1000;
+			ch->one_day_counter=0;
+		}
+		#endif
+		
 	}
 }
+
+
+
+
+
+
+
+
+
+
