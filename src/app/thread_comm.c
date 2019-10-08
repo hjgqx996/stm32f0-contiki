@@ -128,6 +128,14 @@ static void send_ctrl_state(HPacket*hp,U8 ctrl,U8 s)
 	data[2]=s;//处理结果
   packet_send(hp,0x04,3,data,system.addr485);
 }
+//回复进入升级
+static void send_update_entry(HPacket*hp,U8 s)
+{
+	U8*data=hp->p.data;
+	data[0]=s;//处理结果
+  packet_send(hp,0x05,1,data,system.addr485);
+}
+
 //回复升级状态
 static void send_update_state(HPacket*hp,U8 s)
 {
@@ -391,7 +399,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_entry)
 			//保存标志 
 			system.firmware_updata_flag=0x88;
 			ld_flash_write(0,&system.firmware_updata_flag,1,FIRMWARE_updata);
-			send_update_state(hp,0x01);
+			send_update_entry(hp,0x01);
 			delayms(500);
 			cpu_nvic_reset();//复位		
 		}

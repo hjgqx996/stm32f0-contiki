@@ -19,7 +19,7 @@
 
 
 //<o>串口波特率
-#define BAUDRATE              19200
+#define BAUDRATE              115200
 
 //<e>不使用 IR
 #define NOT_USING_IR          0
