@@ -49,7 +49,7 @@ set bootname=bootloader-%baud%
 echo bootloader=%bootname%
 
 ::输出名字
-set name=%pver%-%hver%-%ver%
+set name=%pver%(%hver%-%ver%)
 echo 文件名=%name%
 del tmp.txt
 del tmp1.txt
@@ -70,22 +70,18 @@ if not exist ..\生成\%folder% (
 del ..\生成\%folder%\*.bin   /F /Q
 del ..\生成\%folder%\*.hex   /F /Q
 
-
-
 %fromelf% --bin --output=.\objects\v6.bin  .\objects\stm32f0-contiki.axf
-cmd.exe /C copy .\objects\v6.bin               ..\生成\%folder%\%name%.bin
-cmd.exe /C copy .\objects\stm32f0-contiki.hex  ..\生成\%folder%\%name%.hex
+@echo on
 
 ::生成发布版本用于后台升级
+cmd.exe /C copy .\objects\v6.bin               ..\生成\%folder%\%name%.bin
 cmd.exe /C copy .\objects\v6.bin               ..\生成\%folder%\%release%.bin
 cmd.exe /C copy .\objects\v6.bin               ..\生成\%folder%\%release0%.bin
+cmd.exe /C copy .\objects\stm32f0-contiki.hex  ..\生成\%folder%\%name%.hex
 
 ::生成生产试产文件 bootloader+app
 set bd=..\说明\bootloader\%bootname%.hex
 set prj=..\说明\bootloader\stm32f03.jflash
 %jflash% -openprj%prj% -open%bd% -merge..\生成\%folder%\%name%.hex -saveas..\生成\%folder%\%name%(工厂烧录).hex -exit
-echo 生成:%name%.bin
-echo 生成:%name%.hex
-echo 生成:%name%(工厂烧录).hex
 exit
 
