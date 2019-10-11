@@ -57,6 +57,7 @@ int ld_uart_isp(U8 xUart,char*byte,U8 type);	//type: 0 接收    1发送
 void ld_ir_timer_100us(void);
 BOOL ld_ir_read_start(U8 ir,U8 re,U8 cmd,U8 wanlen);
 int ld_ir_read_isok(U8*dataout,U8 size);
+int ld_ir_read_state(void);                       /*查看红外当前故障类型:-1 ：前导码  -2:数据   0:NULL  2: 成功*/
 /*===================================================
                 iic数据接口
 ====================================================*/

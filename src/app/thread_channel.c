@@ -171,15 +171,18 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 						//隔一段时间读一次红外，如果失败，就认为红外故障了
 						U16 dataout[8];
 						
-						if(pch->test_ir_counter%3==0)
+						if(pch->test_ir_counter%3==0)//3次循环读一次红外
 						{
 							pch->test_ir_counter=0;
-							if(channel_read_from_ir(pch,RC_READ_DATA,(U8*)dataout,650)==FALSE)
+							if(channel_read_from_ir(pch,RC_READ_DATA,(U8*)dataout,650)==FALSE)//读失败
 							{
-								pch->ir_error_counter=BAO_IR_ERROR_TIMES;//红外识别故障
-								pch->error.ir=1;
+								if( (ld_ir_read_state()== -1)  || (time(0) < 120000) ) //开机2分钟后开始滤波   
+								{
+									pch->ir_error_counter=BAO_IR_ERROR_TIMES;//红外识别故障
+								  pch->error.ir=1;
+								}
 							}else{
-								pch->ir_error_counter=0;
+								pch->ir_error_counter=0;//读取正确，清标志
 								pch->error.ir=0;
 								pch->test_ir_counter++;
 								goto WAIT_NEXT_DELAY;
