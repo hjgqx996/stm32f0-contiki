@@ -230,8 +230,7 @@ int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL on
     result = channel_read_from_ir(pch,cmd,dataout,ms_timeout);
 		if(result==TRUE)return result;
 		//红外识别故障++
-		if(pch->ir_error_counter<200)
-			pch->ir_error_counter++;
+		pch->ir_error_counter++;
 		
 		if(!force_using_ir())//非强制使用ir
 		{

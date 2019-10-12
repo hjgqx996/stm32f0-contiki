@@ -121,6 +121,8 @@ static void channel_error_check(U8 ch)
 	else pch->error.thimble = 0;
 	
 	//ºìÍâÊ¶±ð¹ÊÕÏ
+	if(pch->ir_error_counter>=BAO_IR_ERROR_TIMES)
+		pch->ir_error_counter=BAO_IR_ERROR_TIMES;
 	if( (pch->ir_error_counter>=BAO_IR_ERROR_TIMES)  && (pch->error.baibi==0))
 		pch->error.ir=1;
 	else 

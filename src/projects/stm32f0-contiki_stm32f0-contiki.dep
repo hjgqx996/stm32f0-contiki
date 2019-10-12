@@ -1,10 +1,10 @@
 Dependencies for Project 'stm32f0-contiki', Target 'stm32f0-contiki': (DO NOT MODIFY !)
-F (..\app\main.c)(0x5D81966C)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (..\app\main.c)(0x5DA1858C)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -57,8 +57,8 @@ F (..\app\thread_insert.c)(0x5D915B1A)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=in
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -107,12 +107,12 @@ I (..\cpu\inc\stm32f0xx_usart.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_wwdg.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_misc.h)(0x5D8192D6)
 I (..\system\queue.h)(0x5D8ACAEC)
-F (..\app\thread_channel.c)(0x5DA14A82)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\thread_channel.o --omf_browse .\objects\thread_channel.crf --depend .\objects\thread_channel.d)
+F (..\app\thread_channel.c)(0x5DA18496)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\thread_channel.o --omf_browse .\objects\thread_channel.crf --depend .\objects\thread_channel.d)
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -165,8 +165,8 @@ F (..\app\thread_comm.c)(0x5DA1696A)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=inte
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -219,8 +219,8 @@ F (..\app\thread_eject.c)(0x5D8192D6)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=int
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -269,13 +269,13 @@ I (..\cpu\inc\stm32f0xx_usart.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_wwdg.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_misc.h)(0x5D8192D6)
 I (..\system\queue.h)(0x5D8ACAEC)
-F (..\app\config.h)(0x5DA169FD)()
+F (..\app\config.h)(0x5DA17E5B)()
 F (..\app\config.c)(0x5D8192D6)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\config.o --omf_browse .\objects\config.crf --depend .\objects\config.d)
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -327,14 +327,14 @@ I (..\system\queue.h)(0x5D8ACAEC)
 F (..\app\25-50-NAS-V2.h)(0x5DA14203)()
 F (..\app\25-50-NAS-V4.h)(0x5D9EDAE3)()
 F (..\app\25-50-NAS-V5.h)(0x5D9171E6)()
-F (..\app\25-50-NAS-V6.h)(0x5DA13E0C)()
+F (..\app\25-50-NAS-V6.h)(0x5DA185BB)()
 F (..\app\8-16-NAS-V21.0.h)(0x5D917644)()
-F (..\system\channel.c)(0x5DA1304F)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\channel.o --omf_browse .\objects\channel.crf --depend .\objects\channel.d)
+F (..\system\channel.c)(0x5DA18304)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\channel.o --omf_browse .\objects\channel.crf --depend .\objects\channel.d)
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -383,12 +383,12 @@ I (..\cpu\inc\stm32f0xx_usart.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_wwdg.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_misc.h)(0x5D8192D6)
 I (..\system\queue.h)(0x5D8ACAEC)
-F (..\system\channel_read.c)(0x5D82F951)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\channel_read.o --omf_browse .\objects\channel_read.crf --depend .\objects\channel_read.d)
+F (..\system\channel_read.c)(0x5DA182AC)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\channel_read.o --omf_browse .\objects\channel_read.crf --depend .\objects\channel_read.d)
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -441,8 +441,8 @@ F (..\system\packet.c)(0x5D82ED4E)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interw
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -495,8 +495,8 @@ F (..\system\queue.c)(0x5D8ACAEC)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwo
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -549,8 +549,8 @@ F (..\system\system.c)(0x5D919BA0)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interw
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -600,8 +600,8 @@ I (..\cpu\inc\stm32f0xx_wwdg.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_misc.h)(0x5D8192D6)
 I (..\system\queue.h)(0x5D8ACAEC)
 F (..\dev\driver_config.c)(0x5D8192D6)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\driver_config.o --omf_browse .\objects\driver_config.crf --depend .\objects\driver_config.d)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\dev\driver_config_types.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
@@ -636,8 +636,8 @@ F (..\dev\dev.c)(0x5D832A1A)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --
 I (..\app\includes.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)
@@ -829,8 +829,8 @@ I (D:\Keil\ARM\ARMCC\include\stdint.h)(0x51C7C554)
 I (D:\Keil\ARM\ARMCC\include\string.h)(0x51C7C554)
 I (..\lib\lib.h)(0x5D8192D6)
 I (..\system\channel.h)(0x5DA1354F)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\dev\dev.h)(0x5D9FF659)
 I (D:\Keil\ARM\ARMCC\include\time.h)(0x51C7C554)
 F (..\dev\timer3.c)(0x5D8192D6)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\timer3.o --omf_browse .\objects\timer3.crf --depend .\objects\timer3.d)
@@ -890,8 +890,8 @@ I (..\cpu\inc\stm32f0xx_tim.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_usart.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_wwdg.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_misc.h)(0x5D8192D6)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 F (..\contiki\core\sys\autostart.c)(0x5D8192D6)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\autostart.o --omf_browse .\objects\autostart.crf --depend .\objects\autostart.d)
 I (..\contiki\core\sys/autostart.h)(0x5D8192D6)
 I (..\contiki\core\sys/process.h)(0x5D8192D6)
@@ -966,8 +966,8 @@ I (..\contiki\core\sys/lc.h)(0x5D8192D6)
 I (..\contiki\core\sys/lc-switch.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (D:\Keil\ARM\ARMCC\include\time.h)(0x51C7C554)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 F (..\contiki\portable\contiki-conf.h)(0x5D8192D6)()
 F (..\contiki\portable\contiki-default-conf.h)(0x5D8192D6)()
 F (..\lib\lib.c)(0x5D8192D6)(--c99 -c --cpu Cortex-M0 -g -O3 --apcs=interwork --split_sections -I..\app -I..\system -I..\contiki -I..\contiki\core -I..\contiki\portable -I..\cpu -I..\cpu\cmsis_inc -I..\cpu\inc -I..\dev -I..\lib-I D:\Keil\ARM\RV31\INC-I D:\Keil\ARM\CMSIS\Include-I D:\Keil\ARM\Inc\ST\STM32F0xx-DUSE_STDPERIPH_DRIVER -DSTM32F0XX -DSTM32F030-o .\objects\lib.o --omf_browse .\objects\lib.crf --depend .\objects\lib.d)
@@ -1012,8 +1012,8 @@ I (..\cpu\inc\stm32f0xx_wwdg.h)(0x5D8192D6)
 I (..\cpu\inc\stm32f0xx_misc.h)(0x5D8192D6)
 I (..\dev\types.h)(0x5D8192D6)
 I (..\app\includes.h)(0x5D8192D6)
-I (..\app\config.h)(0x5DA169FD)
-I (..\app\25-50-NAS-V2.h)(0x5DA14203)
+I (..\app\config.h)(0x5DA17E5B)
+I (..\app\25-50-NAS-V6.h)(0x5DA185BB)
 I (..\system\channel.h)(0x5DA1354F)
 I (..\contiki\core\contiki.h)(0x5D8192D6)
 I (..\contiki\core\contiki-version.h)(0x5D8192D6)

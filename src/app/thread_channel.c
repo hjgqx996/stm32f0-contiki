@@ -180,8 +180,8 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 								if( (ld_ir_read_state()== -1)  && ( valid_time() < FILTER_TIME_MAX) ) //充电宝进入3分钟后,开始滤波   
 								{
 									pch->ir_error_counter=BAO_IR_ERROR_TIMES;//红外识别故障
-								  pch->error.ir=1;
-								}
+								}else
+									pch->ir_error_counter++;                 //3分钟后,按BAO_IR_ERROR_TIMES次数标志
 							}else{
 								pch->ir_error_counter=0;//读取正确，清标志
 								pch->error.ir=0;
