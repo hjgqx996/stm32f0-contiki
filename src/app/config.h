@@ -29,7 +29,7 @@ typedef enum{
 
 //<s>使用硬件配置
 //<i> "8-16-NAS-V21.0.h" "25-50-NAS-V5.h" "25-50-NAS-V6.h" "25-50-NAS-V2.h" "25-50-NAS-V4.h"
-#define USING_HARDWARE_CONFIG  "25-50-NAS-V6.h"
+#define USING_HARDWARE_CONFIG  "25-50-NAS-V2.h"
 #include USING_HARDWARE_CONFIG
 
 //<o>上电自检次数
@@ -73,6 +73,11 @@ typedef enum{
 
 //<o>红外识别故障计数
 #define BAO_IR_ERROR_TIMES                 2
+
+//<o>红外故障检测开始过滤时间(秒)
+//<i>过滤为: 1次header失败，BAO_IR_ERROR_TIMES次data失败
+//<i>充电宝进入仓道后经过这个时间开始过滤
+#define FILTER_TIME_MAX                    180
 //</h>
 
 //<h>锁仓事件

@@ -21,6 +21,17 @@ static Channel chs[CHANNEL_MAX]={0};
                 本地函数
 ====================================================*/
 /*-------------------------------------
+充电宝有效时间
+-------------------------------------*/
+static void channel_valid_time(U8 ch)
+{
+  Channel*pch = channel_data_get(ch);if(pch==NULL)return;
+	if(pch->state.read_ok)
+	{
+		pch->valid_time++;
+	}
+}
+/*-------------------------------------
 仓道运行状态
 -------------------------------------*/
 static void channel_state_check(U8 ch)
@@ -234,6 +245,7 @@ void channel_check_timer_1s(void)
 	int i=1;
 	for(;i<=CHANNEL_MAX;i++)
 	{
+		channel_valid_time(i);
 		extern BOOL is_system_lease(void);//租借通道不检测
 		if(is_system_lease())continue;
 		channel_state_check(i);

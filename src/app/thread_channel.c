@@ -174,9 +174,10 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 						if(pch->test_ir_counter%3==0)//3次循环读一次红外
 						{
 							pch->test_ir_counter=0;
-							if(channel_read_from_ir(pch,RC_READ_DATA,(U8*)dataout,650)==FALSE)//读失败
+							if(channel_read_from_ir(pch,RC_READ_DATA,(U8*)dataout,650)==FALSE)      //读失败
 							{
-								if( (ld_ir_read_state()== -1)  || (time(0) < 120000) ) //开机2分钟后开始滤波   
+								/* 运维发现,经常性出现 "红外1故障" 的仓道异常，为此添加过滤*/
+								if( (ld_ir_read_state()== -1)  && ( valid_time() < FILTER_TIME_MAX) ) //充电宝进入3分钟后,开始滤波   
 								{
 									pch->ir_error_counter=BAO_IR_ERROR_TIMES;//红外识别故障
 								  pch->error.ir=1;
@@ -229,9 +230,9 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 			/*=====================充电宝休眠唤醒====================*/
 			
 			/*-----------循环等待时间---------------------------------*/
-			if((result) && (channel_read_delay_ms>0)){}
+			if((result) && (channel_read_delay_ms>40)){}
 			else 
-				channel_read_delay_ms=50;
+				channel_read_delay_ms=50;              //无宝短延时
 			os_delay(channel,channel_read_delay_ms);			
 			ld_iwdg_reload();		
 		}

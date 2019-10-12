@@ -400,7 +400,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_entry)
 			system.firmware_updata_flag=0x88;
 			ld_flash_write(0,&system.firmware_updata_flag,1,FIRMWARE_updata);
 			send_update_entry(hp,0x01);
-			delayms(500);
+			delayms(50);
 			cpu_nvic_reset();//¸´Î»		
 		}
 	}

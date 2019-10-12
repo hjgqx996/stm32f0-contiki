@@ -85,6 +85,7 @@ typedef struct{
 	
 	/*--------------插入充电--------------------------*/
   BOOL first_insert;              //第一次插入(==TRUE,时大循环不读，thread_insert线程读)
+	U32  valid_time;                //存活时间(充电宝进入仓道后的有效时间)，单位秒
 		
 	/*--------------iic方向切换,------------------------*/
 	U8  iic_dir;                     //iic方向 0:正常方向  1:方向反转
@@ -186,8 +187,9 @@ extern ChannelConfigureMap channel_config_map[];
 #define is_readok()      (pch->state.read_ok==1)               //判断读取成功
 #define is_readerr()     (pch->state.read_error==1)            //判断是否读失败
 #define is_has_read()    ( (pch->state.read_ok==1) || (pch->state.read_error==1)) //判断是否已经读
-
+#define valid_time()     (pch->valid_time)                     //充电宝存活时间,秒
 #define reset_out5v()   ld_gpio_set(pch->map->io_mp,0) //不输出5V
+
 
 int channel_read(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout,BOOL once);
 BOOL channel_read_from_ir(Channel*pch,READ_TYPE_CMD cmd,U8*dataout,int ms_timeout);
