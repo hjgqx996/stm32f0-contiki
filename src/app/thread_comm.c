@@ -37,8 +37,9 @@ BOOL diancifa(Channel*pch,int flashtime,int timeout,int check_time,int hightime_
 	dian_ci_fa(pch,HIGH);        //电磁阀动作
 	delayms(500);
 	dian_ci_fa(pch,LOW);         //关闭电磁阀
-	bcounter = bai_bi_counter(pch,50);//电磁阀打开的时候，读取摆臂开关电平
 	dian_ci_fa_power(0);         //关闭电磁阀电源
+	delayms(80);
+	bcounter = bai_bi_counter(pch,check_time);//电磁阀打开的时候，读取摆臂开关电平
 	if(bcounter < hightime_max){
 		channel_led_flash(channel_data_get_index(pch),flashtime);//闪灯	
 		return TRUE;
@@ -278,9 +279,11 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_lease)
 					}
 				}	
 
-				if(diancifa(pch,ltimeout/1000,500,60,20)==FALSE)//电磁阀动作时间500ms,灯闪时间 ltimout/1000秒,摆臂开关(高电平时间<250ms)
+				/*电磁阀动作时间500ms,灯闪时间 ltimout/1000秒,摆臂开关(检测100ms)<80ms 表示成功==TRUE*/
+				/*放宽成功，严格失败*/
+				if(diancifa(pch,ltimeout/1000,500,100,80)==FALSE)
 				{
-					if(channel_check_from_iic(pch))
+					if( isvalid_daowe() &&  channel_check_from_iic(pch))//iic 读不到 ,到位开关有效
 					{
 						send_lease_state(hp,Lease_dianchifa_fall,lch,buffer+1);//电磁阀失败
 						pch->error.motor = 1;//电磁阀故障			
@@ -364,7 +367,7 @@ AUTOSTART_THREAD_WITHOUT_TIMEOUT(comm_ctrl)
 			if(cmd==0x01||cmd==0x02)//强制开仓	
 			{			
 
-				if(diancifa(pch,ctrl_time,500,60,20))//电磁阀动作时间500ms,灯闪时间ctrl_time秒,摆臂开关(高电平时间<250ms)
+				if(diancifa(pch,ctrl_time,500,100,80))//电磁阀动作时间500ms,灯闪时间ctrl_time秒,摆臂开关(高电平时间<250ms)
 				{
 					request_charge_off(channel_data_get_index(pch)); //如果在充电，马上关电
 					pch->error.motor = 0;                            //电磁阀故障清0

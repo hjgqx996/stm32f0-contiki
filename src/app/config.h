@@ -15,7 +15,7 @@ typedef enum{
 //-------- <<< Use Configuration Wizard in Context Menu >>> -----------------
 
 //<e>是否使用看门狗
-#define ENABLE_IWDG               0
+#define ENABLE_IWDG               1
 //</e>
 
 //<o>485串口号  <1=>uart1 <2=>uart2
@@ -99,7 +99,7 @@ typedef enum{
 //<e>读不到是否加电
 #define POWERUP_WHILE_READ_ERROR       1
 //<o> 连续加电次数
-#define POWERUP_TIMES                  1
+#define POWERUP_TIMES                  2
 //<o> 一天内总加电次数
 #define POWERUP_ONE_DAY                5
 //</e>

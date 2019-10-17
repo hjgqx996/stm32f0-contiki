@@ -276,9 +276,13 @@ void fsm_charge(U8 ch,int arg)
 		//电量不在85%-99%,重新检测是否补充
 		if(!((pch->Ufsoc<=BUCHONG_STOP_UFSOC_MAX) && (pch->Ufsoc>BUCHONG_1HOUR_STOP_UFSOC_MAX)))
 		{
-			hour1=counter=0;//又可以重新3次补充了
-			if(s120==0)     //充满再跳
-				goto recharge;
+			//有电流等待充满,无电流直接返回
+			if(hour1>120)hour1=120;
+			if(pch->AverageCurrent >0)
+			{
+				if(timeout(hour1) && s120==0)
+						{ hour1=counter=0;goto recharge; }//返回补充
+			}else { hour1=counter=0;goto recharge; }
 		}
 	}
 	/*================================状态:每隔3小时无限补充=========================================================*/
@@ -293,8 +297,13 @@ void fsm_charge(U8 ch,int arg)
 		//电量>85%,退出无限补充
 	  if(pch->Ufsoc>BUCHONG_1HOUR_STOP_UFSOC_MAX)
 		{
-		  hour3=s120=0;
-			goto recharge;
+			//有电流等待充满,无电流直接返回
+			if(hour3>120)hour3=120;
+			if(pch->AverageCurrent >0)
+			{
+				if(timeout(hour3) && s120==0)
+						{ hour3=0;goto recharge; }//返回补充
+			}else { hour3=0;goto recharge; }
 		}
 	}
 	defaultx()

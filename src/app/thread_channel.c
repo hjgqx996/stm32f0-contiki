@@ -182,6 +182,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 									pch->ir_error_counter=BAO_IR_ERROR_TIMES;//红外识别故障
 								}else
 									pch->ir_error_counter++;                 //3分钟后,按BAO_IR_ERROR_TIMES次数标志
+
 							}else{
 								pch->ir_error_counter=0;//读取正确，清标志
 								pch->error.ir=0;
@@ -227,9 +228,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(channel)
 				read_data(pch,i,3);//加密
 				ld_iwdg_reload();	
 			}
-			/*=====================充电宝休眠唤醒====================*/
-			
-			/*-----------循环等待时间---------------------------------*/
+			/*=====================延时===============================*/
 			if((result) && (channel_read_delay_ms>40)){}
 			else 
 				channel_read_delay_ms=50;              //无宝短延时

@@ -73,7 +73,7 @@ AUTOSTART_THREAD_WITH_TIMEOUT(eject)
 						clec=0;
 						pch->warn.eject = 1;//事件位置1
 						cle10min=600;       //事件位清0,计时10分钟后eject清0
-            if(diancifa(pch,0,500,60,20)==FALSE) //摆臂开关还有效表示没有弹仓成功
+            if(diancifa(pch,0,500,100,80)==FALSE) //摆臂开关还有效表示没有弹仓成功
 						{
 							pch->error.motor = 1;//电磁阀故障
 							cleec++;             //错误计数++
