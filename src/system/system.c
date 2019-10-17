@@ -38,7 +38,7 @@ void ld_system_flash_led(int mode,int seconds)
 
 
 /*系统灯定时器处理*/
-void ld_system_led_timer(int ms)
+__weak void ld_system_led_timer(int ms)
 {
 	system.led_flash_time+=ms;	
   system.led_flash_total_time-=ms;	
